@@ -1,16 +1,23 @@
 mod chunk;
 mod value;
+mod vm;
 use crate::{
-    chunk::{Chunk, debug::disassemble_chunk, opcode::OpCode}, value::Value,
+    chunk::{Chunk, opcode::OpCode},
+    value::Value,
+    vm::Vm,
 };
 fn main() {
-    let mut chunk = Chunk::new();
-    let val = Value::Number(1.2);
-    let num = chunk.add_constant(val);
-    let constant_op: u8 = OpCode::Constant as u8;
-    let return_op: u8 = OpCode::Return as u8;
-    chunk.append(constant_op);
-    chunk.append(num as u8);
-    chunk.append(return_op);
-    disassemble_chunk(&chunk, "teste".to_string());
+    let mut c = Chunk::new();
+    let a = c.add_constant(Value::Number(1.0));
+    let z = c.add_constant(Value::Number(0.0));
+    c.append(OpCode::Constant as u8, 4);
+    c.append(a as u8, 4);
+    c.append(OpCode::Constant as u8, 4);
+    c.append(z as u8, 4);
+    c.append(OpCode::Divide as u8, 4);
+    c.append(OpCode::Return as u8, 4);
+    let mut vm = Vm::new();
+    if let Err(e) = vm.run(&c) {
+        println!(">>> Erro na linha {}: {}", e.line, e.message);
+    }
 }
