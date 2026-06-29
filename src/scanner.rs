@@ -1,3 +1,4 @@
+use crate::events::{Event, ScanEvent, SharedSink};
 use crate::token::{KEYWORDS, TokenError};
 use crate::token::{Token, TokenType};
 
@@ -6,15 +7,17 @@ pub struct Scanner {
     current: u64,
     line: u64,
     source: String,
+    sink: SharedSink,
 }
 
 impl Scanner {
-    pub fn new(source: String) -> Scanner {
+    pub fn new(source: String, sink: SharedSink) -> Scanner {
         Scanner {
             start: 0,
             current: 0,
             line: 1,
             source,
+            sink,
         }
     }
 
@@ -66,7 +69,9 @@ impl Scanner {
 
     fn make_token(&self, token_type: TokenType) -> Token {
         let lexeme = self.source[self.start as usize..self.current as usize].to_owned();
-        Token::new(token_type, lexeme, self.line)
+        let token = Token::new(token_type, lexeme, self.line);
+        self.sink.borrow_mut().emit(Event::Scan(ScanEvent::Token(token.clone())));
+        token
     }
 
     fn string(&mut self) -> Result<Token, TokenError> {
@@ -128,18 +133,25 @@ impl Scanner {
     }
 
     fn skip_whitespace(&mut self) {
-        let ch = self.peek();
-        if ch == ' ' || ch == '\t' || ch == '\r'{
-            self.advance();
-        } else if ch == '\n' {
-            self.line += 1;
-            self.advance();
-        } else if ch == '/' {
-
-            if self.peek_next() == '/' {
-                while !self.is_at_end() && self.peek() != '\n' {
+        loop {
+            match self.peek() {
+                ' ' | '\t' | '\r' => {
                     self.advance();
                 }
+                '\n' => {
+                    self.line += 1;
+                    self.advance();
+                }
+                '/' => {
+                    if self.peek_next() == '/' {
+                        while !self.is_at_end() && self.peek() != '\n' {
+                            self.advance();
+                        }
+                    } else {
+                        return;
+                    }
+                }
+                _ => return,
             }
         }
     }
@@ -247,5 +259,18 @@ impl Scanner {
                 }
             }
         }
+    }
+
+    pub fn scan_tokens(&mut self) -> Result<Vec<Token>, TokenError> {
+        let mut tokens = Vec::new();
+        loop {
+            let token = self.scan_token()?;
+            let eof = token.token_type == TokenType::EOF;
+            tokens.push(token);
+            if eof {
+                break;
+            }
+        }
+        Ok(tokens)
     }
 }
