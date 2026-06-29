@@ -53,9 +53,9 @@ impl StmtVisitor for Resolver {
 
     fn visit_return(&mut self, line: u64, value: Option<&Expression>) -> Self::Output {
         if matches!(self.is_function, IsFunction::None) {
-            return Err(self.error("'return' só pode ser usado dentro de uma função.".to_string(), line));
+            return Err(self.error("'retorna' só pode ser usado dentro de uma função.".to_string(), line));
         } else if matches!(self.is_function, IsFunction::Initializer) && value.is_some() {
-            return Err(self.error("O método 'init' não pode retornar um valor. Use 'return;' sem valor para sair cedo.".to_string(), line));
+            return Err(self.error("O método 'init' não pode retornar um valor. Use 'retorna;' sem valor para sair cedo.".to_string(), line));
         }
         if let Some(v) = value { v.accept(self)?; }
         Ok(())

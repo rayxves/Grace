@@ -207,7 +207,7 @@ impl ExprVisitor for Resolver {
     fn visit_this(&mut self, token: &Token, id: usize) -> Self::Output {
         if self.is_class == IsClass::None {
             return Err(self.error(
-                "'this' só pode ser usado dentro de métodos de uma classe.".to_string(),
+                "'este' só pode ser usado dentro de métodos de uma classe.".to_string(),
                 token.line,
             ));
         }

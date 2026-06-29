@@ -132,7 +132,7 @@ impl Parser {
         self.advance();
         if !self.check(&TokenType::LeftParen) {
             self.error(format!(
-                "Esperava '(' após 'if', mas encontrei '{}'.",
+                "Esperava '(' após 'se', mas encontrei '{}'.",
                 self.peek().lexeme
             ));
             self.synchronize();
@@ -182,7 +182,7 @@ impl Parser {
         self.advance();
         if !self.check(&TokenType::LeftParen) {
             self.error(format!(
-                "Esperava '(' após 'while', mas encontrei '{}'.",
+                "Esperava '(' após 'enquanto', mas encontrei '{}'.",
                 self.peek().lexeme
             ));
             self.synchronize();
@@ -218,7 +218,7 @@ impl Parser {
         self.advance();
         if !self.check(&TokenType::LeftParen) {
             self.error(format!(
-                "Esperava '(' após 'for', mas encontrei '{}'.",
+                "Esperava '(' após 'para', mas encontrei '{}'.",
                 self.peek().lexeme
             ));
             self.synchronize();
