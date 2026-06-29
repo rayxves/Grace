@@ -10,6 +10,7 @@ pub trait EventSink {
 pub enum Event {
     Scan(ScanEvent),
     Parse(ParseEvent),
+    Resolve(ResolveEvent),
 }
 
 pub enum ScanEvent {
@@ -19,4 +20,25 @@ pub enum ScanEvent {
 
 pub enum ParseEvent {
     Error { message: String, line: u64 },
+}
+
+pub enum ResolveEvent {
+    ScopeBegin,
+    ScopeEnd,
+    Declare {
+        name: String,
+        line: u64,
+    },
+    Define {
+        name: String,
+    },
+    Resolve {
+        id: usize,
+        name: String,
+        depth: usize,
+    },
+    Error {
+        message: String,
+        line: u64,
+    },
 }
