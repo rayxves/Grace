@@ -8,13 +8,15 @@ pub trait EventSink {
 }
 
 pub enum Event {
-    Scan(ScanEvent)
+    Scan(ScanEvent),
+    Parse(ParseEvent),
 }
 
 pub enum ScanEvent {
     Token(Token),
-    Error {
-        message: String,
-        line: u64
-    }
+    Error { message: String, line: u64 },
+}
+
+pub enum ParseEvent {
+    Error { message: String, line: u64 },
 }

@@ -1,14 +1,15 @@
 use crate::{
-    expr::{Expression, next_id},
-    parser::{ParseError, Parser},
-    stmt::Statement,
-    token::TokenType,
+    events::{Event, ParseEvent}, expr::{Expression, next_id}, parser::{ParseError, Parser}, stmt::Statement, token::TokenType,
 };
 
 impl Parser {
     pub fn error(&mut self, message: String) -> ParseError {
         let error = ParseError::new(self.peek().clone(), message);
         self.errors.push(error.clone());
+        self.sink.borrow_mut().emit(Event::Parse(ParseEvent::Error {
+            message: error.message.clone(),
+            line: error.token.line,
+        }));
         error
     }
 
@@ -490,12 +491,7 @@ impl Parser {
                                     Expression::Variable(n.clone(), self.peek().line, id);
                                 self.advance();
                                 let methods = self.parse_class_body()?;
-                                Some(Statement::Class(
-                                    name,
-                                    line,
-                                    Some(expr_variable),
-                                    methods,
-                                ))
+                                Some(Statement::Class(name, line, Some(expr_variable), methods))
                             }
                             _ => {
                                 self.error(format!(

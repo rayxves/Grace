@@ -1,5 +1,6 @@
 mod statements;
 use crate::{
+    events::SharedSink,
     expr::{Expression, next_id},
     stmt::Statement,
     token::{BinaryOp, LogicalOp, Token, TokenLiteral, TokenType, UnaryOp},
@@ -21,14 +22,16 @@ pub struct Parser {
     tokens: Vec<Token>,
     current_pos: usize,
     pub errors: Vec<ParseError>,
+    sink: SharedSink,
 }
 
 impl Parser {
-    pub fn new(tokens: Vec<Token>) -> Parser {
+    pub fn new(tokens: Vec<Token>, sink: SharedSink) -> Parser {
         Parser {
             tokens,
             current_pos: 0,
             errors: Vec::new(),
+            sink,
         }
     }
 
@@ -86,17 +89,10 @@ impl Parser {
                         self.advance();
                         Ok(Expression::Grouping(Box::new(expr)))
                     }
-                    _ => {
-                        let error = ParseError::new(
-                            self.peek().clone(),
-                            format!(
-                                "Esperava ')' para fechar o parêntese, mas encontrei '{}'.",
-                                self.peek().lexeme
-                            ),
-                        );
-                        self.errors.push(error.clone());
-                        Err(error)
-                    }
+                    _ => Err(self.error(format!(
+                        "Esperava ')' para fechar o parêntese, mas encontrei '{}'.",
+                        self.peek().lexeme
+                    ))),
                 }
             }
             TokenType::Identifier(name) => {
@@ -125,44 +121,23 @@ impl Parser {
                                 let id = next_id();
                                 Ok(Expression::Super(key_super, method, id))
                             }
-                            _ => {
-                                let error = ParseError::new(
-                                    self.peek().clone(),
-                                    format!(
-                                        "Esperava o nome de um método após 'super.', mas encontrei '{}'.",
-                                        self.peek().lexeme
-                                    ),
-                                );
-                                self.errors.push(error.clone());
-                                Err(error)
-                            }
+                            _ => Err(self.error(format!(
+                                "Esperava o nome de um método após 'super.', mas encontrei '{}'.",
+                                self.peek().lexeme
+                            ))),
                         }
                     }
-                    _ => {
-                        let error = ParseError::new(
-                            self.peek().clone(),
-                            format!(
-                                "'super' deve ser seguido de '.' e um nome de método, mas encontrei '{}'.",
-                                self.peek().lexeme
-                            ),
-                        );
-                        self.errors.push(error.clone());
-                        Err(error)
-                    }
+                    _ => Err(self.error(format!(
+                        "'super' deve ser seguido de '.' e um nome de método, mas encontrei '{}'.",
+                        self.peek().lexeme
+                    ))),
                 }
             }
-            _ => {
-                let error = ParseError::new(
-                    self.peek().clone(),
-                    format!(
-                        "Token inesperado '{}' na linha {}.",
-                        self.peek().lexeme,
-                        self.peek().line
-                    ),
-                );
-                self.errors.push(error.clone());
-                Err(error)
-            }
+            _ => Err(self.error(format!(
+                "Token inesperado '{}' na linha {}.",
+                self.peek().lexeme,
+                self.peek().line
+            ))),
         }
     }
 
@@ -336,12 +311,7 @@ impl Parser {
                     return Ok(Expression::Set(expr, token, Box::new(value)));
                 }
                 _ => {
-                    let error = ParseError::new(
-                        self.peek().clone(),
-                        "Não é possível atribuir a esta expressão. Só variáveis e propriedades podem receber valores.".to_string(),
-                    );
-                    self.errors.push(error.clone());
-                    return Err(error);
+                     return Err(self.error( "Não é possível atribuir a esta expressão. Só variáveis e propriedades podem receber valores.".to_string()))
                 }
             }
         }
