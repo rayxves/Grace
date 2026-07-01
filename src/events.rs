@@ -11,6 +11,7 @@ pub enum Event {
     Scan(ScanEvent),
     Parse(ParseEvent),
     Resolve(ResolveEvent),
+    Compile(CompileEvent),
 }
 
 pub enum ScanEvent {
@@ -39,6 +40,14 @@ pub enum ResolveEvent {
     },
     Error {
         message: String,
+        line: u64,
+    },
+}
+
+pub enum CompileEvent {
+    Emit {
+        offset: usize,
+        opcode: String,
         line: u64,
     },
 }

@@ -42,6 +42,14 @@ pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
             println!("Negacao");
             offset + 1
         }
+        Some(OpCode::Print) => {
+            println!("Print");
+            offset + 1
+        }
+        Some(OpCode::Pop) => {
+            println!("Pop");
+            offset + 1
+        }
         None => {
             println!("Desconhecido");
             offset + 1

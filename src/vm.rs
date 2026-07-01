@@ -43,14 +43,10 @@ impl Vm {
                     let value = chunk.pool[next_byte as usize].clone();
                     self.push(value);
                 }
-                Some(OpCode::Return) => match self.pop(chunk) {
-                    Ok(v) => return Ok(println!("{:?}", v)),
-                    Err(e) => return Err(e),
-                },
+                Some(OpCode::Return) => return Ok(()),
                 Some(OpCode::Negate) => {
                     let n = self.pop_number(chunk)?;
-                    let negate_number = -n;
-                    return Ok(self.push(Value::Number(negate_number)));
+                    self.push(Value::Number(-n));
                 }
 
                 Some(OpCode::Add) => {
@@ -66,10 +62,19 @@ impl Vm {
                     let b = self.pop_number(chunk)?;
                     let a = self.pop_number(chunk)?;
                     if b == 0.0 {
-                        return Err(VmError::new("Não é possível realizar uma divisão por 0.".to_string(), chunk.lines[self.ip -1]))
+                        return Err(VmError::new(
+                            "Não é possível realizar uma divisão por 0.".to_string(),
+                            chunk.lines[self.ip - 1],
+                        ));
                     }
-                    return Ok(self.push(Value::Number(a / b)));
-                    
+                    self.push(Value::Number(a / b));
+                }
+                Some(OpCode::Print) => {
+                    let v = self.pop(chunk)?;
+                    println!("{}", v.to_display());
+                }
+                Some(OpCode::Pop) => {
+                    self.pop(chunk)?;
                 }
                 None => {
                     return Err(VmError::new(

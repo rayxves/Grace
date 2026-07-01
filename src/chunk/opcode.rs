@@ -1,4 +1,5 @@
 #[repr(u8)] //represente isso como um u8 por baixo
+#[derive(Debug, Clone, Copy)] 
 pub enum OpCode {
     Return,
     Constant,
@@ -7,6 +8,8 @@ pub enum OpCode {
     Subtract,
     Multiply,
     Divide,
+    Print,
+    Pop
 }
 
 pub enum BinaryOpCode {
@@ -25,6 +28,8 @@ impl OpCode {
             4 => Some(OpCode::Subtract),
             5 => Some(OpCode::Multiply),
             6 => Some(OpCode::Divide),
+            7 => Some(OpCode::Print),
+            8 => Some(OpCode::Pop),
             _ => None,
         }
     }
