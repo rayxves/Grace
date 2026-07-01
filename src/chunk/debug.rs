@@ -50,6 +50,21 @@ pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
             println!("Pop");
             offset + 1
         }
+        Some(OpCode::DefineGlobal) => {
+            let i = chunk.code[offset + 1];
+            println!("DefineGlobal {:?}", chunk.pool[i as usize]);
+            offset + 2
+        }
+        Some(OpCode::GetGlobal) => {
+            let i = chunk.code[offset + 1];
+            println!("GetGlobal {:?}", chunk.pool[i as usize]);
+            offset + 2
+        }
+        Some(OpCode::SetGlobal) => {
+            let i = chunk.code[offset + 1];
+            println!("SetGlobal {:?}", chunk.pool[i as usize]);
+            offset + 2
+        }
         None => {
             println!("Desconhecido");
             offset + 1

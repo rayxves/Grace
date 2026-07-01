@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     chunk::{
         Chunk,
@@ -10,6 +12,7 @@ use crate::{
 pub struct Vm {
     ip: usize,
     stack: Vec<Value>,
+    globals: HashMap<String, Value>,
 }
 
 pub struct VmError {
@@ -28,6 +31,7 @@ impl Vm {
         Vm {
             ip: 0,
             stack: Vec::new(),
+            globals: HashMap::new(),
         }
     }
 
@@ -76,6 +80,42 @@ impl Vm {
                 Some(OpCode::Pop) => {
                     self.pop(chunk)?;
                 }
+                Some(OpCode::DefineGlobal) => {
+                    let name = self.read_name(chunk)?;
+                    let value = self.pop(chunk)?;
+                    self.globals.insert(name, value);
+                }
+                Some(OpCode::GetGlobal) => {
+                    let name = self.read_name(chunk)?;
+                    match self.globals.get(&name) {
+                        Some(value) => {
+                            let value = value.clone();
+                            self.push(value);
+                        }
+                        None => {
+                            return Err(VmError::new(
+                                format!("Variável '{}' não foi definida.", name),
+                                chunk.lines[self.ip - 1],
+                            ));
+                        }
+                    }
+                }
+                Some(OpCode::SetGlobal) => {
+                    let name = self.read_name(chunk)?;
+                    if self.globals.contains_key(&name) {
+                        let value = self.stack.last();
+                        match value {
+                            Some(v) => {
+                                self.globals.insert(name, v.clone());
+                            }
+                            None => {
+                                return Err(VmError::new("Erro interno: pilha vazia.".to_string(), chunk.lines[self.ip - 1]));
+                            }
+                        }
+                    } else {
+                        return Err(VmError::new("Não é possível atribuir valor a uma variável que não foi declarada antes.".to_string(), chunk.lines[self.ip - 1]));
+                    }
+                }
                 None => {
                     return Err(VmError::new(
                         "Erro desconhecido.".to_string(),
@@ -85,6 +125,18 @@ impl Vm {
             }
         }
     }
+
+    fn read_name(&mut self, chunk: &Chunk) -> Result<String, VmError> {
+        let index = self.read_byte(chunk);
+        match &chunk.pool[index as usize] {
+            Value::Str(s) => Ok(s.clone()),
+            _ => Err(VmError::new(
+                "Erro interno: esperava nome de variável no pool.".to_string(),
+                chunk.lines[self.ip - 1],
+            )),
+        }
+    }
+
     pub fn read_byte(&mut self, chunk: &Chunk) -> u8 {
         let byte = chunk.code[self.ip];
         self.ip += 1;
@@ -112,6 +164,12 @@ impl Vm {
         match value {
             Value::Number(n) => {
                 return Ok(n);
+            }
+            Value::Str(s) => {
+                return Err(VmError::new(
+                    format!("Esperava um número e recebi: {}", s),
+                    chunk.lines[self.ip - 1],
+                ));
             }
         }
     }

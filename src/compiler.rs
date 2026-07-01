@@ -36,6 +36,12 @@ impl Compiler {
         self.chunk.append(index as u8, line);
     }
 
+    pub fn emit_named(&mut self, opcode: OpCode, value: Value, line: u64) {
+        let index = self.chunk.add_constant(value);
+        self.emit_op(opcode, line);
+        self.chunk.append(index as u8, line);
+    }
+
     pub fn compile(&mut self, statements: &Vec<Statement>) {
         for stmt in statements {
             stmt.accept(self);
@@ -98,7 +104,7 @@ impl ExprVisitor for Compiler {
     }
 
     fn visit_variable(&mut self, name: &String, line: u64, id: usize) -> Self::Output {
-        todo!()
+        self.emit_named(OpCode::GetGlobal, Value::Str(name.to_string()), line);
     }
 
     fn visit_assign(
@@ -108,7 +114,8 @@ impl ExprVisitor for Compiler {
         expr: &crate::expr::Expression,
         id: usize,
     ) -> Self::Output {
-        todo!()
+        expr.accept(self);
+        self.emit_named(OpCode::SetGlobal, Value::Str(name.to_string()), line);
     }
 
     fn visit_logical(
@@ -180,7 +187,10 @@ impl StmtVisitor for Compiler {
         expr: Option<&crate::expr::Expression>,
         line: u64,
     ) -> Self::Output {
-        todo!()
+        if let Some(e) = expr {
+            e.accept(self);
+        }
+        self.emit_named(OpCode::DefineGlobal, Value::Str(name.to_string()), line);
     }
 
     fn visit_block(&mut self, statements: &Vec<Statement>) -> Self::Output {

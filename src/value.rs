@@ -1,6 +1,7 @@
 #[derive(Debug, Clone)]
 pub enum Value {
     Number(f64),
+    Str(String),
 }
 
 impl Value {
@@ -12,6 +13,9 @@ impl Value {
                 } else {
                     format!("{}", n)
                 }
+            },
+            Value::Str(s) => {
+                s.to_string()
             }
         }
     }
