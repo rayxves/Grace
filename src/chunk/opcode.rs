@@ -13,6 +13,16 @@ pub enum OpCode {
     DefineGlobal,
     GetGlobal,
     SetGlobal,
+    True,
+    False,
+    Null,
+    Not,
+    Equal,
+    Greater,
+    Less,
+    Jump,
+    JumpIfFalse,
+    Loop,
 }
 
 pub enum BinaryOpCode {
@@ -36,6 +46,16 @@ impl OpCode {
             9 => Some(OpCode::DefineGlobal),
             10 => Some(OpCode::GetGlobal),
             11 => Some(OpCode::SetGlobal),
+            12 => Some(OpCode::True),
+            13 => Some(OpCode::False),
+            14 => Some(OpCode::Null),
+            15 => Some(OpCode::Not),
+            16 => Some(OpCode::Equal),
+            17 => Some(OpCode::Greater),
+            18 => Some(OpCode::Less),
+            19 => Some(OpCode::Jump),
+            20 => Some(OpCode::JumpIfFalse),
+            21 => Some(OpCode::Loop),
             _ => None,
         }
     }

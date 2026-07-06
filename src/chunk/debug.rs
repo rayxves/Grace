@@ -65,6 +65,46 @@ pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
             println!("SetGlobal {:?}", chunk.pool[i as usize]);
             offset + 2
         }
+        Some(OpCode::True) => {
+            println!("Verdadeiro");
+            offset + 1
+        }
+        Some(OpCode::False) => {
+            println!("Falso");
+            offset + 1
+        }
+        Some(OpCode::Null) => {
+            println!("Null");
+            offset + 1
+        }
+        Some(OpCode::Not) => {
+            println!("Não");
+            offset + 1
+        }
+        Some(OpCode::Equal) => {
+            println!("Igual");
+            offset + 1
+        }
+        Some(OpCode::Greater) => {
+            println!("Maior");
+            offset + 1
+        }
+        Some(OpCode::Less) => {
+            println!("Menor");
+            offset + 1
+        }
+         Some(OpCode::Jump) => {
+            println!("Desvio");
+            offset + 2
+        }
+        Some(OpCode::JumpIfFalse) => {
+            println!("Desvio Falso");
+            offset + 2
+        }
+        Some(OpCode::Loop) => {
+            println!("Loop");
+            offset + 2
+        }
         None => {
             println!("Desconhecido");
             offset + 1

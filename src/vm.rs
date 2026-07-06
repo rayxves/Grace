@@ -109,12 +109,68 @@ impl Vm {
                                 self.globals.insert(name, v.clone());
                             }
                             None => {
-                                return Err(VmError::new("Erro interno: pilha vazia.".to_string(), chunk.lines[self.ip - 1]));
+                                return Err(VmError::new(
+                                    "Erro interno: pilha vazia.".to_string(),
+                                    chunk.lines[self.ip - 1],
+                                ));
                             }
                         }
                     } else {
                         return Err(VmError::new("Não é possível atribuir valor a uma variável que não foi declarada antes.".to_string(), chunk.lines[self.ip - 1]));
                     }
+                }
+                Some(OpCode::True) => {
+                    self.push(Value::Bool(true));
+                }
+                Some(OpCode::False) => {
+                    self.push(Value::Bool(false));
+                }
+                Some(OpCode::Null) => {
+                    self.push(Value::Null);
+                }
+                Some(OpCode::Not) => {
+                    let value = self.pop(chunk)?;
+                    let truthy_value = self.is_truthy(value);
+                    self.push(Value::Bool(!truthy_value));
+                }
+                Some(OpCode::Greater) => {
+                    let a = self.pop_number(chunk)?;
+                    let b = self.pop_number(chunk)?;
+                    self.push(Value::Bool(b > a));
+                }
+                Some(OpCode::Less) => {
+                    let a = self.pop_number(chunk)?;
+                    let b = self.pop_number(chunk)?;
+                    self.push(Value::Bool(b < a));
+                }
+                Some(OpCode::Equal) => {
+                    let a = self.pop(chunk)?;
+                    let b = self.pop(chunk)?;
+                    self.push(Value::Bool(b == a));
+                }
+                Some(OpCode::Jump) => {
+                    let offset = self.read_byte(chunk);
+                    self.ip += offset as usize;
+                }
+                Some(OpCode::JumpIfFalse) => {
+                    let offset = self.read_byte(chunk);
+                    let cond = match self.stack.last() {
+                        Some(v) => v.clone(),
+                        None => {
+                            return Err(VmError::new(
+                                "Erro interno: pilha vazia".into(),
+                                chunk.lines[self.ip - 1],
+                            ));
+                        }
+                    };
+
+                    if !self.is_truthy(cond) {
+                        self.ip += offset as usize;
+                    }
+                }
+                Some(OpCode::Loop) => {
+                    let offset = self.read_byte(chunk);
+                    self.ip -= offset as usize;
                 }
                 None => {
                     return Err(VmError::new(
@@ -123,6 +179,14 @@ impl Vm {
                     ));
                 }
             }
+        }
+    }
+
+    pub fn is_truthy(&self, value: Value) -> bool {
+        match value {
+            Value::Bool(b) => b,
+            Value::Null => false,
+            _ => true,
         }
     }
 
@@ -162,15 +226,11 @@ impl Vm {
     pub fn pop_number(&mut self, chunk: &Chunk) -> Result<f64, VmError> {
         let value = self.pop(chunk)?;
         match value {
-            Value::Number(n) => {
-                return Ok(n);
-            }
-            Value::Str(s) => {
-                return Err(VmError::new(
-                    format!("Esperava um número e recebi: {}", s),
-                    chunk.lines[self.ip - 1],
-                ));
-            }
+            Value::Number(n) => Ok(n),
+            other => Err(VmError::new(
+                format!("Esperava um número e recebi: {}", other.to_display()),
+                chunk.lines[self.ip - 1],
+            )),
         }
     }
 

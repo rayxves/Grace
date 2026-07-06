@@ -1,7 +1,9 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Number(f64),
     Str(String),
+    Bool(bool),
+    Null
 }
 
 impl Value {
@@ -16,6 +18,16 @@ impl Value {
             },
             Value::Str(s) => {
                 s.to_string()
+            }
+            Value::Bool(b) => {
+                if *b {
+                    "Verdadeiro".to_string()
+                } else {
+                    "Falso".to_string()
+                }
+            }
+            Value::Null => {
+                "Nulo".to_string()
             }
         }
     }
