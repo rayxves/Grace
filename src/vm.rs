@@ -172,6 +172,15 @@ impl Vm {
                     let offset = self.read_byte(chunk);
                     self.ip -= offset as usize;
                 }
+                Some(OpCode::GetLocal) => {
+                    let slot = self.read_byte(chunk);
+                    self.push(self.stack[slot as usize].clone());
+                }
+                Some(OpCode::SetLocal) => {
+                    let slot = self.read_byte(chunk);
+                    let value = self.stack.last().cloned().unwrap();
+                    self.stack[slot as usize] = value;
+                }
                 None => {
                     return Err(VmError::new(
                         "Erro desconhecido.".to_string(),

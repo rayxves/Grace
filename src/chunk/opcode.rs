@@ -23,6 +23,8 @@ pub enum OpCode {
     Jump,
     JumpIfFalse,
     Loop,
+    GetLocal,
+    SetLocal,
 }
 
 pub enum BinaryOpCode {
@@ -56,6 +58,8 @@ impl OpCode {
             19 => Some(OpCode::Jump),
             20 => Some(OpCode::JumpIfFalse),
             21 => Some(OpCode::Loop),
+            22 => Some(OpCode::GetLocal),
+            23 => Some(OpCode::SetLocal),
             _ => None,
         }
     }

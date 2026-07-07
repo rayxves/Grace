@@ -6,10 +6,16 @@ use crate::{
     token::{BinaryOp, LogicalOp, TokenLiteral, UnaryOp},
     value::Value,
 };
+pub struct Locals {
+    name: String,
+    depth: usize,
+}
 
 pub struct Compiler {
     chunk: Chunk,
     sink: SharedSink,
+    locals: Vec<Locals>,
+    scope_depth: usize,
 }
 
 impl Compiler {
@@ -17,6 +23,8 @@ impl Compiler {
         Compiler {
             chunk: Chunk::new(),
             sink,
+            locals: Vec::new(),
+            scope_depth: 0,
         }
     }
 
@@ -68,6 +76,38 @@ impl Compiler {
 
     pub fn into_chunk(self) -> Chunk {
         self.chunk
+    }
+
+    pub fn begin_scope(&mut self) {
+        self.scope_depth += 1;
+    }
+
+    pub fn end_scope(&mut self) {
+        self.scope_depth -= 1;
+        while let Some(local) = self.locals.last() {
+            if local.depth > self.scope_depth {
+                self.emit_op(OpCode::Pop, 0);
+                self.locals.pop();
+            } else {
+                break;
+            }
+        }
+    }
+
+    pub fn add_local(&mut self, name: String) {
+        self.locals.push(Locals {
+            name,
+            depth: self.scope_depth,
+        });
+    }
+
+    pub fn resolve_local(&self, name: String) -> Option<usize> {
+        for i in (0..self.locals.len()).rev() {
+            if self.locals[i].name == name {
+                return Some(i);
+            }
+        }
+        None
     }
 }
 
@@ -143,7 +183,15 @@ impl ExprVisitor for Compiler {
     }
 
     fn visit_variable(&mut self, name: &String, line: u64, id: usize) -> Self::Output {
-        self.emit_named(OpCode::GetGlobal, Value::Str(name.to_string()), line);
+        match self.resolve_local(name.to_string()) {
+            Some(slot) => {
+                self.emit_op(OpCode::GetLocal, line);
+                self.chunk.append(slot as u8, line);
+            }
+            None => {
+                self.emit_named(OpCode::GetGlobal, Value::Str(name.to_string()), line);
+            }
+        }
     }
 
     fn visit_assign(
@@ -154,7 +202,15 @@ impl ExprVisitor for Compiler {
         id: usize,
     ) -> Self::Output {
         expr.accept(self);
-        self.emit_named(OpCode::SetGlobal, Value::Str(name.to_string()), line);
+        match self.resolve_local(name.to_string()) {
+            Some(slot) => {
+                self.emit_op(OpCode::SetLocal, line);
+                self.chunk.append(slot as u8, line);
+            }
+            None => {
+                self.emit_named(OpCode::SetGlobal, Value::Str(name.to_string()), line);
+            }
+        }
     }
 
     fn visit_logical(
@@ -248,13 +304,19 @@ impl StmtVisitor for Compiler {
         } else {
             self.emit_op(OpCode::Null, line);
         }
-        self.emit_named(OpCode::DefineGlobal, Value::Str(name.to_string()), line);
+        if self.scope_depth > 0 {
+            self.add_local(name.to_string());
+        } else {
+            self.emit_named(OpCode::DefineGlobal, Value::Str(name.to_string()), line);
+        }
     }
 
     fn visit_block(&mut self, statements: &Vec<Statement>) -> Self::Output {
+        self.begin_scope();
         for stmt in statements {
             stmt.accept(self);
         }
+        self.end_scope();
     }
 
     fn visit_if(

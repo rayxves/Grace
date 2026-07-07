@@ -105,6 +105,16 @@ pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
             println!("Loop");
             offset + 2
         }
+         Some(OpCode::GetLocal) => {
+            let i = chunk.code[offset + 1];
+            println!("GetLocal {:?}", chunk.pool[i as usize]);
+            offset + 2
+        }
+        Some(OpCode::SetLocal) => {
+            let i = chunk.code[offset + 1];
+            println!("SetLocal {:?}", chunk.pool[i as usize]);
+            offset + 2
+        }
         None => {
             println!("Desconhecido");
             offset + 1

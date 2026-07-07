@@ -15,12 +15,15 @@ impl EventSink for NullSink {
     fn emit(&mut self, _e: Event) {}
 }
 
-fn roda(fonte: &str) {
-    print!("{:<42} -> ", fonte);
+fn roda(rotulo: &str, fonte: &str) {
+    println!("### {}   |   {}", rotulo, fonte);
     let sink: SharedSink = Rc::new(RefCell::new(NullSink));
 
     let mut scanner = Scanner::new(fonte.to_string(), sink.clone());
-    let tokens = scanner.scan_tokens().ok().unwrap();
+    let tokens = match scanner.scan_tokens() {
+        Ok(t) => t,
+        Err(e) => { println!("erro léxico: {}", e.message); println!(); return; }
+    };
 
     let mut parser = Parser::new(tokens, sink.clone());
     let statements = parser.parse();
@@ -31,30 +34,24 @@ fn roda(fonte: &str) {
 
     let mut vm = Vm::new();
     if let Err(e) = vm.run(&chunk) {
-        println!("erro: {}", e.message);
+        println!("erro VM: {}", e.message);
     }
+    println!();
 }
 
 fn main() {
-    println!("--- se / enquanto (não podem ter quebrado) ---");
-    roda("var i = 0; enquanto (i < 3) { imprima i; i = i + 1; }");
-    roda("se (2 == 2) imprima 100; senao imprima 200;");
-    roda("se (2 == 3) imprima 100; senao imprima 200;");
-    roda("se (falso) imprima 1;");                 // sem senao, não pode deixar lixo
-
-    println!("--- e / ou ---");
-    roda("imprima verdadeiro e verdadeiro;");
-    roda("imprima verdadeiro e falso;");
-    roda("imprima falso e verdadeiro;");
-    roda("imprima falso ou verdadeiro;");
-    roda("imprima falso ou falso;");
-    roda("imprima verdadeiro ou falso;");
-
-    println!("--- curto-circuito (o lado direito NÃO deve rodar) ---");
-    roda("imprima falso e (1 / 0 == 0);");         // se rodar o 1/0, dá erro de divisão
-    roda("imprima verdadeiro ou (1 / 0 == 0);");
-
-    println!("--- valor retornado (não só bool) ---");
-    roda("imprima 5 e 9;");                          // deve dar 9
-    roda("imprima nulo ou 42;");                     // deve dar 42
+    // local básico
+    roda("local simples", "{ var a = 1; var b = 2; imprima a + b; }");            // 3
+    // o de dentro enxerga o de fora
+    roda("aninhado", "{ var a = 10; { var b = 20; imprima a + b; } imprima a; }"); // 30, depois 10
+    // SOMBREAMENTO — o teste decisivo
+    roda("sombreamento", "{ var a = 1; { var a = 2; imprima a; } imprima a; }");   // 2, depois 1
+    // local e global convivendo
+    roda("local + global", "var g = 100; { var l = 5; imprima g + l; }");          // 105
+    // atribuir a uma local
+    roda("atribui local", "{ var a = 1; a = a + 5; imprima a; }");                 // 6
+    // laço usando locais
+    roda("laço com local", "{ var soma = 0; var i = 1; enquanto (i <= 3) { soma = soma + i; i = i + 1; } imprima soma; }"); // 6
+    // global ainda funciona sozinha
+    roda("global puro", "var x = 7; imprima x; x = x + 1; imprima x;");            // 7, depois 8
 }
