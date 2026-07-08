@@ -6,9 +6,8 @@ use crate::{
     expr::{ExprVisitor, Expression},
     stmt::{Statement, StmtVisitor},
     token::{BinaryOp, LogicalOp, TokenLiteral, UnaryOp},
-    value::Value,
+    value::{Value, function::Function},
 };
-use crate::value::function::Function as Fn;
 pub struct Locals {
     name: String,
     depth: usize,
@@ -26,7 +25,10 @@ impl Compiler {
         Compiler {
             chunk: Chunk::new(),
             sink,
-            locals: Vec::new(),
+            locals: vec![Locals {
+                name: String::new(),
+                depth: 0,
+            }],
             scope_depth: 0,
         }
     }
@@ -249,7 +251,12 @@ impl ExprVisitor for Compiler {
         args: &Vec<crate::expr::Expression>,
         paren: &crate::token::Token,
     ) -> Self::Output {
-        todo!()
+        callee.accept(self);
+        for arg in args {
+            arg.accept(self);
+        }
+        self.emit_op(OpCode::Call, paren.line);
+        self.chunk.append(args.len() as u8, paren.line);
     }
 
     fn visit_get(
@@ -368,8 +375,11 @@ impl StmtVisitor for Compiler {
             stmt.accept(&mut fn_compiler);
         }
 
+        fn_compiler.emit_op(OpCode::Null, line);
+        fn_compiler.emit_op(OpCode::Return, line);
+
         let fn_chunk = fn_compiler.into_chunk();
-        let function = Fn::new(name.to_string(), params.len() as u64, fn_chunk);
+        let function = Function::new(name.to_string(), params.len() as u64, fn_chunk);
         let value = Value::Function(Rc::new(function));
         self.emit_constant(value.clone(), line);
         if self.scope_depth > 0 {
@@ -380,7 +390,13 @@ impl StmtVisitor for Compiler {
     }
 
     fn visit_return(&mut self, line: u64, value: Option<&crate::expr::Expression>) -> Self::Output {
-        todo!()
+        match value {
+            Some(v) => v.accept(self),
+            None => {
+                self.emit_op(OpCode::Null, line);
+            }
+        }
+        self.emit_op(OpCode::Return, line);
     }
 
     fn visit_class(

@@ -38,6 +38,7 @@ impl Vm {
 
     pub fn run(&mut self, chunk: &Chunk) -> Result<(), VmError> {
         let script = Rc::new(Function::new("script".to_string(), 0, chunk.clone()));
+        self.push(Value::Function(script.clone())); 
         self.frames.push(CallFrame::new(script, 0, 0));
 
         loop {
@@ -48,7 +49,16 @@ impl Vm {
                     let i = self.read_byte(&function);
                     self.push(function.chunk.pool[i as usize].clone());
                 }
-                Some(OpCode::Return) => return Ok(()),
+                Some(OpCode::Return) => {
+                    let val = self.pop(&function)?;
+                    let base = self.frames.pop().unwrap().base;
+                    if self.frames.is_empty() {
+                        return Ok(())
+                    } 
+                    self.stack.truncate(base);
+                    self.push(val);
+
+                },
                 Some(OpCode::Negate) => {
                     let n = self.pop_number(&function)?;
                     self.push(Value::Number(-n));
@@ -156,10 +166,17 @@ impl Vm {
                     self.stack[base + slot as usize] = value;
                 }
                 Some(OpCode::Call) => {
-                    return Err(VmError::new(
-                        "Call ainda não implementado (Etapa 3b).".into(),
-                        self.cur_line(&function),
-                    ));
+                    let arg_count = self.read_byte(&function);
+                    let base = self.stack.len() - arg_count as usize - 1;
+                    let callee_fn = match self.stack[base].clone() {
+                        Value::Function(f) => f,
+                        _ => return Err(VmError::new("Só é possível chamar funções.".into(), 0)),
+                    };
+                    if arg_count != callee_fn.arity as u8 {
+                        return Err(VmError::new("Número de argumentos inválidos.".into(), 0))
+                    }
+                    let call_frame = CallFrame::new(callee_fn, 0, base);
+                    self.frames.push(call_frame);
                 }
                 None => {
                     return Err(VmError::new(
@@ -233,4 +250,5 @@ impl Vm {
         self.push(Value::Number(r));
         Ok(())
     }
+
 }
