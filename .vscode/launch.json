@@ -1,0 +1,16 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug Grace",
+			"cargo": {
+				"args": ["build", "--bin=Grace"]
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}",
+			"terminal": "integrated"
+		}
+	]
+}

@@ -25,6 +25,7 @@ pub enum OpCode {
     Loop,
     GetLocal,
     SetLocal,
+    Call,
 }
 
 pub enum BinaryOpCode {
@@ -60,6 +61,7 @@ impl OpCode {
             21 => Some(OpCode::Loop),
             22 => Some(OpCode::GetLocal),
             23 => Some(OpCode::SetLocal),
+            24 => Some(OpCode::Call),
             _ => None,
         }
     }

@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     chunk::{Chunk, opcode::OpCode},
     events::{CompileEvent, Event::Compile, SharedSink},
@@ -6,6 +8,7 @@ use crate::{
     token::{BinaryOp, LogicalOp, TokenLiteral, UnaryOp},
     value::Value,
 };
+use crate::value::function::Function as Fn;
 pub struct Locals {
     name: String,
     depth: usize,
@@ -355,7 +358,25 @@ impl StmtVisitor for Compiler {
         stmts: &Vec<Statement>,
         line: u64,
     ) -> Self::Output {
-        todo!()
+        let mut fn_compiler = Compiler::new(self.sink.clone());
+
+        fn_compiler.begin_scope();
+        for param in params {
+            fn_compiler.add_local(param.to_string());
+        }
+        for stmt in stmts {
+            stmt.accept(&mut fn_compiler);
+        }
+
+        let fn_chunk = fn_compiler.into_chunk();
+        let function = Fn::new(name.to_string(), params.len() as u64, fn_chunk);
+        let value = Value::Function(Rc::new(function));
+        self.emit_constant(value.clone(), line);
+        if self.scope_depth > 0 {
+            self.add_local(name.to_string());
+        } else {
+            self.emit_named(OpCode::DefineGlobal, Value::Str(name.to_string()), line);
+        }
     }
 
     fn visit_return(&mut self, line: u64, value: Option<&crate::expr::Expression>) -> Self::Output {

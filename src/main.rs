@@ -15,14 +15,14 @@ impl EventSink for NullSink {
     fn emit(&mut self, _e: Event) {}
 }
 
-fn roda(rotulo: &str, fonte: &str) {
-    println!("### {}   |   {}", rotulo, fonte);
+fn roda(fonte: &str) {
+    print!("{:<52} -> ", fonte);
     let sink: SharedSink = Rc::new(RefCell::new(NullSink));
 
     let mut scanner = Scanner::new(fonte.to_string(), sink.clone());
     let tokens = match scanner.scan_tokens() {
         Ok(t) => t,
-        Err(e) => { println!("erro léxico: {}", e.message); println!(); return; }
+        Err(e) => { println!("erro léxico: {}", e.message); return; }
     };
 
     let mut parser = Parser::new(tokens, sink.clone());
@@ -36,22 +36,16 @@ fn roda(rotulo: &str, fonte: &str) {
     if let Err(e) = vm.run(&chunk) {
         println!("erro VM: {}", e.message);
     }
-    println!();
 }
 
 fn main() {
-    // local básico
-    roda("local simples", "{ var a = 1; var b = 2; imprima a + b; }");            // 3
-    // o de dentro enxerga o de fora
-    roda("aninhado", "{ var a = 10; { var b = 20; imprima a + b; } imprima a; }"); // 30, depois 10
-    // SOMBREAMENTO — o teste decisivo
-    roda("sombreamento", "{ var a = 1; { var a = 2; imprima a; } imprima a; }");   // 2, depois 1
-    // local e global convivendo
-    roda("local + global", "var g = 100; { var l = 5; imprima g + l; }");          // 105
-    // atribuir a uma local
-    roda("atribui local", "{ var a = 1; a = a + 5; imprima a; }");                 // 6
-    // laço usando locais
-    roda("laço com local", "{ var soma = 0; var i = 1; enquanto (i <= 3) { soma = soma + i; i = i + 1; } imprima soma; }"); // 6
-    // global ainda funciona sozinha
-    roda("global puro", "var x = 7; imprima x; x = x + 1; imprima x;");            // 7, depois 8
+    println!("=== Etapa 3a: a VM reformada roda tudo que já funcionava? ===");
+    roda("imprima 1 + 2;");                                          // 3
+    roda("imprima (1.2 + 3.4) / 5.6;");                             // 0.8214...
+    roda("var x = 10; imprima x; x = x + 5; imprima x;");           // 10, 15
+    roda("se (2 == 2) imprima 100; senao imprima 200;");            // 100
+    roda("var i = 0; enquanto (i < 3) { imprima i; i = i + 1; }");  // 0, 1, 2
+    roda("{ var a = 1; { var a = 2; imprima a; } imprima a; }");    // 2, 1
+    roda("imprima verdadeiro e falso;");                            // Falso
+    roda("imprima falso ou verdadeiro;");                           // Verdadeiro
 }

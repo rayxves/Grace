@@ -2,6 +2,8 @@ use crate::value::Value;
 
 pub mod opcode;
 pub mod debug;
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Chunk {
     pub code: Vec<u8>,
     pub pool: Vec<Value>,

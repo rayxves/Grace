@@ -1,17 +1,19 @@
-use std::collections::HashMap;
+mod call_frame;
 
-use crate::{
-    chunk::{
-        Chunk,
-        debug::disassemble_instruction,
-        opcode::{BinaryOpCode, OpCode},
-    },
-    value::Value,
+use std::collections::HashMap;
+use std::rc::Rc;
+
+use crate::chunk::{
+    Chunk,
+    opcode::{BinaryOpCode, OpCode},
 };
+use crate::value::Value;
+use crate::value::function::Function;
+use crate::vm::call_frame::CallFrame;
 
 pub struct Vm {
-    ip: usize,
     stack: Vec<Value>,
+    frames: Vec<CallFrame>,
     globals: HashMap<String, Value>,
 }
 
@@ -19,7 +21,6 @@ pub struct VmError {
     pub message: String,
     pub line: u64,
 }
-
 impl VmError {
     pub fn new(message: String, line: u64) -> VmError {
         VmError { message, line }
@@ -29,64 +30,57 @@ impl VmError {
 impl Vm {
     pub fn new() -> Vm {
         Vm {
-            ip: 0,
             stack: Vec::new(),
+            frames: Vec::new(),
             globals: HashMap::new(),
         }
     }
 
     pub fn run(&mut self, chunk: &Chunk) -> Result<(), VmError> {
+        let script = Rc::new(Function::new("script".to_string(), 0, chunk.clone()));
+        self.frames.push(CallFrame::new(script, 0, 0));
+
         loop {
-            println!("Pilha: {:?}", self.stack);
-            disassemble_instruction(chunk, self.ip);
-            let byte = self.read_byte(chunk);
-            let decoded = OpCode::from_byte(byte);
-            match decoded {
+            let function = self.frames.last().unwrap().function.clone();
+            let byte = self.read_byte(&function);
+            match OpCode::from_byte(byte) {
                 Some(OpCode::Constant) => {
-                    let next_byte = self.read_byte(chunk);
-                    let value = chunk.pool[next_byte as usize].clone();
-                    self.push(value);
+                    let i = self.read_byte(&function);
+                    self.push(function.chunk.pool[i as usize].clone());
                 }
                 Some(OpCode::Return) => return Ok(()),
                 Some(OpCode::Negate) => {
-                    let n = self.pop_number(chunk)?;
+                    let n = self.pop_number(&function)?;
                     self.push(Value::Number(-n));
                 }
-
-                Some(OpCode::Add) => {
-                    self.binary_op(chunk, BinaryOpCode::Add)?;
-                }
-                Some(OpCode::Subtract) => {
-                    self.binary_op(chunk, BinaryOpCode::Subtract)?;
-                }
-                Some(OpCode::Multiply) => {
-                    self.binary_op(chunk, BinaryOpCode::Multiply)?;
-                }
+                Some(OpCode::Add) => self.binary_op(&function, BinaryOpCode::Add)?,
+                Some(OpCode::Subtract) => self.binary_op(&function, BinaryOpCode::Subtract)?,
+                Some(OpCode::Multiply) => self.binary_op(&function, BinaryOpCode::Multiply)?,
                 Some(OpCode::Divide) => {
-                    let b = self.pop_number(chunk)?;
-                    let a = self.pop_number(chunk)?;
+                    let b = self.pop_number(&function)?;
+                    let a = self.pop_number(&function)?;
                     if b == 0.0 {
                         return Err(VmError::new(
                             "Não é possível realizar uma divisão por 0.".to_string(),
-                            chunk.lines[self.ip - 1],
+                            self.cur_line(&function),
                         ));
                     }
                     self.push(Value::Number(a / b));
                 }
                 Some(OpCode::Print) => {
-                    let v = self.pop(chunk)?;
+                    let v = self.pop(&function)?;
                     println!("{}", v.to_display());
                 }
                 Some(OpCode::Pop) => {
-                    self.pop(chunk)?;
+                    self.pop(&function)?;
                 }
                 Some(OpCode::DefineGlobal) => {
-                    let name = self.read_name(chunk)?;
-                    let value = self.pop(chunk)?;
+                    let name = self.read_name(&function)?;
+                    let value = self.pop(&function)?;
                     self.globals.insert(name, value);
                 }
                 Some(OpCode::GetGlobal) => {
-                    let name = self.read_name(chunk)?;
+                    let name = self.read_name(&function)?;
                     match self.globals.get(&name) {
                         Some(value) => {
                             let value = value.clone();
@@ -95,102 +89,114 @@ impl Vm {
                         None => {
                             return Err(VmError::new(
                                 format!("Variável '{}' não foi definida.", name),
-                                chunk.lines[self.ip - 1],
+                                self.cur_line(&function),
                             ));
                         }
                     }
                 }
                 Some(OpCode::SetGlobal) => {
-                    let name = self.read_name(chunk)?;
+                    let name = self.read_name(&function)?;
                     if self.globals.contains_key(&name) {
-                        let value = self.stack.last();
-                        match value {
-                            Some(v) => {
-                                self.globals.insert(name, v.clone());
-                            }
-                            None => {
-                                return Err(VmError::new(
-                                    "Erro interno: pilha vazia.".to_string(),
-                                    chunk.lines[self.ip - 1],
-                                ));
-                            }
-                        }
+                        let value = self.stack.last().cloned().unwrap();
+                        self.globals.insert(name, value);
                     } else {
-                        return Err(VmError::new("Não é possível atribuir valor a uma variável que não foi declarada antes.".to_string(), chunk.lines[self.ip - 1]));
+                        return Err(VmError::new("Não é possível atribuir valor a uma variável que não foi declarada antes.".to_string(), self.cur_line(&function)));
                     }
                 }
-                Some(OpCode::True) => {
-                    self.push(Value::Bool(true));
-                }
-                Some(OpCode::False) => {
-                    self.push(Value::Bool(false));
-                }
-                Some(OpCode::Null) => {
-                    self.push(Value::Null);
-                }
+                Some(OpCode::True) => self.push(Value::Bool(true)),
+                Some(OpCode::False) => self.push(Value::Bool(false)),
+                Some(OpCode::Null) => self.push(Value::Null),
                 Some(OpCode::Not) => {
-                    let value = self.pop(chunk)?;
-                    let truthy_value = self.is_truthy(value);
-                    self.push(Value::Bool(!truthy_value));
+                    let v = self.pop(&function)?;
+                    let t = self.is_truthy(v);
+                    self.push(Value::Bool(!t));
                 }
                 Some(OpCode::Greater) => {
-                    let a = self.pop_number(chunk)?;
-                    let b = self.pop_number(chunk)?;
+                    let a = self.pop_number(&function)?;
+                    let b = self.pop_number(&function)?;
                     self.push(Value::Bool(b > a));
                 }
                 Some(OpCode::Less) => {
-                    let a = self.pop_number(chunk)?;
-                    let b = self.pop_number(chunk)?;
+                    let a = self.pop_number(&function)?;
+                    let b = self.pop_number(&function)?;
                     self.push(Value::Bool(b < a));
                 }
                 Some(OpCode::Equal) => {
-                    let a = self.pop(chunk)?;
-                    let b = self.pop(chunk)?;
+                    let a = self.pop(&function)?;
+                    let b = self.pop(&function)?;
                     self.push(Value::Bool(b == a));
                 }
                 Some(OpCode::Jump) => {
-                    let offset = self.read_byte(chunk);
-                    self.ip += offset as usize;
+                    let offset = self.read_byte(&function);
+                    self.frame_mut().ip += offset as usize;
                 }
                 Some(OpCode::JumpIfFalse) => {
-                    let offset = self.read_byte(chunk);
-                    let cond = match self.stack.last() {
-                        Some(v) => v.clone(),
-                        None => {
-                            return Err(VmError::new(
-                                "Erro interno: pilha vazia".into(),
-                                chunk.lines[self.ip - 1],
-                            ));
-                        }
-                    };
-
+                    let offset = self.read_byte(&function);
+                    let cond = self.stack.last().cloned().ok_or(VmError::new(
+                        "Erro interno: pilha vazia".into(),
+                        self.cur_line(&function),
+                    ))?;
                     if !self.is_truthy(cond) {
-                        self.ip += offset as usize;
+                        self.frame_mut().ip += offset as usize;
                     }
                 }
                 Some(OpCode::Loop) => {
-                    let offset = self.read_byte(chunk);
-                    self.ip -= offset as usize;
+                    let offset = self.read_byte(&function);
+                    self.frame_mut().ip -= offset as usize;
                 }
                 Some(OpCode::GetLocal) => {
-                    let slot = self.read_byte(chunk);
-                    self.push(self.stack[slot as usize].clone());
+                    let slot = self.read_byte(&function);
+                    let base = self.frame().base;
+                    self.push(self.stack[base + slot as usize].clone());
                 }
                 Some(OpCode::SetLocal) => {
-                    let slot = self.read_byte(chunk);
+                    let slot = self.read_byte(&function);
+                    let base = self.frame().base;
                     let value = self.stack.last().cloned().unwrap();
-                    self.stack[slot as usize] = value;
+                    self.stack[base + slot as usize] = value;
+                }
+                Some(OpCode::Call) => {
+                    return Err(VmError::new(
+                        "Call ainda não implementado (Etapa 3b).".into(),
+                        self.cur_line(&function),
+                    ));
                 }
                 None => {
                     return Err(VmError::new(
                         "Erro desconhecido.".to_string(),
-                        chunk.lines[self.ip - 1],
+                        self.cur_line(&function),
                     ));
                 }
             }
         }
     }
 
+    fn frame(&self) -> &CallFrame {
+        self.frames.last().unwrap()
+    }
+    fn frame_mut(&mut self) -> &mut CallFrame {
+        self.frames.last_mut().unwrap()
+    }
+    fn cur_line(&self, function: &Rc<Function>) -> u64 {
+        let ip = self.frame().ip;
+        function.chunk.lines[ip - 1]
+    }
+    fn read_byte(&mut self, function: &Rc<Function>) -> u8 {
+        let ip = self.frame().ip;
+        let byte = function.chunk.code[ip];
+        self.frame_mut().ip += 1;
+        byte
+    }
+    fn read_name(&mut self, function: &Rc<Function>) -> Result<String, VmError> {
+        let index = self.read_byte(function);
+        match &function.chunk.pool[index as usize] {
+            Value::Str(s) => Ok(s.clone()),
+            _ => Err(VmError::new(
+                "Erro interno: esperava nome de variável no pool.".to_string(),
+                self.cur_line(function),
+            )),
+        }
+    }
     pub fn is_truthy(&self, value: Value) -> bool {
         match value {
             Value::Bool(b) => b,
@@ -198,58 +204,33 @@ impl Vm {
             _ => true,
         }
     }
-
-    fn read_name(&mut self, chunk: &Chunk) -> Result<String, VmError> {
-        let index = self.read_byte(chunk);
-        match &chunk.pool[index as usize] {
-            Value::Str(s) => Ok(s.clone()),
-            _ => Err(VmError::new(
-                "Erro interno: esperava nome de variável no pool.".to_string(),
-                chunk.lines[self.ip - 1],
-            )),
-        }
-    }
-
-    pub fn read_byte(&mut self, chunk: &Chunk) -> u8 {
-        let byte = chunk.code[self.ip];
-        self.ip += 1;
-        return byte;
-    }
-
-    pub fn push(&mut self, value: Value) {
+    fn push(&mut self, value: Value) {
         self.stack.push(value);
     }
-    pub fn pop(&mut self, chunk: &Chunk) -> Result<Value, VmError> {
-        let value = self.stack.pop();
-        match value {
-            Some(v) => return Ok(v),
-            None => {
-                return Err(VmError::new(
-                    "Erro interno, pilha vazia.".to_string(),
-                    chunk.lines[self.ip - 1],
-                ));
-            }
-        }
+    fn pop(&mut self, function: &Rc<Function>) -> Result<Value, VmError> {
+        self.stack.pop().ok_or(VmError::new(
+            "Erro interno, pilha vazia.".to_string(),
+            self.cur_line(function),
+        ))
     }
-
-    pub fn pop_number(&mut self, chunk: &Chunk) -> Result<f64, VmError> {
-        let value = self.pop(chunk)?;
-        match value {
+    fn pop_number(&mut self, function: &Rc<Function>) -> Result<f64, VmError> {
+        match self.pop(function)? {
             Value::Number(n) => Ok(n),
             other => Err(VmError::new(
                 format!("Esperava um número e recebi: {}", other.to_display()),
-                chunk.lines[self.ip - 1],
+                self.cur_line(function),
             )),
         }
     }
-
-    pub fn binary_op(&mut self, chunk: &Chunk, op_code: BinaryOpCode) -> Result<(), VmError> {
-        let b = self.pop_number(chunk)?;
-        let a = self.pop_number(chunk)?;
-        match op_code {
-            BinaryOpCode::Add => return Ok(self.push(Value::Number(a + b))),
-            BinaryOpCode::Subtract => return Ok(self.push(Value::Number(a - b))),
-            BinaryOpCode::Multiply => return Ok(self.push(Value::Number(a * b))),
-        }
+    fn binary_op(&mut self, function: &Rc<Function>, op: BinaryOpCode) -> Result<(), VmError> {
+        let b = self.pop_number(function)?;
+        let a = self.pop_number(function)?;
+        let r = match op {
+            BinaryOpCode::Add => a + b,
+            BinaryOpCode::Subtract => a - b,
+            BinaryOpCode::Multiply => a * b,
+        };
+        self.push(Value::Number(r));
+        Ok(())
     }
 }
