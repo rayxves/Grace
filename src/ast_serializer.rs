@@ -319,15 +319,26 @@ impl StmtVisitor for AstSerializer {
         name: &String,
         line: u64,
         superclass: &Option<crate::expr::Expression>,
+        attributes: &Vec<String>,
         statements: &Vec<crate::stmt::Statement>,
     ) -> Self::Output {
         let mut children = vec![];
         if let Some(sc) = superclass {
             children.push(sc.accept(self));
         }
+        for atributo in attributes {
+            children.push(AstNode {
+                id: None,
+                kind: "Attribute".to_string(),
+                label: atributo.clone(),
+                line: Some(line),
+                children: vec![],
+            });
+        }
         for s in statements {
             children.push(s.accept(self));
         }
+
         AstNode {
             id: None,
             kind: "Class".to_string(),

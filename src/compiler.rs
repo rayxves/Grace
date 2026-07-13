@@ -404,6 +404,7 @@ impl StmtVisitor for Compiler {
         name: &String,
         line: u64,
         superclass: &Option<crate::expr::Expression>,
+        attributes: &Vec<String>,
         statements: &Vec<Statement>,
     ) -> Self::Output {
         todo!()

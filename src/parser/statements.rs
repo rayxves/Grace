@@ -1,5 +1,9 @@
 use crate::{
-    events::{Event, ParseEvent}, expr::{Expression, next_id}, parser::{ParseError, Parser}, stmt::Statement, token::TokenType,
+    events::{Event, ParseEvent},
+    expr::{Expression, next_id},
+    parser::{ParseError, Parser},
+    stmt::Statement,
+    token::TokenType,
 };
 
 impl Parser {
@@ -440,7 +444,7 @@ impl Parser {
         }
     }
 
-    fn parse_class_body(&mut self) -> Option<Vec<Statement>> {
+    fn parse_class_body(&mut self) -> Option<(Vec<String>, Vec<Statement>)> {
         if !self.check(&TokenType::LeftBrace) {
             self.error(format!(
                 "Esperava {{, mas encontrei '{}'.",
@@ -450,6 +454,7 @@ impl Parser {
         }
         self.advance();
         let mut methods = Vec::new();
+        let mut attributes = Vec::new();
         while !self.check(&TokenType::RightBrace) {
             match &self.peek().token_type {
                 TokenType::Identifier(n) => {
@@ -458,6 +463,31 @@ impl Parser {
                     match self.parse_function_statement(fun_name) {
                         Some(f) => methods.push(f),
                         None => return None,
+                    }
+                }
+                TokenType::Var => {
+                    self.advance();
+                    match &self.peek().token_type {
+                        TokenType::Identifier(n) => {
+                            attributes.push(n.clone());
+                            self.advance();
+                            if self.check(&TokenType::Semicolon) {
+                                self.advance();
+                            } else {
+                                self.error(format!(
+                                    "Esperava ';' após o atributo, mas encontrei '{}'.",
+                                    self.peek().lexeme
+                                ));
+                                return None;
+                            }
+                        }
+                        _ => {
+                            self.error(format!(
+                                "Esperava nome de um atributo, mas encontrei '{}'.",
+                                self.peek().lexeme
+                            ));
+                            return None;
+                        }
                     }
                 }
                 _ => {
@@ -470,7 +500,7 @@ impl Parser {
             }
         }
         self.advance();
-        Some(methods)
+        Some((attributes, methods))
     }
 
     fn class_statement(&mut self) -> Option<Statement> {
@@ -490,8 +520,14 @@ impl Parser {
                                 let expr_variable =
                                     Expression::Variable(n.clone(), self.peek().line, id);
                                 self.advance();
-                                let methods = self.parse_class_body()?;
-                                Some(Statement::Class(name, line, Some(expr_variable), methods))
+                                let (attributes, methods) = self.parse_class_body()?;
+                                Some(Statement::Class(
+                                    name,
+                                    line,
+                                    Some(expr_variable),
+                                    attributes,
+                                    methods,
+                                ))
                             }
                             _ => {
                                 self.error(format!(
@@ -503,8 +539,8 @@ impl Parser {
                         }
                     }
                     TokenType::LeftBrace => {
-                        let methods = self.parse_class_body()?;
-                        return Some(Statement::Class(name, line, None, methods));
+                        let (attributes, methods) = self.parse_class_body()?;
+                        return Some(Statement::Class(name, line, None, attributes, methods));
                     }
                     _ => {
                         self.error(format!(
