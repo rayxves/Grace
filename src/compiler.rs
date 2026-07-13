@@ -311,7 +311,8 @@ impl ExprVisitor for Compiler {
     }
 
     fn visit_this(&mut self, token: &crate::token::Token, id: usize) -> Self::Output {
-        todo!()
+        self.emit_op(OpCode::GetLocal, 0);
+        self.chunk.append(0u8, 0);
     }
 
     fn visit_super(
