@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{collections::HashMap, rc::Rc, vec};
 
 use crate::{
     chunk::{Chunk, opcode::OpCode},
@@ -117,6 +117,25 @@ impl Compiler {
             }
         }
         None
+    }
+    fn compile_function(
+        &mut self,
+        name: &str,
+        params: &Vec<String>,
+        body: &Vec<Statement>,
+    ) -> Function {
+        let mut fn_compiler = Compiler::new(self.sink.clone());
+        fn_compiler.begin_scope();
+        for param in params {
+            fn_compiler.add_local(param.to_string());
+        }
+        for stmt in body {
+            stmt.accept(&mut fn_compiler);
+        }
+        fn_compiler.emit_op(OpCode::Null, 0);
+        fn_compiler.emit_op(OpCode::Return, 0);
+        let fn_chunk = fn_compiler.into_chunk();
+        Function::new(name.to_string(), params.len() as u64, fn_chunk) // DEVOLVE a função
     }
 }
 
@@ -269,7 +288,11 @@ impl ExprVisitor for Compiler {
         token: &crate::token::Token,
     ) -> Self::Output {
         expr.accept(self);
-        self.emit_named(OpCode::GetProperty, Value::Str(token.lexeme.clone()), token.line);
+        self.emit_named(
+            OpCode::GetProperty,
+            Value::Str(token.lexeme.clone()),
+            token.line,
+        );
     }
 
     fn visit_set(
@@ -280,7 +303,11 @@ impl ExprVisitor for Compiler {
     ) -> Self::Output {
         expr.accept(self);
         value.accept(self);
-        self.emit_named(OpCode::SetProperty, Value::Str(token.lexeme.clone()), token.line);
+        self.emit_named(
+            OpCode::SetProperty,
+            Value::Str(token.lexeme.clone()),
+            token.line,
+        );
     }
 
     fn visit_this(&mut self, token: &crate::token::Token, id: usize) -> Self::Output {
@@ -371,24 +398,10 @@ impl StmtVisitor for Compiler {
         params: &Vec<String>,
         stmts: &Vec<Statement>,
         line: u64,
-    ) -> Self::Output {
-        let mut fn_compiler = Compiler::new(self.sink.clone());
-
-        fn_compiler.begin_scope();
-        for param in params {
-            fn_compiler.add_local(param.to_string());
-        }
-        for stmt in stmts {
-            stmt.accept(&mut fn_compiler);
-        }
-
-        fn_compiler.emit_op(OpCode::Null, line);
-        fn_compiler.emit_op(OpCode::Return, line);
-
-        let fn_chunk = fn_compiler.into_chunk();
-        let function = Function::new(name.to_string(), params.len() as u64, fn_chunk);
+    ) {
+        let function = self.compile_function(name, params, stmts);
         let value = Value::Function(Rc::new(function));
-        self.emit_constant(value.clone(), line);
+        self.emit_constant(value, line);
         if self.scope_depth > 0 {
             self.add_local(name.to_string());
         } else {
@@ -414,9 +427,17 @@ impl StmtVisitor for Compiler {
         attributes: &Vec<String>,
         statements: &Vec<Statement>,
     ) -> Self::Output {
+        let mut methods = HashMap::new();
+        for method_stmt in statements {
+            if let Statement::Function(m_name, m_params, m_body, _) = method_stmt {
+                let method = self.compile_function(m_name, m_params, m_body);
+                methods.insert(m_name.clone(), Rc::new(method));
+            }
+        }
         let class = Class {
             name: name.to_string(),
             attributes: attributes.to_vec(),
+            methods,
         };
 
         let value = Value::Class(Rc::new(class));

@@ -3,7 +3,7 @@ mod call_frame;
 use std::rc::Rc;
 use std::{cell::RefCell, collections::HashMap};
 
-use crate::value::Value;
+use crate::value::{BoundMethod, Value};
 use crate::value::function::Function;
 use crate::vm::call_frame::CallFrame;
 use crate::{
@@ -205,18 +205,27 @@ impl Vm {
                             let field = inst.borrow().fields.get(&name).cloned();
                             match field {
                                 Some(value) => self.push(value),
-                                None => {
-                                    let borrowed = inst.borrow();
-                                    let available =
-                                        self.available_attributes(&borrowed.class.attributes);
-                                    return Err(VmError::new(
-                                        format!(
-                                            "O atributo '{}' não existe na classe '{}'. Atributos disponíveis: {}.",
-                                            name, borrowed.class.name, available
-                                        ),
-                                        self.cur_line(&function),
-                                    ));
-                                }
+                                None => match inst.borrow().class.methods.get(&name).cloned() {
+                                    Some(m) => {
+                                        let bound = BoundMethod {
+                                            receiver: inst.clone(),
+                                            method: m,
+                                        };
+                                        self.push(Value::BoundMethod(Rc::new(bound)));
+                                    }
+                                    None => {
+                                        let borrowed = inst.borrow();
+                                        let available =
+                                            self.available_attributes(&borrowed.class.attributes);
+                                        return Err(VmError::new(
+                                            format!(
+                                                "O atributo '{}' não existe na classe '{}'. Atributos disponíveis: {}.",
+                                                name, borrowed.class.name, available
+                                            ),
+                                            self.cur_line(&function),
+                                        ));
+                                    }
+                                },
                             }
                         }
                         other => {
