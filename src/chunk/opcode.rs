@@ -26,6 +26,8 @@ pub enum OpCode {
     GetLocal,
     SetLocal,
     Call,
+    GetProperty,
+    SetProperty
 }
 
 pub enum BinaryOpCode {
@@ -62,6 +64,8 @@ impl OpCode {
             22 => Some(OpCode::GetLocal),
             23 => Some(OpCode::SetLocal),
             24 => Some(OpCode::Call),
+            25 => Some(OpCode::GetProperty),
+            26 => Some(OpCode::SetProperty),
             _ => None,
         }
     }

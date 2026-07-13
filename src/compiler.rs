@@ -6,7 +6,11 @@ use crate::{
     expr::{ExprVisitor, Expression},
     stmt::{Statement, StmtVisitor},
     token::{BinaryOp, LogicalOp, TokenLiteral, UnaryOp},
-    value::{Value, function::Function},
+    value::{
+        Class,
+        Value::{self},
+        function::Function,
+    },
 };
 pub struct Locals {
     name: String,
@@ -264,7 +268,8 @@ impl ExprVisitor for Compiler {
         expr: &crate::expr::Expression,
         token: &crate::token::Token,
     ) -> Self::Output {
-        todo!()
+        expr.accept(self);
+        self.emit_named(OpCode::GetProperty, Value::Str(token.lexeme.clone()), token.line);
     }
 
     fn visit_set(
@@ -273,7 +278,9 @@ impl ExprVisitor for Compiler {
         token: &crate::token::Token,
         value: &crate::expr::Expression,
     ) -> Self::Output {
-        todo!()
+        expr.accept(self);
+        value.accept(self);
+        self.emit_named(OpCode::SetProperty, Value::Str(token.lexeme.clone()), token.line);
     }
 
     fn visit_this(&mut self, token: &crate::token::Token, id: usize) -> Self::Output {
@@ -407,6 +414,17 @@ impl StmtVisitor for Compiler {
         attributes: &Vec<String>,
         statements: &Vec<Statement>,
     ) -> Self::Output {
-        todo!()
+        let class = Class {
+            name: name.to_string(),
+            attributes: attributes.to_vec(),
+        };
+
+        let value = Value::Class(Rc::new(class));
+        self.emit_constant(value, line);
+        if self.scope_depth > 0 {
+            self.add_local(name.to_string());
+        } else {
+            self.emit_named(OpCode::DefineGlobal, Value::Str(name.to_string()), line);
+        }
     }
 }

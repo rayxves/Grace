@@ -1,15 +1,18 @@
 mod call_frame;
 
-use std::collections::HashMap;
 use std::rc::Rc;
+use std::{cell::RefCell, collections::HashMap};
 
-use crate::chunk::{
-    Chunk,
-    opcode::{BinaryOpCode, OpCode},
-};
 use crate::value::Value;
 use crate::value::function::Function;
 use crate::vm::call_frame::CallFrame;
+use crate::{
+    chunk::{
+        Chunk,
+        opcode::{BinaryOpCode, OpCode},
+    },
+    value::Instance,
+};
 
 pub struct Vm {
     stack: Vec<Value>,
@@ -38,7 +41,7 @@ impl Vm {
 
     pub fn run(&mut self, chunk: &Chunk) -> Result<(), VmError> {
         let script = Rc::new(Function::new("script".to_string(), 0, chunk.clone()));
-        self.push(Value::Function(script.clone())); 
+        self.push(Value::Function(script.clone()));
         self.frames.push(CallFrame::new(script, 0, 0));
 
         loop {
@@ -53,12 +56,11 @@ impl Vm {
                     let val = self.pop(&function)?;
                     let base = self.frames.pop().unwrap().base;
                     if self.frames.is_empty() {
-                        return Ok(())
-                    } 
+                        return Ok(());
+                    }
                     self.stack.truncate(base);
                     self.push(val);
-
-                },
+                }
                 Some(OpCode::Negate) => {
                     let n = self.pop_number(&function)?;
                     self.push(Value::Number(-n));
@@ -168,15 +170,101 @@ impl Vm {
                 Some(OpCode::Call) => {
                     let arg_count = self.read_byte(&function);
                     let base = self.stack.len() - arg_count as usize - 1;
-                    let callee_fn = match self.stack[base].clone() {
-                        Value::Function(f) => f,
+                    match self.stack[base].clone() {
+                        Value::Function(callee_fn) => {
+                            if arg_count != callee_fn.arity as u8 {
+                                return Err(VmError::new(
+                                    "Número de argumentos inválidos.".into(),
+                                    0,
+                                ));
+                            }
+                            let call_frame = CallFrame::new(callee_fn, 0, base);
+                            self.frames.push(call_frame);
+                        }
+                        Value::Class(class) => {
+                            let mut fields = HashMap::new();
+                            for atributo in &class.attributes {
+                                fields.insert(atributo.clone(), Value::Null);
+                            }
+                            let instance = Instance {
+                                class: class.clone(),
+                                fields,
+                            };
+                            let value = Value::Instance(Rc::new(RefCell::new(instance)));
+                            self.stack.truncate(base);
+                            self.push(value);
+                        }
                         _ => return Err(VmError::new("Só é possível chamar funções.".into(), 0)),
                     };
-                    if arg_count != callee_fn.arity as u8 {
-                        return Err(VmError::new("Número de argumentos inválidos.".into(), 0))
+                }
+                Some(OpCode::GetProperty) => {
+                    let instance = self.pop(&function)?;
+                    let name = self.read_name(&function)?;
+                    match instance {
+                        Value::Instance(inst) => {
+                            let field = inst.borrow().fields.get(&name).cloned();
+                            match field {
+                                Some(value) => self.push(value),
+                                None => {
+                                    let borrowed = inst.borrow();
+                                    let available =
+                                        self.available_attributes(&borrowed.class.attributes);
+                                    return Err(VmError::new(
+                                        format!(
+                                            "O atributo '{}' não existe na classe '{}'. Atributos disponíveis: {}.",
+                                            name, borrowed.class.name, available
+                                        ),
+                                        self.cur_line(&function),
+                                    ));
+                                }
+                            }
+                        }
+                        other => {
+                            return Err(VmError::new(
+                                format!(
+                                    "Não é possível acessar o atributo '{}': '{}' não é uma instância de uma classe.",
+                                    name,
+                                    other.to_display()
+                                ),
+                                self.cur_line(&function),
+                            ));
+                        }
                     }
-                    let call_frame = CallFrame::new(callee_fn, 0, base);
-                    self.frames.push(call_frame);
+                }
+                Some(OpCode::SetProperty) => {
+                    let value = self.pop(&function)?;
+                    let instance = self.pop(&function)?;
+                    let name = self.read_name(&function)?;
+                    match instance {
+                        Value::Instance(inst) => {
+                            let exists = inst.borrow().fields.contains_key(&name);
+                            if exists {
+                                inst.borrow_mut().fields.insert(name, value.clone());
+                                self.push(value);
+                            } else {
+                                let borrowed = inst.borrow();
+                                let available =
+                                    self.available_attributes(&borrowed.class.attributes);
+                                return Err(VmError::new(
+                                    format!(
+                                        "Não é possível atribuir a '{}': esse atributo não existe na classe '{}'. Atributos disponíveis: {}.",
+                                        name, borrowed.class.name, available
+                                    ),
+                                    self.cur_line(&function),
+                                ));
+                            }
+                        }
+                        other => {
+                            return Err(VmError::new(
+                                format!(
+                                    "Não é possível atribuir o atributo '{}': '{}' não é uma instância de uma classe.",
+                                    name,
+                                    other.to_display()
+                                ),
+                                self.cur_line(&function),
+                            ));
+                        }
+                    }
                 }
                 None => {
                     return Err(VmError::new(
@@ -239,6 +327,17 @@ impl Vm {
             )),
         }
     }
+    fn available_attributes(&self, attrs: &[String]) -> String {
+        if attrs.is_empty() {
+            "nenhum".to_string()
+        } else {
+            attrs
+                .iter()
+                .map(|a| format!("'{}'", a))
+                .collect::<Vec<_>>()
+                .join(", ")
+        }
+    }
     fn binary_op(&mut self, function: &Rc<Function>, op: BinaryOpCode) -> Result<(), VmError> {
         let b = self.pop_number(function)?;
         let a = self.pop_number(function)?;
@@ -250,5 +349,4 @@ impl Vm {
         self.push(Value::Number(r));
         Ok(())
     }
-
 }

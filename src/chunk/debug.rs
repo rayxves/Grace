@@ -57,12 +57,12 @@ pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
         }
         Some(OpCode::GetGlobal) => {
             let i = chunk.code[offset + 1];
-            println!("GetGlobal {:?}", chunk.pool[i as usize]);
+            println!("PegaGlobal {:?}", chunk.pool[i as usize]);
             offset + 2
         }
         Some(OpCode::SetGlobal) => {
             let i = chunk.code[offset + 1];
-            println!("SetGlobal {:?}", chunk.pool[i as usize]);
+            println!("RedefineGlobal {:?}", chunk.pool[i as usize]);
             offset + 2
         }
         Some(OpCode::True) => {
@@ -107,18 +107,28 @@ pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
         }
         Some(OpCode::GetLocal) => {
             let i = chunk.code[offset + 1];
-            println!("GetLocal {:?}", chunk.pool[i as usize]);
+            println!("PegaLocal {:?}", chunk.pool[i as usize]);
             offset + 2
         }
         Some(OpCode::SetLocal) => {
             let i = chunk.code[offset + 1];
-            println!("SetLocal {:?}", chunk.pool[i as usize]);
+            println!("DefineLocal {:?}", chunk.pool[i as usize]);
             offset + 2
         }
         Some(OpCode::Call) => {
             let n = chunk.code[offset + 1];
             println!("Chamada ({} args)", n);
-            offset + 2 
+            offset + 2
+        }
+        Some(OpCode::GetProperty) => {
+            let i = chunk.code[offset + 1];
+            println!("PegaAtributo {:?}", chunk.pool[i as usize]);
+            offset + 2
+        }
+        Some(OpCode::SetProperty) => {
+            let i = chunk.code[offset + 1];
+            println!("DefineAtributo {:?}", chunk.pool[i as usize]);
+            offset + 2
         }
         None => {
             println!("Desconhecido");

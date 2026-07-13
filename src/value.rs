@@ -1,7 +1,19 @@
 pub mod function;
-use std::rc::Rc;
+use std::{cell::RefCell, collections::HashMap, fmt::format, rc::Rc};
 
 use crate::value::function::Function;
+
+#[derive(Debug, Clone)]
+pub struct Class {
+    pub name: String,
+    pub attributes: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Instance {
+    pub class: Rc<Class>,
+    pub fields: HashMap<String, Value>,
+}
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -9,7 +21,9 @@ pub enum Value {
     Str(String),
     Bool(bool),
     Function(Rc<Function>),
-    Null
+    Class(Rc<Class>),
+    Instance(Rc<RefCell<Instance>>),
+    Null,
 }
 
 impl Value {
@@ -21,10 +35,8 @@ impl Value {
                 } else {
                     format!("{}", n)
                 }
-            },
-            Value::Str(s) => {
-                s.to_string()
             }
+            Value::Str(s) => s.to_string(),
             Value::Bool(b) => {
                 if *b {
                     "Verdadeiro".to_string()
@@ -33,9 +45,9 @@ impl Value {
                 }
             }
             Value::Function(f) => format!("Função {}", f.name),
-            Value::Null => {
-                "Nulo".to_string()
-            }
+            Value::Class(c) => format!("Classe {}", c.name),
+            Value::Instance(i) => format!("Instance {}", i.borrow().class.name),
+            Value::Null => "Nulo".to_string(),
         }
     }
 }
@@ -47,8 +59,10 @@ impl PartialEq for Value {
             (Value::Str(a), Value::Str(b)) => a == b,
             (Value::Bool(a), Value::Bool(b)) => a == b,
             (Value::Null, Value::Null) => true,
-            (Value::Function(a), Value::Function(b)) => Rc::ptr_eq(a, b), 
-            _ => false,  
+            (Value::Function(a), Value::Function(b)) => Rc::ptr_eq(a, b),
+            (Value::Class(a), Value::Class(b)) => Rc::ptr_eq(a, b),
+            (Value::Instance(a), Value::Instance(b)) => Rc::ptr_eq(a, b),
+            _ => false,
         }
     }
 }
