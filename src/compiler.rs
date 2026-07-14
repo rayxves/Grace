@@ -132,10 +132,16 @@ impl Compiler {
         for stmt in body {
             stmt.accept(&mut fn_compiler);
         }
-        fn_compiler.emit_op(OpCode::Null, 0);
-        fn_compiler.emit_op(OpCode::Return, 0);
+        if name == "construtor" {
+            fn_compiler.emit_op(OpCode::GetLocal, 0);
+            fn_compiler.chunk.append(0u8, 0);  
+            fn_compiler.emit_op(OpCode::Return, 0);
+        } else {
+            fn_compiler.emit_op(OpCode::Null, 0);
+            fn_compiler.emit_op(OpCode::Return, 0);
+        }
         let fn_chunk = fn_compiler.into_chunk();
-        Function::new(name.to_string(), params.len() as u64, fn_chunk) // DEVOLVE a função
+        Function::new(name.to_string(), params.len() as u64, fn_chunk)
     }
 }
 

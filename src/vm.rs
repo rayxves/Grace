@@ -198,10 +198,7 @@ impl Vm {
         let base = self.stack.len() - arg_count as usize - 1;
         match self.stack[base].clone() {
             Value::Function(callee) => self.call_function(function, callee, arg_count, base),
-            Value::Class(class) => {
-                self.instantiate_class(class, base);
-                Ok(())
-            }
+            Value::Class(class) => self.instantiate_class(function, class, arg_count, base),
             Value::BoundMethod(bound) => self.call_bound_method(function, bound, arg_count, base),
             _ => Err(VmError::new(
                 "Só é possível chamar funções, classes ou métodos.".into(),
@@ -230,14 +227,53 @@ impl Vm {
         Ok(())
     }
 
-    fn instantiate_class(&mut self, class: Rc<crate::value::Class>, base: usize) {
+    fn instantiate_class(
+        &mut self,
+        function: &Rc<Function>,
+        class: Rc<crate::value::Class>,
+        arg_count: u8,
+        base: usize,
+    ) -> Result<(), VmError> {
         let mut fields = HashMap::new();
         for attribute in &class.attributes {
             fields.insert(attribute.clone(), Value::Null);
         }
-        let instance = Instance { class, fields };
-        self.stack.truncate(base);
-        self.push(Value::Instance(Rc::new(RefCell::new(instance))));
+        let instance = Rc::new(RefCell::new(Instance {
+            class: class.clone(),
+            fields,
+        }));
+
+        match class.methods.get("construtor") {
+            Some(constructor) => {
+                if arg_count as u64 != constructor.arity {
+                    return Err(VmError::new(
+                        format!(
+                            "O construtor da classe '{}' espera {} argumento(s), mas recebeu {}.",
+                            class.name, constructor.arity, arg_count
+                        ),
+                        self.cur_line(function),
+                    ));
+                }
+
+                self.stack[base] = Value::Instance(instance);
+                self.frames
+                    .push(CallFrame::new(constructor.clone(), 0, base));
+            }
+            None => {
+                if arg_count > 0 {
+                    return Err(VmError::new(
+                        format!(
+                            "A classe '{}' não tem construtor, portanto não aceita argumentos.",
+                            class.name
+                        ),
+                        self.cur_line(function),
+                    ));
+                }
+                self.stack.truncate(base);
+                self.push(Value::Instance(instance));
+            }
+        }
+        Ok(())
     }
 
     fn op_get_property(&mut self, function: &Rc<Function>) -> Result<(), VmError> {
