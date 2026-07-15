@@ -457,6 +457,13 @@ impl Parser {
         let mut attributes = Vec::new();
         while !self.check(&TokenType::RightBrace) {
             match &self.peek().token_type {
+                TokenType::Constructor => {
+                    self.advance();
+                    match self.parse_function_statement("construtor".to_string()) {
+                        Some(f) => methods.push(f),
+                        None => return None,
+                    }
+                }
                 TokenType::Identifier(n) => {
                     let fun_name = n.clone();
                     self.advance();
