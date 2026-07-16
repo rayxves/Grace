@@ -8,6 +8,7 @@ pub struct Class {
     pub name: String,
     pub attributes: Vec<String>,
     pub methods: HashMap<String, Rc<Function>>,
+    pub superclass: Option<Rc<Class>>
 }
 
 #[derive(Debug, Clone)]

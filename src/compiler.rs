@@ -12,6 +12,18 @@ use crate::{
         function::Function,
     },
 };
+
+#[derive(Debug, Clone)]
+pub struct CompileError {
+    pub message: String,
+    pub line: u64,
+}
+
+impl CompileError {
+    pub fn new(message: String, line: u64) -> CompileError {
+        CompileError { message, line }
+    }
+}
 pub struct Locals {
     name: String,
     depth: usize,
@@ -22,6 +34,8 @@ pub struct Compiler {
     sink: SharedSink,
     locals: Vec<Locals>,
     scope_depth: usize,
+    pub errors: Vec<CompileError>,
+    classes: HashMap<String, Rc<Class>>,
 }
 
 impl Compiler {
@@ -34,7 +48,18 @@ impl Compiler {
                 depth: 0,
             }],
             scope_depth: 0,
+            errors: Vec::new(),
+            classes: HashMap::new(),
         }
+    }
+
+    pub fn error(&mut self, message: String, line: u64) {
+        let error = CompileError::new(message, line);
+        self.errors.push(error.clone());
+        self.sink.borrow_mut().emit(Compile(CompileEvent::Error {
+            message: error.message,
+            line: error.line,
+        }));
     }
 
     pub fn emit_op(&mut self, opcode: OpCode, line: u64) {
@@ -134,12 +159,14 @@ impl Compiler {
         }
         if name == "construtor" {
             fn_compiler.emit_op(OpCode::GetLocal, 0);
-            fn_compiler.chunk.append(0u8, 0);  
+            fn_compiler.chunk.append(0u8, 0);
             fn_compiler.emit_op(OpCode::Return, 0);
         } else {
             fn_compiler.emit_op(OpCode::Null, 0);
             fn_compiler.emit_op(OpCode::Return, 0);
         }
+        let fn_errors = fn_compiler.errors.clone();
+        self.errors.extend(fn_errors);
         let fn_chunk = fn_compiler.into_chunk();
         Function::new(name.to_string(), params.len() as u64, fn_chunk)
     }
@@ -434,21 +461,64 @@ impl StmtVisitor for Compiler {
         attributes: &Vec<String>,
         statements: &Vec<Statement>,
     ) -> Self::Output {
+        let parent: Option<Rc<Class>> = match superclass {
+            Some(Expression::Variable(parent_name, _, _)) => match self.classes.get(parent_name) {
+                Some(p) => Some(p.clone()),
+                None => {
+                    self.error(
+                        format!("A superclasse '{}' não foi declarada.", parent_name),
+                        line,
+                    );
+                    return;
+                }
+            },
+            _ => None,
+        };
+
+        let mut all_attributes: Vec<String> = Vec::new();
+        if let Some(p) = &parent {
+            all_attributes.extend(p.attributes.clone());
+        }
+        for attribute in attributes {
+            if all_attributes.contains(attribute) {
+                let parent_name = parent.as_ref().map(|p| p.name.clone()).unwrap_or_default();
+                self.error(
+                    format!(
+                        "O atributo '{}' já foi declarado na superclasse '{}'.",
+                        attribute, parent_name
+                    ),
+                    line,
+                );
+            } else {
+                all_attributes.push(attribute.clone());
+            }
+        }
+
         let mut methods = HashMap::new();
+        if let Some(p) = &parent {
+            for (m_name, m) in &p.methods {
+                if m_name == "construtor" {
+                    continue;
+                }
+                methods.insert(m_name.clone(), m.clone());
+            }
+        }
         for method_stmt in statements {
             if let Statement::Function(m_name, m_params, m_body, _) = method_stmt {
                 let method = self.compile_function(m_name, m_params, m_body);
                 methods.insert(m_name.clone(), Rc::new(method));
             }
         }
-        let class = Class {
-            name: name.to_string(),
-            attributes: attributes.to_vec(),
-            methods,
-        };
 
-        let value = Value::Class(Rc::new(class));
-        self.emit_constant(value, line);
+        let class = Rc::new(Class {
+            name: name.to_string(),
+            attributes: all_attributes,
+            methods,
+            superclass: parent,
+        });
+        self.classes.insert(name.clone(), class.clone());
+
+        self.emit_constant(Value::Class(class), line);
         if self.scope_depth > 0 {
             self.add_local(name.to_string());
         } else {

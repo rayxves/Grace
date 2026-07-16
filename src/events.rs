@@ -50,4 +50,8 @@ pub enum CompileEvent {
         opcode: String,
         line: u64,
     },
+    Error {
+        message: String,
+        line: u64,
+    },
 }
