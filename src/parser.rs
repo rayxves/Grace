@@ -115,7 +115,7 @@ impl Parser {
                     TokenType::Dot => {
                         self.advance();
                         match &self.peek().token_type {
-                            TokenType::Identifier(_) => {
+                            TokenType::Identifier(_) | TokenType::Constructor => {
                                 let method = self.peek().clone();
                                 self.advance();
                                 let id = next_id();

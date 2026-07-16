@@ -1,12 +1,7 @@
 use std::{collections::HashMap, rc::Rc, vec};
 
 use crate::{
-    chunk::{Chunk, opcode::OpCode},
-    events::{CompileEvent, Event::Compile, SharedSink},
-    expr::{ExprVisitor, Expression},
-    stmt::{Statement, StmtVisitor},
-    token::{BinaryOp, LogicalOp, TokenLiteral, UnaryOp},
-    value::{
+    chunk::{Chunk, opcode::OpCode}, events::{CompileEvent, Event::Compile, SharedSink}, expr::{ExprVisitor, Expression}, stmt::{Statement, StmtVisitor}, token::{BinaryOp, LogicalOp, Token, TokenLiteral, UnaryOp}, value::{
         Class,
         Value::{self},
         function::Function,
@@ -36,6 +31,7 @@ pub struct Compiler {
     scope_depth: usize,
     pub errors: Vec<CompileError>,
     classes: HashMap<String, Rc<Class>>,
+    current_class: Option<Rc<Class>>,
 }
 
 impl Compiler {
@@ -50,6 +46,7 @@ impl Compiler {
             scope_depth: 0,
             errors: Vec::new(),
             classes: HashMap::new(),
+            current_class: Option::None,
         }
     }
 
@@ -150,6 +147,8 @@ impl Compiler {
         body: &Vec<Statement>,
     ) -> Function {
         let mut fn_compiler = Compiler::new(self.sink.clone());
+        fn_compiler.classes = self.classes.clone();
+        fn_compiler.current_class = self.current_class.clone();
         fn_compiler.begin_scope();
         for param in params {
             fn_compiler.add_local(param.to_string());
@@ -348,13 +347,47 @@ impl ExprVisitor for Compiler {
         self.chunk.append(0u8, 0);
     }
 
-    fn visit_super(
-        &mut self,
-        key_super: &crate::token::Token,
-        method: &crate::token::Token,
-        id: usize,
-    ) -> Self::Output {
-        todo!()
+    fn visit_super(&mut self, key_super: &Token, method: &Token, _id: usize) -> Self::Output {
+        let parent = match &self.current_class {
+            Some(class) => {
+                match &class.superclass {
+                    Some(p) => p.clone(),
+                    None => {
+                        self.error(format!("A classe '{}' não tem superclasse, então não é possível usar 'super'.", class.name), key_super.line);
+                        return;
+                    }
+                }
+            }
+            None => {
+                self.error(
+                    "'super' só pode ser usado dentro de um método de uma classe.".to_string(),
+                    key_super.line,
+                );
+                return;
+            }
+        };
+
+        let parent_method = match parent.methods.get(&method.lexeme) {
+            Some(m) => m.clone(),
+            None => {
+                self.error(
+                    format!(
+                        "O método '{}' não existe na superclasse '{}'.",
+                        method.lexeme, parent.name
+                    ),
+                    method.line,
+                );
+                return;
+            }
+        };
+
+        self.emit_op(OpCode::GetLocal, method.line);
+        self.chunk.append(0u8, method.line);
+        self.emit_named(
+            OpCode::GetSuper,
+            Value::Function(parent_method),
+            method.line,
+        );
     }
 }
 
@@ -503,12 +536,23 @@ impl StmtVisitor for Compiler {
                 methods.insert(m_name.clone(), m.clone());
             }
         }
+
+        let enclosing = self.current_class.take();
+        self.current_class = Some(Rc::new(Class {
+            name: name.to_string(),
+            attributes: all_attributes.clone(),
+            methods: HashMap::new(),
+            superclass: parent.clone(),
+        }));
+
         for method_stmt in statements {
             if let Statement::Function(m_name, m_params, m_body, _) = method_stmt {
                 let method = self.compile_function(m_name, m_params, m_body);
                 methods.insert(m_name.clone(), Rc::new(method));
             }
         }
+
+        self.current_class = enclosing;
 
         let class = Rc::new(Class {
             name: name.to_string(),

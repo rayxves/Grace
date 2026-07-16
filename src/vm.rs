@@ -129,6 +129,7 @@ impl Vm {
                 Some(OpCode::Call) => self.op_call(&function)?,
                 Some(OpCode::GetProperty) => self.op_get_property(&function)?,
                 Some(OpCode::SetProperty) => self.op_set_property(&function)?,
+                Some(OpCode::GetSuper) => self.op_get_super(&function)?,
                 None => {
                     return Err(VmError::new(
                         "Erro desconhecido.".to_string(),
@@ -351,6 +352,39 @@ impl Vm {
                 self.cur_line(function),
             ))
         }
+    }
+
+
+    fn op_get_super(&mut self, function: &Rc<Function>) -> Result<(), VmError> {
+        let index = self.read_byte(function);
+        let method = match &function.chunk.pool[index as usize] {
+            Value::Function(f) => f.clone(),
+            _ => {
+                return Err(VmError::new(
+                    "Erro interno: esperava um método no pool para 'super'.".to_string(),
+                    self.cur_line(function),
+                ));
+            }
+        };
+        let instance = self.pop(function)?;
+        let inst = match instance {
+            Value::Instance(inst) => inst,
+            other => {
+                return Err(VmError::new(
+                    format!(
+                        "'super' precisa de uma instância, mas recebi '{}'.",
+                        other.to_display()
+                    ),
+                    self.cur_line(function),
+                ));
+            }
+        };
+        let bound = BoundMethod {
+            receiver: inst,
+            method,
+        };
+        self.push(Value::BoundMethod(Rc::new(bound)));
+        Ok(())
     }
 
     fn available_attributes(&self, attrs: &[String]) -> String {

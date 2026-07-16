@@ -106,13 +106,13 @@ pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
             offset + 2
         }
         Some(OpCode::GetLocal) => {
-            let i = chunk.code[offset + 1];
-            println!("PegaLocal {:?}", chunk.pool[i as usize]);
+            let slot = chunk.code[offset + 1];
+            println!("PegaLocal slot {}", slot);
             offset + 2
         }
         Some(OpCode::SetLocal) => {
-            let i = chunk.code[offset + 1];
-            println!("DefineLocal {:?}", chunk.pool[i as usize]);
+            let slot = chunk.code[offset + 1];
+            println!("DefineLocal slot {}", slot);
             offset + 2
         }
         Some(OpCode::Call) => {
@@ -128,6 +128,11 @@ pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
         Some(OpCode::SetProperty) => {
             let i = chunk.code[offset + 1];
             println!("DefineAtributo {:?}", chunk.pool[i as usize]);
+            offset + 2
+        }
+        Some(OpCode::GetSuper) => {
+            let i = chunk.code[offset + 1];
+            println!("PegaSuper {:?}", chunk.pool[i as usize]);
             offset + 2
         }
         None => {
