@@ -1,4 +1,4 @@
-use crate::token::{ BinaryOp, LogicalOp, Token, TokenLiteral, UnaryOp};
+use crate::token::{BinaryOp, LogicalOp, Token, TokenLiteral, UnaryOp};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 static NEXT_ID: AtomicUsize = AtomicUsize::new(0);
@@ -16,7 +16,7 @@ pub trait ExprVisitor {
         line: &u64,
         right: &Expression,
     ) -> Self::Output;
-    fn visit_literal(&mut self, literal: &TokenLiteral) -> Self::Output;
+    fn visit_literal(&mut self, literal: &TokenLiteral, line: u64) -> Self::Output;
     fn visit_unary(&mut self, unary_op: &UnaryOp, line: &u64, expr: &Expression) -> Self::Output;
     fn visit_grouping(&mut self, expr: &Expression) -> Self::Output;
     fn visit_variable(&mut self, name: &String, line: u64, id: usize) -> Self::Output;
@@ -51,7 +51,7 @@ pub enum Expression {
     Binary(Box<Expression>, BinaryOp, u64, Box<Expression>),
     Unary(UnaryOp, u64, Box<Expression>),
     Grouping(Box<Expression>),
-    Literal(TokenLiteral),
+    Literal(TokenLiteral, u64),
     Variable(String, u64, usize),
     Assign(String, u64, Box<Expression>, usize),
     Logical(Box<Expression>, LogicalOp, u64, Box<Expression>),
@@ -59,16 +59,33 @@ pub enum Expression {
     Get(Box<Expression>, Token),
     Set(Box<Expression>, Token, Box<Expression>),
     This(Token, usize),
-    Super(Token, Token, usize)
+    Super(Token, Token, usize),
 }
 
 impl Expression {
+    pub fn line(&self) -> u64 {
+        match self {
+            Expression::Binary(_, _, line, _) => *line,
+            Expression::Unary(_, line, _) => *line,
+            Expression::Grouping(expr) => expr.line(),
+            Expression::Literal(_, line) => *line,
+            Expression::Variable(_, line, _) => *line,
+            Expression::Assign(_, line, _, _) => *line,
+            Expression::Logical(_, _, line, _) => *line,
+            Expression::Call(_, _, paren) => paren.line,
+            Expression::Get(_, token) => token.line,
+            Expression::Set(_, token, _) => token.line,
+            Expression::This(token, _) => token.line,
+            Expression::Super(key_super, _, _) => key_super.line,
+        }
+    }
+
     pub fn accept<V: ExprVisitor>(&self, visitor: &mut V) -> V::Output {
         match self {
             Expression::Binary(left, op, line, right) => {
                 visitor.visit_binary(left, op, line, right)
             }
-            Expression::Literal(literal) => visitor.visit_literal(literal),
+            Expression::Literal(literal, line) => visitor.visit_literal(literal, *line),
             Expression::Grouping(expr) => visitor.visit_grouping(expr),
             Expression::Unary(unary_op, line, expr) => visitor.visit_unary(unary_op, line, expr),
             Expression::Variable(name, line, id) => visitor.visit_variable(name, *line, *id),

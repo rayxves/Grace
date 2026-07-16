@@ -18,27 +18,46 @@ impl Parser {
     }
 
     pub fn print_statement(&mut self) -> Result<Statement, ParseError> {
+        let line = self.peek().line;
         self.advance();
-        let value = self.expression()?;
-        if self.check(&TokenType::Semicolon) {
-            self.advance();
-            Ok(Statement::Print(value))
-        } else {
-            Err(self.error(format!(
-                "Esperava ';' após o valor do print, mas encontrei '{}'.",
+
+        if !self.check(&TokenType::LeftParen) {
+            return Err(self.error(format!(
+                "Esperava '(' depois de 'imprima', como em 'imprima(valor);', mas encontrei '{}'.",
                 self.peek().lexeme
-            )))
+            )));
         }
+        self.advance();
+
+        let value = self.expression()?;
+
+        if !self.check(&TokenType::RightParen) {
+            return Err(self.error(format!(
+                "Esperava ')' para fechar o 'imprima(', mas encontrei '{}'.",
+                self.peek().lexeme
+            )));
+        }
+        self.advance();
+
+        if !self.check(&TokenType::Semicolon) {
+            return Err(self.error(format!(
+                "Esperava ';' depois de 'imprima(...)', mas encontrei '{}'.",
+                self.peek().lexeme
+            )));
+        }
+        self.advance();
+        Ok(Statement::Print(value, line))
     }
 
     pub fn expr_statement(&mut self) -> Result<Statement, ParseError> {
+        let line = self.peek().line;
         let expr = self.expression()?;
         if self.check(&TokenType::Semicolon) {
             self.advance();
-            Ok(Statement::ExprStatement(expr))
+            Ok(Statement::ExprStatement(expr, line))
         } else {
             Err(self.error(format!(
-                "Esperava ';' após expressão, mas encontrei '{}'.",
+                "Esperava ';' no fim do comando, mas encontrei '{}'.",
                 self.peek().lexeme
             )))
         }
@@ -116,6 +135,7 @@ impl Parser {
     }
 
     pub fn block_statement(&mut self) -> Option<Statement> {
+        let line = self.peek().line;
         self.advance();
         let mut body = Vec::new();
         while !self.check(&TokenType::RightBrace) && !self.is_at_end() {
@@ -125,14 +145,15 @@ impl Parser {
             }
         }
         if self.is_at_end() {
-            self.error("Bloco não fechado — esperava '}'.".to_string());
+            self.error("Bloco não foi fechado: faltou '}'.".to_string());
             return None;
         }
         self.advance();
-        Some(Statement::Block(body))
+        Some(Statement::Block(body, line))
     }
 
     pub fn if_statement(&mut self) -> Option<Statement> {
+        let line = self.peek().line;
         self.advance();
         if !self.check(&TokenType::LeftParen) {
             self.error(format!(
@@ -174,15 +195,17 @@ impl Parser {
                     condition,
                     Box::new(then_branch),
                     Some(Box::new(else_branch)),
+                    line,
                 )),
                 None => None,
             }
         } else {
-            Some(Statement::If(condition, Box::new(then_branch), None))
+            Some(Statement::If(condition, Box::new(then_branch), None, line))
         }
     }
 
     pub fn while_statement(&mut self) -> Option<Statement> {
+        let line = self.peek().line;
         self.advance();
         if !self.check(&TokenType::LeftParen) {
             self.error(format!(
@@ -213,12 +236,13 @@ impl Parser {
         self.advance();
 
         match self.statement() {
-            Some(body) => Some(Statement::While(condition, Box::new(body))),
+            Some(body) => Some(Statement::While(condition, Box::new(body), line)),
             None => None,
         }
     }
 
     pub fn for_statement(&mut self) -> Option<Statement> {
+        let line = self.peek().line;
         self.advance();
         if !self.check(&TokenType::LeftParen) {
             self.error(format!(
@@ -289,12 +313,15 @@ impl Parser {
 
         match self.statement() {
             Some(body) => {
-                let while_body = Statement::Block(vec![body, Statement::ExprStatement(increment)]);
-                let mut outer = vec![Statement::While(condition, Box::new(while_body))];
+                let while_body = Statement::Block(
+                    vec![body, Statement::ExprStatement(increment, line)],
+                    line,
+                );
+                let mut outer = vec![Statement::While(condition, Box::new(while_body), line)];
                 if let Some(init) = initializer {
                     outer.insert(0, init);
                 }
-                Some(Statement::Block(outer))
+                Some(Statement::Block(outer, line))
             }
             None => None,
         }
@@ -348,7 +375,7 @@ impl Parser {
                 }
                 self.advance();
                 match self.block_statement() {
-                    Some(Statement::Block(stmts)) => {
+                    Some(Statement::Block(stmts, _)) => {
                         return Some(Statement::Function(name, params, stmts, line));
                     }
                     _ => return None,
@@ -428,7 +455,7 @@ impl Parser {
                 }
                 self.advance();
                 match self.block_statement() {
-                    Some(Statement::Block(stmts)) => {
+                    Some(Statement::Block(stmts, _)) => {
                         return Some(Statement::Function(name, params, stmts, line));
                     }
                     _ => return None,

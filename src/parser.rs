@@ -64,22 +64,26 @@ impl Parser {
         match &self.peek().token_type {
             TokenType::Number(value) => {
                 let value = *value;
+                let line = self.peek().line;
                 self.advance();
-                Ok(Expression::Literal(TokenLiteral::Number(value)))
+                Ok(Expression::Literal(TokenLiteral::Number(value), line))
             }
             TokenType::StringLiteral(value) => {
                 let value = value.to_string();
+                let line = self.peek().line;
                 self.advance();
-                Ok(Expression::Literal(TokenLiteral::StringLiteral(value)))
+                Ok(Expression::Literal(TokenLiteral::StringLiteral(value), line))
             }
             TokenType::Boolean(value) => {
                 let value = *value;
+                let line = self.peek().line;
                 self.advance();
-                Ok(Expression::Literal(TokenLiteral::Boolean(value)))
+                Ok(Expression::Literal(TokenLiteral::Boolean(value), line))
             }
             TokenType::Null => {
+                let line = self.peek().line;
                 self.advance();
-                Ok(Expression::Literal(TokenLiteral::Null))
+                Ok(Expression::Literal(TokenLiteral::Null, line))
             }
             TokenType::LeftParen => {
                 self.advance();

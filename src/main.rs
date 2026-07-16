@@ -1,54 +1,92 @@
-mod token; mod events; mod scanner; mod expr; mod stmt; mod parser; mod ast_serializer; mod resolver;
-mod value; mod chunk; mod vm; mod compiler;
+mod ast_serializer;
+mod chunk;
+mod compiler;
+mod events;
+mod expr;
+mod parser;
+mod resolver;
+mod scanner;
+mod stmt;
+mod token;
+mod value;
+mod vm;
 
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use scanner::Scanner;
-use parser::Parser;
 use compiler::Compiler;
-use vm::Vm;
 use events::{Event, EventSink, SharedSink};
+use parser::Parser;
+use scanner::Scanner;
+use vm::Vm;
 
 struct NullSink;
 impl EventSink for NullSink {
-    fn emit(&mut self, _e: Event) {}
+    fn emit(&mut self, _event: Event) {}
 }
 
-fn roda(rotulo: &str, fonte: &str) {
-    println!("### {}", rotulo);
+fn run(source: &str) {
     let sink: SharedSink = Rc::new(RefCell::new(NullSink));
 
-    let mut scanner = Scanner::new(fonte.to_string(), sink.clone());
+    let mut scanner = Scanner::new(source.to_string(), sink.clone());
     let tokens = match scanner.scan_tokens() {
-        Ok(t) => t,
-        Err(e) => { println!("erro léxico: {}\n", e.message); return; }
+        Ok(tokens) => tokens,
+        Err(error) => {
+            println!("Erro na linha {}: {}", error.line, error.message);
+            return;
+        }
     };
 
     let mut parser = Parser::new(tokens, sink.clone());
     let statements = parser.parse();
+    if !parser.errors.is_empty() {
+        for error in &parser.errors {
+            println!("Erro na linha {}: {}", error.token.line, error.message);
+        }
+        return;
+    }
 
     let mut compiler = Compiler::new(sink.clone());
     compiler.compile(&statements);
+    if !compiler.errors.is_empty() {
+        for error in &compiler.errors {
+            println!("Erro na linha {}: {}", error.line, error.message);
+        }
+        return;
+    }
     let chunk = compiler.into_chunk();
 
     let mut vm = Vm::new();
-    if let Err(e) = vm.run(&chunk) {
-        println!("erro VM: {}", e.message);
+    if let Err(error) = vm.run(&chunk) {
+        println!("Erro na linha {}: {}", error.line, error.message);
     }
-    println!();
 }
 
 fn main() {
-    roda("função simples", "funcao dobro(n) { retorna n * 2; } imprima dobro(5);");
-    roda("sem retorno (Nulo)", "funcao oi(n) { imprima n; } oi(9);");
-    roda("dois argumentos", "funcao soma(a, b) { retorna a + b; } imprima soma(3, 4);");
-    roda("chamada aninhada", "funcao dobro(n) { retorna n * 2; } imprima dobro(dobro(3));");
-    roda("função chama função", "funcao inc(x){retorna x+1;} funcao dobro(n){retorna inc(n)*2;} imprima dobro(4);");
-    roda("recursão fatorial", "funcao fat(n) { se (n <= 1) retorna 1; retorna n * fat(n - 1); } imprima fat(5);");
-    roda("recursão fibonacci", "funcao fib(n){ se (n < 2) retorna n; retorna fib(n-1) + fib(n-2); } imprima fib(10);");
-    roda("global na função", "var base = 100; funcao maisBase(x) { retorna x + base; } imprima maisBase(7);");
-    roda("local + parâmetro", "funcao calc(x) { var y = 10; retorna x + y; } imprima calc(5);");
-    roda("função com laço", "funcao somaAte(n) { var s = 0; var i = 1; enquanto (i <= n) { s = s + i; i = i + 1; } retorna s; } imprima somaAte(5);");
-    roda("erro de aridade", "funcao f(a, b) { retorna a; } imprima f(1);");
+    run(r#"
+        classe Animal {
+            var nome;
+            construtor(nome) {
+                este.nome = nome;
+            }
+            apresenta() {
+                imprima(este.nome);
+            }
+        }
+
+        classe Cachorro < Animal {
+            var raca;
+            construtor(nome, raca) {
+                super.construtor(nome);
+                este.raca = raca;
+            }
+            apresenta() {
+                super.apresenta();
+                imprima(este.raca);
+            }
+        }
+
+        var rex = Cachorro("Rex", "Poodle");
+        rex.apresenta();
+    "#);
 }

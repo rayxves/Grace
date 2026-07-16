@@ -31,12 +31,12 @@ impl ExprVisitor for AstSerializer {
         }
     }
 
-    fn visit_literal(&mut self, literal: &crate::token::TokenLiteral) -> Self::Output {
+    fn visit_literal(&mut self, literal: &crate::token::TokenLiteral, line: u64) -> Self::Output {
         AstNode {
             id: None,
             kind: "Literal".to_string(),
-            label: format!("{:?}", literal),
-            line: None,
+            label: literal_label(literal),
+            line: Some(line),
             children: vec![],
         }
     }
@@ -185,22 +185,22 @@ impl ExprVisitor for AstSerializer {
 impl StmtVisitor for AstSerializer {
     type Output = AstNode;
 
-    fn visit_print(&mut self, expr: &crate::expr::Expression) -> Self::Output {
+    fn visit_print(&mut self, expr: &crate::expr::Expression, line: u64) -> Self::Output {
         AstNode {
             id: None,
             kind: "Print".to_string(),
-            label: "".to_string(),
-            line: None,
+            label: "imprima".to_string(),
+            line: Some(line),
             children: vec![expr.accept(self)],
         }
     }
 
-    fn visit_expr_statement(&mut self, expr: &crate::expr::Expression) -> Self::Output {
+    fn visit_expr_statement(&mut self, expr: &crate::expr::Expression, line: u64) -> Self::Output {
         AstNode {
             id: None,
             kind: "ExprStmt".to_string(),
-            label: "".to_string(),
-            line: None,
+            label: "expressão".to_string(),
+            line: Some(line),
             children: vec![expr.accept(self)],
         }
     }
@@ -228,7 +228,7 @@ impl StmtVisitor for AstSerializer {
         }
     }
 
-    fn visit_block(&mut self, statements: &Vec<crate::stmt::Statement>) -> Self::Output {
+    fn visit_block(&mut self, statements: &Vec<crate::stmt::Statement>, line: u64) -> Self::Output {
         let mut children = vec![];
         for stmt in statements {
             children.push(stmt.accept(self));
@@ -237,8 +237,8 @@ impl StmtVisitor for AstSerializer {
         AstNode {
             id: None,
             kind: "Block".to_string(),
-            label: "".to_string(),
-            line: None,
+            label: "bloco".to_string(),
+            line: Some(line),
             children,
         }
     }
@@ -248,6 +248,7 @@ impl StmtVisitor for AstSerializer {
         expr: &crate::expr::Expression,
         stmt: &crate::stmt::Statement,
         else_stmt: Option<&crate::stmt::Statement>,
+        line: u64,
     ) -> Self::Output {
         let mut children = vec![expr.accept(self), stmt.accept(self)];
         if let Some(e) = else_stmt {
@@ -256,8 +257,8 @@ impl StmtVisitor for AstSerializer {
         AstNode {
             id: None,
             kind: "If".to_string(),
-            label: "".to_string(),
-            line: None,
+            label: "se".to_string(),
+            line: Some(line),
             children,
         }
     }
@@ -266,12 +267,13 @@ impl StmtVisitor for AstSerializer {
         &mut self,
         expr: &crate::expr::Expression,
         stmt: &crate::stmt::Statement,
+        line: u64,
     ) -> Self::Output {
         AstNode {
             id: None,
             kind: "While".to_string(),
-            label: "".to_string(),
-            line: None,
+            label: "enquanto".to_string(),
+            line: Some(line),
             children: vec![expr.accept(self), stmt.accept(self)],
         }
     }
@@ -346,5 +348,23 @@ impl StmtVisitor for AstSerializer {
             line: Some(line),
             children,
         }
+    }
+}
+
+fn literal_label(literal: &crate::token::TokenLiteral) -> String {
+    use crate::token::TokenLiteral;
+    match literal {
+        TokenLiteral::Number(n) => {
+            if *n == n.floor() {
+                format!("{}", *n as i64)
+            } else {
+                format!("{}", n)
+            }
+        }
+        TokenLiteral::StringLiteral(s) => format!("\"{}\"", s),
+        TokenLiteral::Boolean(b) => {
+            if *b { "verdadeiro".to_string() } else { "falso".to_string() }
+        }
+        TokenLiteral::Null => "nulo".to_string(),
     }
 }

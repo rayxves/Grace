@@ -135,7 +135,7 @@ impl ExprVisitor for Resolver {
         right.accept(self)?;
         Ok(())
     }
-    fn visit_literal(&mut self, _literal: &crate::token::TokenLiteral) -> Self::Output {
+    fn visit_literal(&mut self, _literal: &crate::token::TokenLiteral, _line: u64) -> Self::Output {
         Ok(())
     }
     fn visit_unary(

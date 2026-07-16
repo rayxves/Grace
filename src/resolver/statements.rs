@@ -7,11 +7,11 @@ use crate::{
 impl StmtVisitor for Resolver {
     type Output = Result<(), ResolveError>;
 
-    fn visit_print(&mut self, expr: &Expression) -> Self::Output {
+    fn visit_print(&mut self, expr: &Expression, _line: u64) -> Self::Output {
         expr.accept(self)?;
         Ok(())
     }
-    fn visit_expr_statement(&mut self, expr: &Expression) -> Self::Output {
+    fn visit_expr_statement(&mut self, expr: &Expression, _line: u64) -> Self::Output {
         expr.accept(self)?;
         Ok(())
     }
@@ -25,7 +25,7 @@ impl StmtVisitor for Resolver {
         Ok(())
     }
 
-    fn visit_block(&mut self, statements: &Vec<Statement>) -> Self::Output {
+    fn visit_block(&mut self, statements: &Vec<Statement>, _line: u64) -> Self::Output {
         self.begin_scope();
         for stmt in statements {
             stmt.accept(self)?;
@@ -39,6 +39,7 @@ impl StmtVisitor for Resolver {
         expr: &Expression,
         stmt: &Statement,
         else_stmt: Option<&Statement>,
+        _line: u64,
     ) -> Self::Output {
         expr.accept(self)?;
         stmt.accept(self)?;
@@ -48,7 +49,7 @@ impl StmtVisitor for Resolver {
         Ok(())
     }
 
-    fn visit_while(&mut self, expr: &Expression, stmt: &Statement) -> Self::Output {
+    fn visit_while(&mut self, expr: &Expression, stmt: &Statement, _line: u64) -> Self::Output {
         expr.accept(self)?;
         stmt.accept(self)?;
         Ok(())

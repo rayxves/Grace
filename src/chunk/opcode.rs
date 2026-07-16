@@ -1,4 +1,13 @@
-#[repr(u8)] //represente isso como um u8 por baixo
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum OperandKind {
+    None,
+    PoolIndex,
+    Slot,
+    ArgCount,
+    JumpOffset,
+}
+
+#[repr(u8)]
 #[derive(Debug, Clone, Copy)]
 pub enum OpCode {
     Return,
@@ -28,7 +37,7 @@ pub enum OpCode {
     Call,
     GetProperty,
     SetProperty,
-    GetSuper
+    GetSuper,
 }
 
 pub enum BinaryOpCode {
@@ -69,6 +78,67 @@ impl OpCode {
             26 => Some(OpCode::SetProperty),
             27 => Some(OpCode::GetSuper),
             _ => None,
+        }
+    }
+
+    pub fn description(&self) -> String {
+        let name = match self {
+            OpCode::Return => "retorna",
+            OpCode::Constant => "constante",
+            OpCode::Negate => "nega número",
+            OpCode::Add => "soma",
+            OpCode::Subtract => "subtrai",
+            OpCode::Multiply => "multiplica",
+            OpCode::Divide => "divide",
+            OpCode::Print => "imprime",
+            OpCode::Pop => "descarta topo",
+            OpCode::DefineGlobal => "define global",
+            OpCode::GetGlobal => "lê global",
+            OpCode::SetGlobal => "atribui global",
+            OpCode::True => "verdadeiro",
+            OpCode::False => "falso",
+            OpCode::Null => "nulo",
+            OpCode::Not => "nega lógico",
+            OpCode::Equal => "igual",
+            OpCode::Greater => "maior",
+            OpCode::Less => "menor",
+            OpCode::Jump => "salta",
+            OpCode::JumpIfFalse => "salta se falso",
+            OpCode::Loop => "volta (laço)",
+            OpCode::GetLocal => "lê local",
+            OpCode::SetLocal => "atribui local",
+            OpCode::Call => "chama",
+            OpCode::GetProperty => "lê atributo",
+            OpCode::SetProperty => "atribui atributo",
+            OpCode::GetSuper => "lê método da superclasse",
+        };
+        name.to_string()
+    }
+
+    pub fn operand_kind(&self) -> OperandKind {
+        match self {
+            OpCode::Constant
+            | OpCode::DefineGlobal
+            | OpCode::GetGlobal
+            | OpCode::SetGlobal
+            | OpCode::GetProperty
+            | OpCode::SetProperty
+            | OpCode::GetSuper => OperandKind::PoolIndex,
+
+            OpCode::GetLocal | OpCode::SetLocal => OperandKind::Slot,
+
+            OpCode::Call => OperandKind::ArgCount,
+
+            OpCode::Jump | OpCode::JumpIfFalse | OpCode::Loop => OperandKind::JumpOffset,
+
+            _ => OperandKind::None,
+        }
+    }
+
+    pub fn size(&self) -> usize {
+        match self.operand_kind() {
+            OperandKind::None => 1,
+            _ => 2,
         }
     }
 }
