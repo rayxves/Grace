@@ -1,7 +1,8 @@
 use std::vec;
-
+use serde::Serialize;
 use crate::{expr::ExprVisitor, stmt::StmtVisitor};
 
+#[derive(Serialize)]
 pub struct AstNode {
     pub id: Option<usize>,
     pub kind: String,
