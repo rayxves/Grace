@@ -12,6 +12,7 @@ pub enum Event {
     Parse(ParseEvent),
     Resolve(ResolveEvent),
     Compile(CompileEvent),
+    Vm(VmEvent),   
 }
 
 pub enum ScanEvent {
@@ -49,6 +50,18 @@ pub enum CompileEvent {
         offset: usize,
         opcode: String,
         line: u64,
+    },
+    Error {
+        message: String,
+        line: u64,
+    },
+}
+
+pub enum VmEvent {
+    Step {
+        line: u64,          
+        instruction: String,   
+        stack: Vec<String>,   
     },
     Error {
         message: String,

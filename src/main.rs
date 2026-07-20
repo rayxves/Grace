@@ -20,13 +20,34 @@ use parser::Parser;
 use scanner::Scanner;
 use vm::Vm;
 
+use crate::events::VmEvent;
+
 struct NullSink;
 impl EventSink for NullSink {
     fn emit(&mut self, _event: Event) {}
 }
 
+struct TraceSink;
+impl EventSink for TraceSink {
+    fn emit(&mut self, event: Event) {
+        if let Event::Vm(VmEvent::Step {
+            line,
+            instruction,
+            stack,
+        }) = event
+        {
+            println!(
+                "linha {:<2} | {:<22} | pilha: [{}]",
+                line,
+                instruction,
+                stack.join(", ")
+            );
+        }
+    }
+}
+
 fn run(source: &str) {
-    let sink: SharedSink = Rc::new(RefCell::new(NullSink));
+    let sink: SharedSink = Rc::new(RefCell::new(TraceSink));
 
     let mut scanner = Scanner::new(source.to_string(), sink.clone());
     let tokens = match scanner.scan_tokens() {
@@ -56,7 +77,7 @@ fn run(source: &str) {
     }
     let chunk = compiler.into_chunk();
 
-    let mut vm = Vm::new();
+    let mut vm = Vm::new(sink.clone());
     if let Err(error) = vm.run(&chunk) {
         println!("Erro na linha {}: {}", error.line, error.message);
     }

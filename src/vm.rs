@@ -4,18 +4,23 @@ mod operations;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::chunk::{
-    Chunk,
-    opcode::{BinaryOpCode, OpCode},
-};
-use crate::value::function::Function;
+use crate::events::{Event, VmEvent};
 use crate::value::Value;
+use crate::value::function::Function;
 use crate::vm::call_frame::CallFrame;
+use crate::{
+    chunk::{
+        Chunk,
+        opcode::{BinaryOpCode, OpCode},
+    },
+    events::SharedSink,
+};
 
 pub struct Vm {
     pub(crate) stack: Vec<Value>,
     pub(crate) frames: Vec<CallFrame>,
     pub(crate) globals: HashMap<String, Value>,
+    pub(crate) sink: SharedSink,
 }
 
 pub struct VmError {
@@ -30,11 +35,12 @@ impl VmError {
 }
 
 impl Vm {
-    pub fn new() -> Vm {
+    pub fn new(sink: SharedSink) -> Vm {
         Vm {
             stack: Vec::new(),
             frames: Vec::new(),
             globals: HashMap::new(),
+            sink,
         }
     }
 
@@ -45,7 +51,17 @@ impl Vm {
 
         loop {
             let function = self.frames.last().unwrap().function.clone();
+            let step_line = function
+                .chunk
+                .lines
+                .get(self.frame().ip)
+                .copied()
+                .unwrap_or(0);
             let byte = self.read_byte(&function);
+            let opcode = OpCode::from_byte(byte);
+            let step_name = opcode
+                .map(|op| op.description())
+                .unwrap_or_else(|| "?".to_string());
             match OpCode::from_byte(byte) {
                 Some(OpCode::Constant) => {
                     let index = self.read_byte(&function);
@@ -110,7 +126,17 @@ impl Vm {
                     ));
                 }
             }
+            self.emit_step(step_line, step_name);
         }
+    }
+
+    fn emit_step(&self, line: u64, instruction: String) {
+        let stack: Vec<String> = self.stack.iter().skip(1).map(|v| v.to_display()).collect();
+        self.sink.borrow_mut().emit(Event::Vm(VmEvent::Step {
+            line,
+            instruction,
+            stack,
+        }));
     }
 
     pub(crate) fn frame(&self) -> &CallFrame {
@@ -123,7 +149,12 @@ impl Vm {
 
     pub(crate) fn cur_line(&self, function: &Rc<Function>) -> u64 {
         let ip = self.frame().ip;
-        function.chunk.lines.get(ip.saturating_sub(1)).copied().unwrap_or(0)
+        function
+            .chunk
+            .lines
+            .get(ip.saturating_sub(1))
+            .copied()
+            .unwrap_or(0)
     }
 
     pub(crate) fn read_byte(&mut self, function: &Rc<Function>) -> u8 {
