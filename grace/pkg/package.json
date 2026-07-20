@@ -1,0 +1,15 @@
+{
+  "name": "Grace",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "Grace_bg.wasm",
+    "Grace.js",
+    "Grace.d.ts"
+  ],
+  "main": "Grace.js",
+  "types": "Grace.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
