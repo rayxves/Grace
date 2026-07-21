@@ -39,7 +39,7 @@ pub fn gera_trace(fonte: &str) -> String {
                 line: token_error.line,
             }));
             let ast: Option<AstNode> = None;
-            return collector.borrow().to_json(&ast);
+            return collector.borrow().to_json(&ast, &Vec::new());
         }
     };
 
@@ -63,7 +63,7 @@ pub fn gera_trace(fonte: &str) -> String {
     let mut compiler = Compiler::new(sink.clone());
     compiler.compile(&statements);
     let chunk = compiler.into_chunk();
-
+    let bytecode = build_bytecode_list(&chunk);
     let mut vm = Vm::new(sink.clone());
     if let Err(vm_error) = vm.run(&chunk) {
         sink.borrow_mut().emit(Event::Vm(VmEvent::Error {
@@ -72,8 +72,30 @@ pub fn gera_trace(fonte: &str) -> String {
         }));
     }
 
-    let json = collector.borrow().to_json(&ast);
+    let json = collector.borrow().to_json(&ast, &bytecode);
     json
+}
+
+fn build_bytecode_list(chunk: &chunk::Chunk) -> Vec<trace::BytecodeJson> {
+    use chunk::opcode::OpCode;
+
+    let mut list = Vec::new();
+    let mut offset = 0;
+    while offset < chunk.code.len() {
+        let byte = chunk.code[offset];
+        match OpCode::from_byte(byte) {
+            Some(opcode) => {
+                let text = chunk::debug::describe(chunk, opcode, offset);
+                let line = chunk.lines.get(offset).copied().unwrap_or(0);
+                list.push(trace::BytecodeJson { offset, text, line });
+                offset += opcode.size();
+            }
+            None => {
+                offset += 1;
+            }
+        }
+    }
+    list
 }
 
 #[wasm_bindgen]

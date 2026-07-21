@@ -5,13 +5,13 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::events::{Event, VmEvent};
-use crate::value::Value;
 use crate::value::function::Function;
+use crate::value::Value;
 use crate::vm::call_frame::CallFrame;
 use crate::{
     chunk::{
-        Chunk,
         opcode::{BinaryOpCode, OpCode},
+        Chunk,
     },
     events::SharedSink,
 };
@@ -51,6 +51,7 @@ impl Vm {
 
         loop {
             let function = self.frames.last().unwrap().function.clone();
+            let step_offset = self.frame().ip;
             let step_line = function
                 .chunk
                 .lines
@@ -126,13 +127,14 @@ impl Vm {
                     ));
                 }
             }
-            self.emit_step(step_line, step_name);
+            self.emit_step(step_offset, step_line, step_name);
         }
     }
 
-    fn emit_step(&self, line: u64, instruction: String) {
+    fn emit_step(&self, offset: usize, line: u64, instruction: String) {
         let stack: Vec<String> = self.stack.iter().skip(1).map(|v| v.to_display()).collect();
         self.sink.borrow_mut().emit(Event::Vm(VmEvent::Step {
+            offset,
             line,
             instruction,
             stack,

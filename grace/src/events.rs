@@ -59,9 +59,10 @@ pub enum CompileEvent {
 
 pub enum VmEvent {
     Step {
-        line: u64,          
-        instruction: String,   
-        stack: Vec<String>,   
+        offset: usize,
+        line: u64,
+        instruction: String,
+        stack: Vec<String>,
     },
     Error {
         message: String,

@@ -1,12 +1,11 @@
 use serde::Serialize;
 
 use crate::ast_serializer::AstNode;
-use crate::events::{
-    CompileEvent, Event, EventSink, ParseEvent, ResolveEvent, ScanEvent, VmEvent,
-};
+use crate::events::{CompileEvent, Event, EventSink, ParseEvent, ResolveEvent, ScanEvent, VmEvent};
 
 #[derive(Serialize)]
 pub struct StepJson {
+    pub offset: usize,
     pub line: u64,
     pub instruction: String,
     pub stack: Vec<String>,
@@ -15,8 +14,16 @@ pub struct StepJson {
 #[derive(Serialize)]
 struct TraceView<'a> {
     ast: &'a Option<AstNode>,
+    bytecode: &'a Vec<BytecodeJson>,
     steps: &'a Vec<StepJson>,
     error: &'a Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct BytecodeJson {
+    pub offset: usize,
+    pub text: String,
+    pub line: u64,
 }
 
 pub struct TraceCollector {
@@ -32,9 +39,10 @@ impl TraceCollector {
         }
     }
 
-    pub fn to_json(&self, ast: &Option<AstNode>) -> String {
+    pub fn to_json(&self, ast: &Option<AstNode>, bytecode: &Vec<BytecodeJson>) -> String {
         let trace = TraceView {
             ast,
+            bytecode,
             steps: &self.steps,
             error: &self.error,
         };
@@ -45,8 +53,18 @@ impl TraceCollector {
 impl EventSink for TraceCollector {
     fn emit(&mut self, event: Event) {
         match event {
-            Event::Vm(VmEvent::Step { line, instruction, stack }) => {
-                self.steps.push(StepJson { line, instruction, stack });
+            Event::Vm(VmEvent::Step {
+                offset,
+                line,
+                instruction,
+                stack,
+            }) => {
+                self.steps.push(StepJson {
+                    offset,
+                    line,
+                    instruction,
+                    stack,
+                });
             }
             Event::Vm(VmEvent::Error { message, line })
             | Event::Scan(ScanEvent::Error { message, line })
