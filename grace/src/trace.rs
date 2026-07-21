@@ -1,7 +1,9 @@
 use serde::Serialize;
 
 use crate::ast_serializer::AstNode;
-use crate::events::{Event, EventSink, VmEvent};
+use crate::events::{
+    CompileEvent, Event, EventSink, ParseEvent, ResolveEvent, ScanEvent, VmEvent,
+};
 
 #[derive(Serialize)]
 pub struct StepJson {
@@ -46,8 +48,14 @@ impl EventSink for TraceCollector {
             Event::Vm(VmEvent::Step { line, instruction, stack }) => {
                 self.steps.push(StepJson { line, instruction, stack });
             }
-            Event::Vm(VmEvent::Error { message, line }) => {
-                self.error = Some(format!("Linha {}: {}", line, message));
+            Event::Vm(VmEvent::Error { message, line })
+            | Event::Scan(ScanEvent::Error { message, line })
+            | Event::Parse(ParseEvent::Error { message, line })
+            | Event::Resolve(ResolveEvent::Error { message, line })
+            | Event::Compile(CompileEvent::Error { message, line }) => {
+                if self.error.is_none() {
+                    self.error = Some(format!("Linha {}: {}", line, message));
+                }
             }
             _ => {}
         }

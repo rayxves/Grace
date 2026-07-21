@@ -1,0 +1,90 @@
+.panel {
+	display: flex;
+	flex-direction: column;
+	flex: 3;
+	min-height: 0;
+	background: var(--color-surface);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-soft);
+	overflow: hidden;
+}
+
+.title {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--color-text-muted);
+	padding: var(--space-md) var(--space-md) var(--space-sm);
+}
+
+.treeContainer {
+	flex: 1;
+	min-height: 0;
+	border-top: 1px solid var(--color-border);
+	background: var(--color-bg);
+}
+
+.placeholder {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	margin: 0;
+	color: var(--color-text-muted);
+	font-size: 0.875rem;
+}
+
+.node {
+	cursor: pointer;
+}
+
+.nodeShape {
+	fill: var(--color-node-fill);
+	stroke: var(--color-node-stroke);
+	stroke-width: 0.09375rem;
+	transition:
+		fill 0.2s ease,
+		stroke 0.2s ease;
+}
+
+.nodeActive .nodeShape {
+	fill: var(--color-node-active-fill);
+	stroke: var(--color-node-active-stroke);
+	stroke-width: 0.1875rem;
+}
+
+.nodeError .nodeShape {
+	fill: var(--color-node-error-fill);
+	stroke: var(--color-node-error-stroke);
+	stroke-width: 0.1875rem;
+}
+
+.nodeError .nodeLabel {
+	fill: var(--color-node-error-stroke);
+}
+
+.nodeCollapsed .nodeShape {
+	fill: var(--color-node-collapsed-fill);
+	stroke-dasharray: 0.25rem;
+}
+
+.nodeLabel {
+	fill: var(--color-node-text);
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	font-weight: 600;
+	stroke: none;
+}
+
+.nodeActive .nodeLabel {
+	fill: var(--color-node-active-stroke);
+}
+
+.nodeKind {
+	fill: var(--color-node-kind);
+	font-size: 0.725rem;
+	font-weight: 400;
+	stroke: none;
+}

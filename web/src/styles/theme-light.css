@@ -1,0 +1,74 @@
+:root[data-theme="light"] {
+	--color-bg: #f6f6f9;
+	--color-surface: #ffffff;
+	--color-surface-alt: #f0eff4;
+	--color-border: #e4e3e9;
+	--color-border-strong: #cfcdd8;
+
+	--color-text: #3d3a45;
+	--color-text-muted: #8a8695;
+	--color-heading: #16131d;
+
+	--color-accent: #8b2fd6;
+	--color-accent-soft: rgba(139, 47, 214, 0.1);
+	--color-accent-border: rgba(139, 47, 214, 0.4);
+	--color-on-accent: #ffffff;
+
+	--color-exec-line: rgba(139, 47, 214, 0.12);
+	--color-exec-line-border: #8b2fd6;
+
+	--color-danger: #b3261e;
+	--color-danger-soft: rgba(179, 38, 30, 0.08);
+	--color-danger-border: rgba(179, 38, 30, 0.35);
+
+	--color-editor-bg: #ffffff;
+	--color-editor-gutter-bg: #ffffff;
+	--color-editor-gutter-text: #b4b1bd;
+	--color-editor-selection: rgba(139, 47, 214, 0.15);
+	--color-editor-cursor: #16131d;
+	--color-editor-active-line: rgba(0, 0, 0, 0.03);
+
+	--syntax-keyword: #8b2fd6;
+	--syntax-string: #1a7f37;
+	--syntax-number: #b25e09;
+	--syntax-comment: #9b98a5;
+	--syntax-variable: #16131d;
+	--syntax-punctuation: #6b6875;
+
+	--color-node-fill: #ffffff;
+	--color-node-stroke: #cfcdd8;
+	--color-node-text: #16131d;
+	--color-node-kind: #8a8695;
+	--color-node-active-fill: rgba(139, 47, 214, 0.12);
+	--color-node-active-stroke: #8b2fd6;
+	--color-node-collapsed-fill: #f0eff4;
+	--color-tree-link: #d8d6df;
+
+	--color-stack-block-bg: #ffffff;
+	--color-stack-block-border: #cfcdd8;
+	--color-stack-block-text: #16131d;
+	--color-stack-top-bg: rgba(139, 47, 214, 0.1);
+	--color-stack-top-border: #8b2fd6;
+	--color-stack-base: #e4e3e9;
+
+	--color-pushed-bg: rgba(26, 127, 55, 0.08);
+	--color-pushed-border: rgba(26, 127, 55, 0.4);
+	--color-pushed-text: #1a7f37;
+
+	--color-popped-bg: rgba(179, 38, 30, 0.06);
+	--color-popped-border: rgba(179, 38, 30, 0.35);
+	--color-popped-text: #b3261e;
+
+	--color-error-line: rgba(179, 38, 30, 0.1);
+	--color-error-line-border: #b3261e;
+
+	--color-output-bg: #1b1c24;
+	--color-output-text: #7ee2a8;
+	--color-output-label: #7d7a8a;
+
+	--color-node-error-fill: rgba(179, 38, 30, 0.1);
+	--color-node-error-stroke: #b3261e;
+
+	--shadow-soft: 0 0.0625rem 0.1875rem rgba(22, 19, 29, 0.06);
+	--shadow-raised: 0 0.25rem 1rem rgba(22, 19, 29, 0.08);
+}

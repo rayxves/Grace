@@ -1,0 +1,27 @@
+.panel {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	height: 100%;
+	background: var(--color-surface);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-soft);
+	overflow: hidden;
+}
+
+.title {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--color-text-muted);
+	padding: var(--space-md) var(--space-md) var(--space-sm);
+}
+
+.editorWrapper {
+	flex: 1;
+	min-height: 0;
+	border-top: 1px solid var(--color-border);
+	overflow: hidden;
+}

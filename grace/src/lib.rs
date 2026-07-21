@@ -17,7 +17,7 @@ use std::rc::Rc;
 
 use ast_serializer::{AstNode, AstSerializer};
 use compiler::Compiler;
-use events::SharedSink;
+use events::{Event, ScanEvent, SharedSink, VmEvent};
 use parser::Parser;
 use scanner::Scanner;
 use stmt::StmtVisitor;
@@ -33,7 +33,11 @@ pub fn gera_trace(fonte: &str) -> String {
     let mut scanner = Scanner::new(fonte.to_string(), sink.clone());
     let tokens = match scanner.scan_tokens() {
         Ok(tokens) => tokens,
-        Err(_) => {
+        Err(token_error) => {
+            sink.borrow_mut().emit(Event::Scan(ScanEvent::Error {
+                message: token_error.message,
+                line: token_error.line,
+            }));
             let ast: Option<AstNode> = None;
             return collector.borrow().to_json(&ast);
         }
@@ -61,7 +65,12 @@ pub fn gera_trace(fonte: &str) -> String {
     let chunk = compiler.into_chunk();
 
     let mut vm = Vm::new(sink.clone());
-    let _ = vm.run(&chunk);
+    if let Err(vm_error) = vm.run(&chunk) {
+        sink.borrow_mut().emit(Event::Vm(VmEvent::Error {
+            message: vm_error.message,
+            line: vm_error.line,
+        }));
+    }
 
     let json = collector.borrow().to_json(&ast);
     json

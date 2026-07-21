@@ -1,0 +1,43 @@
+.app {
+	display: flex;
+	flex-direction: column;
+	height: 100svh;
+}
+
+.workspace {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	gap: var(--space-lg);
+	padding: var(--space-lg);
+}
+
+.editorColumn {
+	flex: 2;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.visualColumn {
+	flex: 3;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-lg);
+}
+
+@media (max-width: 64rem) {
+	.workspace {
+		flex-direction: column;
+		overflow-y: auto;
+	}
+
+	.editorColumn {
+		min-height: 20rem;
+	}
+
+	.visualColumn {
+		min-height: 40rem;
+	}
+}
