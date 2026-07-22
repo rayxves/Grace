@@ -36,6 +36,13 @@
 	gap: var(--space-sm);
 }
 
+.bottomRow {
+	flex: 2;
+	min-height: 0;
+	display: flex;
+	gap: var(--space-lg);
+}
+
 @media (max-width: 64rem) {
 	.workspace {
 		flex-direction: column;
@@ -47,6 +54,11 @@
 	}
 
 	.visualColumn {
-		min-height: 40rem;
+		min-height: 60rem;
+	}
+
+	.bottomRow {
+		flex-direction: column;
+		min-height: 30rem;
 	}
 }

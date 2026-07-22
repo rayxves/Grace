@@ -1,0 +1,156 @@
+.panel {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	background: var(--color-surface);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-soft);
+	overflow: hidden;
+}
+
+.title {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--color-text-muted);
+	padding: var(--space-md) var(--space-md) var(--space-sm);
+}
+
+.content {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-md);
+	padding: var(--space-md);
+	border-top: 1px solid var(--color-border);
+	overflow-y: auto;
+}
+
+.loopBadge {
+	align-self: flex-start;
+	padding: 0.1875rem 0.625rem;
+	border-radius: 999rem;
+	background: var(--color-accent-soft);
+	border: 1px solid var(--color-accent-border);
+	color: var(--color-accent);
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+.section {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-xs);
+}
+
+.sectionLabel {
+	font-size: 0.6875rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--color-text-muted);
+}
+
+.frames {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1875rem;
+}
+
+.frame {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--space-sm);
+	padding: 0.25rem 0.625rem;
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--color-border);
+	background: var(--color-surface-alt);
+	font-size: 0.8125rem;
+}
+
+.frameCurrent {
+	border-color: var(--color-accent-border);
+	background: var(--color-accent-soft);
+}
+
+.frameName {
+	font-family: var(--font-mono);
+	font-weight: 600;
+	color: var(--color-heading);
+}
+
+.frameCurrent .frameName {
+	color: var(--color-accent);
+}
+
+.frameLine {
+	font-size: 0.75rem;
+	color: var(--color-text-muted);
+	white-space: nowrap;
+}
+
+.variableTable {
+	display: flex;
+	flex-direction: column;
+	gap: 0.0625rem;
+}
+
+.variableRow {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--space-sm);
+	padding: 0.25rem 0.5rem;
+	border-radius: var(--radius-sm);
+	font-family: var(--font-mono);
+	font-size: 0.8125rem;
+}
+
+.variableChanged {
+	animation: variableFlash 0.9s ease-out;
+}
+
+@keyframes variableFlash {
+	0% {
+		background: var(--color-pushed-bg);
+	}
+	100% {
+		background: transparent;
+	}
+}
+
+.variableName {
+	color: var(--color-text);
+}
+
+.variableValue {
+	color: var(--color-heading);
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	text-align: right;
+}
+
+.emptyGroup {
+	margin: 0;
+	color: var(--color-text-muted);
+	font-size: 0.75rem;
+	font-style: italic;
+}
+
+.empty {
+	display: flex;
+	min-height: 100%;
+	min-width: 100%;
+	align-items: center;
+	justify-content: center;
+}
+
+.placeholder {
+	margin: 0;
+	color: var(--color-text-muted);
+	font-size: 0.875rem;
+}

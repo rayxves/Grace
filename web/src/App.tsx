@@ -4,6 +4,7 @@ import { CodeEditor } from "./components/CodeEditor/CodeEditor";
 import { AstView } from "./components/AstView/AstView";
 import { BytecodeView } from "./components/BytecodeView/BytecodeView";
 import { StackView } from "./components/StackView/StackView";
+import { VariablesView } from "./components/VariablesView/VariablesView";
 import { ViewTabs } from "./components/ViewTabs/ViewTabs";
 import { usePlayer } from "./hooks/usePlayer";
 import { useTheme } from "./hooks/useTheme";
@@ -80,6 +81,9 @@ function App() {
 		[hasTrace, steps, player.index],
 	);
 
+	const previousStep =
+		hasTrace && player.index > 0 ? steps[player.index - 1] : null;
+
 	useKeyboardShortcuts({
 		enabled: hasTrace,
 		onNext: player.next,
@@ -144,12 +148,18 @@ function App() {
 							/>
 						)}
 					</div>
-					<StackView
-						step={hasTrace ? player.currentStep : null}
-						output={output}
-						error={errorReached ? errorMessage : null}
-						hasBytecode={(trace?.bytecode.length ?? 0) > 0}
-					/>
+					<div className={styles.bottomRow}>
+						<VariablesView
+							step={hasTrace ? player.currentStep : null}
+							previousStep={previousStep}
+						/>
+						<StackView
+							step={hasTrace ? player.currentStep : null}
+							output={output}
+							error={errorReached ? errorMessage : null}
+							hasBytecode={(trace?.bytecode.length ?? 0) > 0}
+						/>
+					</div>
 				</div>
 			</main>
 		</div>
