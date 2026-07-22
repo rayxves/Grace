@@ -58,7 +58,7 @@ impl Vm {
     pub fn run(&mut self, chunk: &Chunk) -> Result<(), VmError> {
         let script = Rc::new(Function::new("script".to_string(), 0, chunk.clone()));
         self.push(Value::Function(script.clone()));
-        self.frames.push(CallFrame::new(script, 0, 0));
+        self.frames.push(CallFrame::new(script, 0, 0, None));
 
         loop {
             let function = self.frames.last().unwrap().function.clone();
@@ -133,6 +133,14 @@ impl Vm {
                 Some(OpCode::Loop) => {
                     let offset = self.read_byte(&function);
                     self.frame_mut().ip -= offset as usize;
+                    if let Some(loop_id) = step_node_id {
+                        let counter = self
+                            .frame_mut()
+                            .loop_iterations
+                            .entry(loop_id)
+                            .or_insert(1);
+                        *counter += 1;
+                    }
                 }
                 Some(OpCode::GetLocal) => self.op_get_local(&function),
                 Some(OpCode::SetLocal) => self.op_set_local(&function)?,
@@ -165,14 +173,65 @@ impl Vm {
             .iter()
             .map(|v| v.to_display())
             .collect();
+
+        let mut globals: Vec<(String, String)> = self
+            .globals
+            .iter()
+            .map(|(name, value)| (name.clone(), value.to_display()))
+            .collect();
+        globals.sort_by(|a, b| a.0.cmp(&b.0));
+
+        let current_frame = self.frame();
+        let current_ip = current_frame.ip;
+        let base = current_frame.base;
+
+        let locals: Vec<(String, String)> = current_frame
+            .function
+            .chunk
+            .local_ranges
+            .iter()
+            .filter(|range| {
+                !range.name.is_empty() && current_ip >= range.start && current_ip < range.end
+            })
+            .filter_map(|range| {
+                self.stack
+                    .get(base + range.slot)
+                    .map(|value| (range.name.clone(), value.to_display()))
+            })
+            .collect();
+
+        let loop_iteration = current_frame
+            .function
+            .chunk
+            .loops
+            .iter()
+            .filter(|range| current_ip >= range.start && current_ip < range.end)
+            .min_by_key(|range| range.end - range.start)
+            .map(|range| {
+                *current_frame
+                    .loop_iterations
+                    .get(&range.node_id)
+                    .unwrap_or(&1)
+            });
+
+        let call_stack: Vec<(String, Option<u64>)> = self
+            .frames
+            .iter()
+            .map(|frame| (frame.function.name.clone(), frame.call_line))
+            .collect();
+
         self.sink.borrow_mut().emit(Event::Vm(VmEvent::Step {
             offset,
             line,
             node_id,
+            loop_iteration,
             instruction,
             stack,
             popped,
             pushed,
+            globals,
+            locals,
+            call_stack,
         }));
     }
 

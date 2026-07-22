@@ -4,7 +4,7 @@ mod statements;
 use std::{collections::HashMap, rc::Rc};
 
 use crate::{
-    chunk::{Chunk, opcode::OpCode},
+    chunk::{Chunk, LocalRange, opcode::OpCode},
     events::{CompileEvent, Event::Compile, SharedSink},
     stmt::Statement,
     value::{Class, Value, function::Function},
@@ -25,6 +25,8 @@ impl CompileError {
 pub struct Locals {
     name: String,
     depth: usize,
+    slot: usize,
+    start_offset: usize,
 }
 
 pub struct Compiler {
@@ -45,6 +47,8 @@ impl Compiler {
             locals: vec![Locals {
                 name: String::new(),
                 depth: 0,
+                slot: 0,
+                start_offset: 0,
             }],
             scope_depth: 0,
             errors: Vec::new(),
@@ -117,19 +121,32 @@ impl Compiler {
     pub fn end_scope(&mut self, line: u64, node_id: Option<usize>) {
         self.scope_depth -= 1;
         while let Some(local) = self.locals.last() {
-            if local.depth > self.scope_depth {
-                self.emit_op(OpCode::Pop, line, node_id);
-                self.locals.pop();
-            } else {
+            if local.depth <= self.scope_depth {
                 break;
             }
+            let name = local.name.clone();
+            let slot = local.slot;
+            let start_offset = local.start_offset;
+            self.emit_op(OpCode::Pop, line, node_id);
+            let end_offset = self.chunk.code.len();
+            self.chunk.local_ranges.push(LocalRange {
+                name,
+                slot,
+                start: start_offset,
+                end: end_offset,
+            });
+            self.locals.pop();
         }
     }
 
     pub fn add_local(&mut self, name: String) {
+        let slot = self.locals.len();
+        let start_offset = self.chunk.code.len();
         self.locals.push(Locals {
             name,
             depth: self.scope_depth,
+            slot,
+            start_offset,
         });
     }
 
@@ -180,6 +197,16 @@ impl Compiler {
             fn_compiler.emit_op(OpCode::Null, end_line, None);
         }
         fn_compiler.emit_op(OpCode::Return, end_line, None);
+
+        let fn_end = fn_compiler.chunk.code.len();
+        for local in &fn_compiler.locals {
+            fn_compiler.chunk.local_ranges.push(LocalRange {
+                name: local.name.clone(),
+                slot: local.slot,
+                start: local.start_offset,
+                end: fn_end,
+            });
+        }
 
         let fn_errors = fn_compiler.errors.clone();
         self.errors.extend(fn_errors);

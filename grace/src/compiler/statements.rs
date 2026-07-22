@@ -2,7 +2,7 @@ use std::{collections::HashMap, rc::Rc};
 
 use super::Compiler;
 use crate::{
-    chunk::opcode::OpCode,
+    chunk::{LoopRange, opcode::OpCode},
     expr::Expression,
     stmt::{Statement, StmtVisitor},
     value::{Class, Value},
@@ -86,6 +86,12 @@ impl StmtVisitor for Compiler {
         self.emit_loop(loop_start, line, Some(id));
         self.patch_jump(exit_jump);
         self.emit_op(OpCode::Pop, line, Some(id));
+        let loop_end = self.chunk.code.len();
+        self.chunk.loops.push(LoopRange {
+            node_id: id,
+            start: loop_start,
+            end: loop_end,
+        });
     }
 
     fn visit_function(

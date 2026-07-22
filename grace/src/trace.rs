@@ -4,15 +4,32 @@ use crate::ast_serializer::AstNode;
 use crate::events::{CompileEvent, Event, EventSink, ParseEvent, ResolveEvent, ScanEvent, VmEvent};
 
 #[derive(Serialize)]
+pub struct VariableJson {
+    pub name: String,
+    pub value: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CallStackEntryJson {
+    pub function_name: String,
+    pub call_line: Option<u64>,
+}
+
+#[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StepJson {
     pub offset: usize,
     pub line: u64,
     pub node_id: Option<usize>,
+    pub loop_iteration: Option<usize>,
     pub instruction: String,
     pub stack: Vec<String>,
     pub popped: Vec<String>,
     pub pushed: Vec<String>,
+    pub globals: Vec<VariableJson>,
+    pub locals: Vec<VariableJson>,
+    pub call_stack: Vec<CallStackEntryJson>,
 }
 
 #[derive(Serialize)]
@@ -68,19 +85,39 @@ impl EventSink for TraceCollector {
                 offset,
                 line,
                 node_id,
+                loop_iteration,
                 instruction,
                 stack,
                 popped,
                 pushed,
+                globals,
+                locals,
+                call_stack,
             }) => {
                 self.steps.push(StepJson {
                     offset,
                     line,
                     node_id,
+                    loop_iteration,
                     instruction,
                     stack,
                     popped,
                     pushed,
+                    globals: globals
+                        .into_iter()
+                        .map(|(name, value)| VariableJson { name, value })
+                        .collect(),
+                    locals: locals
+                        .into_iter()
+                        .map(|(name, value)| VariableJson { name, value })
+                        .collect(),
+                    call_stack: call_stack
+                        .into_iter()
+                        .map(|(function_name, call_line)| CallStackEntryJson {
+                            function_name,
+                            call_line,
+                        })
+                        .collect(),
                 });
             }
             Event::Vm(VmEvent::Error {

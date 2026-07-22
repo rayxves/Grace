@@ -13,14 +13,28 @@ export interface BytecodeInstruction {
 	nodeId: number | null;
 }
 
+export interface Variable {
+	name: string;
+	value: string;
+}
+
+export interface CallStackEntry {
+	functionName: string;
+	callLine: number | null;
+}
+
 export interface Step {
 	offset: number;
 	line: number;
 	nodeId: number | null;
+	loopIteration: number | null;
 	instruction: string;
 	stack: string[];
 	popped: string[];
 	pushed: string[];
+	globals: Variable[];
+	locals: Variable[];
+	callStack: CallStackEntry[];
 }
 
 export interface Trace {

@@ -190,7 +190,8 @@ impl Vm {
         base: usize,
     ) -> Result<(), VmError> {
         self.check_arity(function, &callee.name, "A função", callee.arity, arg_count)?;
-        self.frames.push(CallFrame::new(callee, 0, base));
+        let call_line = self.cur_line(function);
+        self.frames.push(CallFrame::new(callee, 0, base, Some(call_line)));
         Ok(())
     }
 
@@ -209,8 +210,9 @@ impl Vm {
             arg_count,
         )?;
         self.stack[base] = Value::Instance(bound.receiver.clone());
+        let call_line = self.cur_line(function);
         self.frames
-            .push(CallFrame::new(bound.method.clone(), 0, base));
+            .push(CallFrame::new(bound.method.clone(), 0, base, Some(call_line)));
         Ok(())
     }
 
@@ -240,8 +242,9 @@ impl Vm {
                     arg_count,
                 )?;
                 self.stack[base] = Value::Instance(instance);
+                let call_line = self.cur_line(function);
                 self.frames
-                    .push(CallFrame::new(constructor.clone(), 0, base));
+                    .push(CallFrame::new(constructor.clone(), 0, base, Some(call_line)));
                 Ok(())
             }
             None => {
