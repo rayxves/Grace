@@ -1,11 +1,17 @@
 import type { Theme } from "../../hooks/useTheme";
+import { PLAYER_SPEEDS } from "../../hooks/usePlayer";
+import type { Step } from "../../types";
+import { Scrubber } from "../Scrubber/Scrubber";
+import { ViewTabs } from "../ViewTabs/ViewTabs";
 import styles from "./Toolbar.module.css";
 
 interface ToolbarProps {
 	onRun: () => void;
 	running: boolean;
 	hasTrace: boolean;
+	steps: Step[];
 	playing: boolean;
+	speed: number;
 	stepIndex: number;
 	totalSteps: number;
 	currentLine: number | null;
@@ -14,15 +20,24 @@ interface ToolbarProps {
 	onNext: () => void;
 	onNextLine: () => void;
 	onReset: () => void;
+	onSeek: (index: number) => void;
+	onSpeedChange: (speed: number) => void;
 	theme: Theme;
 	onToggleTheme: () => void;
 }
+
+const SPEED_TABS = PLAYER_SPEEDS.map((speed) => ({
+	id: String(speed),
+	label: `${speed}x`,
+}));
 
 export function Toolbar({
 	onRun,
 	running,
 	hasTrace,
+	steps,
 	playing,
+	speed,
 	stepIndex,
 	totalSteps,
 	currentLine,
@@ -31,86 +46,102 @@ export function Toolbar({
 	onNext,
 	onNextLine,
 	onReset,
+	onSeek,
+	onSpeedChange,
 	theme,
 	onToggleTheme,
 }: Readonly<ToolbarProps>) {
 	const atStart = stepIndex === 0;
 	const atEnd = totalSteps === 0 || stepIndex >= totalSteps - 1;
 
+	let positionText = "pronto para executar";
+	if (hasTrace && totalSteps > 0) {
+		positionText = `passo ${stepIndex + 1} de ${totalSteps}`;
+		if (currentLine !== null) {
+			positionText += ` — linha ${currentLine}`;
+		}
+	}
+
 	return (
 		<header className={styles.toolbar}>
-			<div className={styles.brand}>
-				<span className={styles.logo}>Grace</span>
-				<span className={styles.subtitle}>visualizador de execução</span>
-			</div>
-
-			<div className={styles.controls}>
-				<button
-					className={styles.runButton}
-					onClick={onRun}
-					disabled={running}
-				>
-					{running ? "executando…" : "executar"}
-				</button>
-
-				<div className={styles.playerGroup}>
-					<button
-						className={styles.control}
-						onClick={onReset}
-						disabled={!hasTrace || atStart}
-						title="reiniciar"
-					>
-						⏮
-					</button>
-					<button
-						className={styles.control}
-						onClick={onPrevious}
-						disabled={!hasTrace || atStart}
-						title="passo anterior"
-					>
-						←
-					</button>
-					<button
-						className={styles.control}
-						onClick={onTogglePlay}
-						disabled={!hasTrace || atEnd}
-						title={playing ? "pausar" : "correr"}
-					>
-						{playing ? "⏸" : "▶"}
-					</button>
-					<button
-						className={styles.control}
-						onClick={onNext}
-						disabled={!hasTrace || atEnd}
-						title="próximo passo"
-					>
-						→
-					</button>
-					<button
-						className={styles.controlLabeled}
-						onClick={onNextLine}
-						disabled={!hasTrace || atEnd}
-						title="avançar até a próxima linha"
-					>
-						linha →
-					</button>
+			<div className={styles.topRow}>
+				<div className={styles.brand}>
+					<span className={styles.logo}>Grace</span>
+					<span className={styles.subtitle}>visualizador de execução</span>
 				</div>
 
-				<span className={styles.position}>
-					{hasTrace && totalSteps > 0
-						? `passo ${stepIndex + 1} de ${totalSteps}` +
-							(currentLine !== null ? ` — linha ${currentLine}` : "")
-						: "pronto para executar"}
-				</span>
+				<div className={styles.controls}>
+					<button
+						className={styles.runButton}
+						onClick={onRun}
+						disabled={running}
+					>
+						{running ? "executando…" : "executar"}
+					</button>
+
+					<div className={styles.playerGroup}>
+						<button
+							className={styles.control}
+							onClick={onReset}
+							disabled={!hasTrace || atStart}
+							title="reiniciar"
+						>
+							⏮
+						</button>
+						<button
+							className={styles.controlBack}
+							onClick={onPrevious}
+							disabled={!hasTrace || atStart}
+							title="voltar um passo (seta esquerda)"
+						>
+							◀ voltar
+						</button>
+						<button
+							className={styles.control}
+							onClick={onTogglePlay}
+							disabled={!hasTrace || atEnd}
+							title={playing ? "pausar (espaço)" : "correr (espaço)"}
+						>
+							{playing ? "⏸" : "▶"}
+						</button>
+						<button
+							className={styles.control}
+							onClick={onNext}
+							disabled={!hasTrace || atEnd}
+							title="próximo passo (seta direita)"
+						>
+							→
+						</button>
+						<button
+							className={styles.controlLabeled}
+							onClick={onNextLine}
+							disabled={!hasTrace || atEnd}
+							title="avançar até a próxima linha"
+						>
+							linha →
+						</button>
+					</div>
+
+					<ViewTabs<string>
+						tabs={SPEED_TABS}
+						activeId={String(speed)}
+						onSelect={(id) => onSpeedChange(Number(id))}
+					/>
+				</div>
+
+				<button
+					className={styles.themeButton}
+					onClick={onToggleTheme}
+					title={theme === "light" ? "tema escuro" : "tema claro"}
+				>
+					{theme === "light" ? "🌙" : "☀️"}
+				</button>
 			</div>
 
-			<button
-				className={styles.themeButton}
-				onClick={onToggleTheme}
-				title={theme === "light" ? "tema escuro" : "tema claro"}
-			>
-				{theme === "light" ? "🌙" : "☀️"}
-			</button>
+			<div className={styles.scrubberRow}>
+				<Scrubber steps={steps} index={stepIndex} onSeek={onSeek} />
+				<span className={styles.position}>{positionText}</span>
+			</div>
 		</header>
 	);
 }

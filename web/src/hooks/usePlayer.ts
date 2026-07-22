@@ -1,9 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Step } from "../types";
 
+const BASE_INTERVAL_MS = 800;
+export const PLAYER_SPEEDS = [0.25, 0.5, 1, 2, 4] as const;
+
 export function usePlayer(steps: Step[]) {
 	const [index, setIndex] = useState(0);
 	const [playing, setPlaying] = useState(false);
+	const [speed, setSpeed] = useState<number>(1);
 
 	const [lastSteps, setLastSteps] = useState(steps);
 	if (lastSteps !== steps) {
@@ -21,6 +25,13 @@ export function usePlayer(steps: Step[]) {
 	const previous = useCallback(() => {
 		setIndex((i) => Math.max(i - 1, 0));
 	}, []);
+
+	const goTo = useCallback(
+		(target: number) => {
+			setIndex(Math.min(Math.max(target, 0), lastIndex));
+		},
+		[lastIndex],
+	);
 
 	const nextLine = useCallback(() => {
 		setIndex((current) => {
@@ -51,16 +62,19 @@ export function usePlayer(steps: Step[]) {
 				if (nextIndex >= lastIndex) setPlaying(false);
 				return nextIndex;
 			});
-		}, 800);
+		}, BASE_INTERVAL_MS / speed);
 		return () => clearTimeout(timer);
-	}, [playing, index, lastIndex]);
+	}, [playing, index, lastIndex, speed]);
 
 	return {
 		index,
 		currentStep: steps[index] ?? null,
 		playing,
+		speed,
+		setSpeed,
 		next,
 		previous,
+		goTo,
 		nextLine,
 		togglePlay,
 		reset,

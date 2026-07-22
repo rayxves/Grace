@@ -7,6 +7,7 @@ import { StackView } from "./components/StackView/StackView";
 import { ViewTabs } from "./components/ViewTabs/ViewTabs";
 import { usePlayer } from "./hooks/usePlayer";
 import { useTheme } from "./hooks/useTheme";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { runGrace } from "./lib/grace";
 import { collectOutput } from "./lib/instructions";
 import { parseErrorLine } from "./lib/errors";
@@ -79,13 +80,23 @@ function App() {
 		[hasTrace, steps, player.index],
 	);
 
+	useKeyboardShortcuts({
+		enabled: hasTrace,
+		onNext: player.next,
+		onPrevious: player.previous,
+		onTogglePlay: player.togglePlay,
+		onReset: player.reset,
+	});
+
 	return (
 		<div className={styles.app}>
 			<Toolbar
 				onRun={run}
 				running={running}
 				hasTrace={hasTrace}
+				steps={steps}
 				playing={player.playing}
+				speed={player.speed}
 				stepIndex={player.index}
 				totalSteps={player.total}
 				currentLine={currentLine}
@@ -94,6 +105,8 @@ function App() {
 				onNext={player.next}
 				onNextLine={player.nextLine}
 				onReset={player.reset}
+				onSeek={player.goTo}
+				onSpeedChange={player.setSpeed}
 				theme={theme}
 				onToggleTheme={toggleTheme}
 			/>
