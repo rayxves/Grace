@@ -20,7 +20,7 @@ interface AstViewProps {
 
 const NODE_SIZE = { x: 130, y: 110 };
 const SEPARATION = { siblings: 1.1, nonSiblings: 1.4 };
-const SCALE_EXTENT = { min: 0.3, max: 2.5 };
+const SCALE_EXTENT = { min: 0.3, max: 2 };
 
 function AstNodeElement(
 	{ nodeDatum, toggleNode }: CustomNodeElementProps,
@@ -88,7 +88,10 @@ export function AstView({
 	);
 
 	const treeData = useMemo(
-		() => (ast ? buildRevealedTree(ast, revealedLines, errorLine) : null),
+		() =>
+			ast && ast.children.length > 0
+				? buildRevealedTree(ast, revealedLines, errorLine)
+				: null,
 		[ast, revealedLines, errorLine],
 	);
 
@@ -108,7 +111,7 @@ export function AstView({
 
 	return (
 		<section className={styles.panel}>
-			<h2 className={styles.title}>árvore do programa</h2>
+			<h2 className={styles.title}>Árvore do programa</h2>
 			<div ref={containerRef} className={styles.treeContainer}>
 				{treeData ? (
 					<Tree
@@ -119,7 +122,7 @@ export function AstView({
 						dimensions={dimensions}
 						collapsible
 						zoomable
-						zoom={1.15}
+						zoom={0.9}
 						scaleExtent={SCALE_EXTENT}
 						separation={SEPARATION}
 						nodeSize={NODE_SIZE}

@@ -5,19 +5,19 @@ import styles from "./StackView.module.css";
 
 interface StackViewProps {
 	step: Step | null;
-	previousStep: Step | null;
 	output: string[];
 	error: string | null;
+	hasBytecode: boolean;
 }
 
 export function StackView({
 	step,
-	previousStep,
 	output,
 	error,
+	hasBytecode,
 }: Readonly<StackViewProps>) {
 	const stack = step?.stack ?? [];
-	const explanation = step ? explainStep(step, previousStep) : null;
+	const explanation = step ? explainStep(step) : null;
 
 	return (
 		<section className={styles.panel}>
@@ -102,9 +102,12 @@ export function StackView({
 							className={styles.errorStop}
 							role="alert">
 							<strong>
-								{step
-									? "a execução parou aqui"
-									: "o programa nem chegou a executar"}
+								{(() => {
+									if (step) return "a execução parou aqui";
+									if (hasBytecode)
+										return "a execução falhou logo na primeira instrução";
+									return "o programa não chegou a ser compilado";
+								})()}
 							</strong>
 							<p>{error}</p>
 						</div>

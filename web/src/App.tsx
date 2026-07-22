@@ -72,9 +72,7 @@ function App() {
 
 	const gatedCurrentLine = hasTrace ? currentLine : null;
 	const gatedErrorLine = errorReached ? errorLine : null;
-
-	const previousStep =
-		hasTrace && player.index > 0 ? steps[player.index - 1] : null;
+	const gatedErrorOffset = errorReached ? (trace?.errorOffset ?? null) : null;
 
 	const output = useMemo(
 		() => (hasTrace ? collectOutput(steps, player.index) : []),
@@ -129,15 +127,15 @@ function App() {
 								bytecode={trace?.bytecode ?? EMPTY_BYTECODE}
 								steps={steps}
 								stepIndex={player.index}
-								errorLine={gatedErrorLine}
+								errorOffset={gatedErrorOffset}
 							/>
 						)}
 					</div>
 					<StackView
 						step={hasTrace ? player.currentStep : null}
-						previousStep={previousStep}
 						output={output}
 						error={errorReached ? errorMessage : null}
+						hasBytecode={(trace?.bytecode.length ?? 0) > 0}
 					/>
 				</div>
 			</main>

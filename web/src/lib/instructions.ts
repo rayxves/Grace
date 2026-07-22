@@ -43,18 +43,6 @@ const fallbackDescriptions: Record<string, string> = {
 	"lê método da superclasse": "busca um método na superclasse",
 };
 
-function stackDiff(previous: string[], current: string[]) {
-	let common = 0;
-	while (
-		common < previous.length &&
-		common < current.length &&
-		previous[common] === current[common]
-	) {
-		common++;
-	}
-	return { popped: previous.slice(common), pushed: current.slice(common) };
-}
-
 type Summarizer = (context: StepContext) => string | null;
 
 function binaryOperation(symbol: string, verb: string): Summarizer {
@@ -137,14 +125,17 @@ const summarizers: Record<string, Summarizer> = {
 			: null,
 };
 
-export function explainStep(step: Step, previous: Step | null): StepExplanation {
-	const { popped, pushed } = stackDiff(previous?.stack ?? [], step.stack);
-	const context: StepContext = { popped, pushed, top: step.stack.at(-1) };
+export function explainStep(step: Step): StepExplanation {
+	const context: StepContext = {
+		popped: step.popped,
+		pushed: step.pushed,
+		top: step.stack.at(-1),
+	};
 	const summary =
 		summarizers[step.instruction]?.(context) ??
 		fallbackDescriptions[step.instruction] ??
 		"executou uma instrução da máquina virtual";
-	return { summary, popped, pushed };
+	return { summary, popped: step.popped, pushed: step.pushed };
 }
 
 export function collectOutput(steps: Step[], upToIndex: number): string[] {

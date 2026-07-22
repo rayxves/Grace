@@ -17,6 +17,8 @@ export interface Step {
 	line: number;
 	instruction: string;
 	stack: string[];
+	popped: string[];
+	pushed: string[];
 }
 
 export interface Trace {
@@ -24,4 +26,5 @@ export interface Trace {
 	bytecode: BytecodeInstruction[];
 	steps: Step[];
 	error: string | null;
+	errorOffset: number | null;
 }

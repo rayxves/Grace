@@ -7,27 +7,19 @@ interface BytecodeViewProps {
 	bytecode: BytecodeInstruction[];
 	steps: Step[];
 	stepIndex: number;
-	errorLine: number | null;
+	errorOffset: number | null;
 }
 
 export function BytecodeView({
 	bytecode,
 	steps,
 	stepIndex,
-	errorLine,
+	errorOffset,
 }: Readonly<BytecodeViewProps>) {
 	const currentRowRef = useRef<HTMLDivElement>(null);
 
 	const currentOffset = steps[stepIndex]?.offset ?? null;
-
-	const highlightOffset = useMemo(() => {
-		if (currentOffset !== null) return currentOffset;
-		if (errorLine === null) return null;
-		return (
-			bytecode.find((instruction) => instruction.line === errorLine)
-				?.offset ?? null
-		);
-	}, [currentOffset, errorLine, bytecode]);
+	const highlightOffset = errorOffset ?? currentOffset;
 
 	const executedOffsets = useMemo(() => {
 		const offsets = new Set<number>();
@@ -60,16 +52,18 @@ export function BytecodeView({
 							<div className={styles.lineInstructions}>
 								{group.instructions.map((instruction) => {
 									const isCurrent = instruction.offset === highlightOffset;
-									const isError = isCurrent && errorLine !== null;
+									const isError = isCurrent && errorOffset !== null;
 									const isExecuted =
 										!isCurrent && executedOffsets.has(instruction.offset);
+									let highlightClass = "";
+									if (isError) {
+										highlightClass = styles.rowError;
+									} else if (isCurrent) {
+										highlightClass = styles.rowCurrent;
+									}
 									const rowClass = [
 										styles.row,
-										isError
-											? styles.rowError
-											: isCurrent
-												? styles.rowCurrent
-												: "",
+										highlightClass,
 										isExecuted ? styles.rowExecuted : "",
 									].join(" ");
 
