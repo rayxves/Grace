@@ -18,13 +18,14 @@ impl ExprVisitor for AstSerializer {
 
     fn visit_binary(
         &mut self,
+        id: usize,
         left: &crate::expr::Expression,
         operator: &crate::token::BinaryOp,
         line: &u64,
         right: &crate::expr::Expression,
     ) -> Self::Output {
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Binary".to_string(),
             label: format!("{:?}", operator),
             line: Some(*line),
@@ -32,9 +33,14 @@ impl ExprVisitor for AstSerializer {
         }
     }
 
-    fn visit_literal(&mut self, literal: &crate::token::TokenLiteral, line: u64) -> Self::Output {
+    fn visit_literal(
+        &mut self,
+        id: usize,
+        literal: &crate::token::TokenLiteral,
+        line: u64,
+    ) -> Self::Output {
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Literal".to_string(),
             label: literal_label(literal),
             line: Some(line),
@@ -44,12 +50,13 @@ impl ExprVisitor for AstSerializer {
 
     fn visit_unary(
         &mut self,
+        id: usize,
         unary_op: &crate::token::UnaryOp,
         line: &u64,
         expr: &crate::expr::Expression,
     ) -> Self::Output {
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Unary".to_string(),
             label: format!("{:?}", unary_op),
             line: Some(*line),
@@ -57,9 +64,9 @@ impl ExprVisitor for AstSerializer {
         }
     }
 
-    fn visit_grouping(&mut self, expr: &crate::expr::Expression) -> Self::Output {
+    fn visit_grouping(&mut self, id: usize, expr: &crate::expr::Expression) -> Self::Output {
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Grouping".to_string(),
             label: "".to_string(),
             line: None,
@@ -95,13 +102,14 @@ impl ExprVisitor for AstSerializer {
 
     fn visit_logical(
         &mut self,
+        id: usize,
         left: &crate::expr::Expression,
         operator: &crate::token::LogicalOp,
         line: &u64,
         right: &crate::expr::Expression,
     ) -> Self::Output {
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Logical".to_string(),
             label: format!("{:?}", operator),
             line: Some(*line),
@@ -111,6 +119,7 @@ impl ExprVisitor for AstSerializer {
 
     fn visit_call(
         &mut self,
+        id: usize,
         callee: &crate::expr::Expression,
         args: &Vec<crate::expr::Expression>,
         paren: &crate::token::Token,
@@ -120,7 +129,7 @@ impl ExprVisitor for AstSerializer {
             children.push(arg.accept(self));
         }
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Call".to_string(),
             label: "".to_string(),
             line: Some(paren.line),
@@ -130,11 +139,12 @@ impl ExprVisitor for AstSerializer {
 
     fn visit_get(
         &mut self,
+        id: usize,
         expr: &crate::expr::Expression,
         token: &crate::token::Token,
     ) -> Self::Output {
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Get".to_string(),
             label: token.lexeme.to_string(),
             line: Some(token.line),
@@ -144,12 +154,13 @@ impl ExprVisitor for AstSerializer {
 
     fn visit_set(
         &mut self,
+        id: usize,
         expr: &crate::expr::Expression,
         token: &crate::token::Token,
         value: &crate::expr::Expression,
     ) -> Self::Output {
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Set".to_string(),
             label: token.lexeme.to_string(),
             line: Some(token.line),
@@ -186,9 +197,9 @@ impl ExprVisitor for AstSerializer {
 impl StmtVisitor for AstSerializer {
     type Output = AstNode;
 
-    fn visit_print(&mut self, expr: &crate::expr::Expression, line: u64) -> Self::Output {
+    fn visit_print(&mut self, id: usize, expr: &crate::expr::Expression, line: u64) -> Self::Output {
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Print".to_string(),
             label: "imprima".to_string(),
             line: Some(line),
@@ -196,9 +207,14 @@ impl StmtVisitor for AstSerializer {
         }
     }
 
-    fn visit_expr_statement(&mut self, expr: &crate::expr::Expression, line: u64) -> Self::Output {
+    fn visit_expr_statement(
+        &mut self,
+        id: usize,
+        expr: &crate::expr::Expression,
+        line: u64,
+    ) -> Self::Output {
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "ExprStmt".to_string(),
             label: "expressão".to_string(),
             line: Some(line),
@@ -208,6 +224,7 @@ impl StmtVisitor for AstSerializer {
 
     fn visit_var(
         &mut self,
+        id: usize,
         name: &String,
         expr: Option<&crate::expr::Expression>,
         line: u64,
@@ -221,7 +238,7 @@ impl StmtVisitor for AstSerializer {
             }
         };
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "VarDecl".to_string(),
             label: name.to_string(),
             line: Some(line),
@@ -229,14 +246,19 @@ impl StmtVisitor for AstSerializer {
         }
     }
 
-    fn visit_block(&mut self, statements: &Vec<crate::stmt::Statement>, line: u64) -> Self::Output {
+    fn visit_block(
+        &mut self,
+        id: usize,
+        statements: &Vec<crate::stmt::Statement>,
+        line: u64,
+    ) -> Self::Output {
         let mut children = vec![];
         for stmt in statements {
             children.push(stmt.accept(self));
         }
 
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Block".to_string(),
             label: "bloco".to_string(),
             line: Some(line),
@@ -246,6 +268,7 @@ impl StmtVisitor for AstSerializer {
 
     fn visit_if(
         &mut self,
+        id: usize,
         expr: &crate::expr::Expression,
         stmt: &crate::stmt::Statement,
         else_stmt: Option<&crate::stmt::Statement>,
@@ -256,7 +279,7 @@ impl StmtVisitor for AstSerializer {
             children.push(e.accept(self));
         }
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "If".to_string(),
             label: "se".to_string(),
             line: Some(line),
@@ -266,12 +289,13 @@ impl StmtVisitor for AstSerializer {
 
     fn visit_while(
         &mut self,
+        id: usize,
         expr: &crate::expr::Expression,
         stmt: &crate::stmt::Statement,
         line: u64,
     ) -> Self::Output {
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "While".to_string(),
             label: "enquanto".to_string(),
             line: Some(line),
@@ -281,6 +305,7 @@ impl StmtVisitor for AstSerializer {
 
     fn visit_function(
         &mut self,
+        id: usize,
         name: &String,
         params: &Vec<String>,
         stmts: &Vec<crate::stmt::Statement>,
@@ -291,7 +316,7 @@ impl StmtVisitor for AstSerializer {
             children.push(stmt.accept(self));
         }
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Function".to_string(),
             label: format!("{}({})", name, params.join(", ")),
             line: Some(line),
@@ -299,7 +324,12 @@ impl StmtVisitor for AstSerializer {
         }
     }
 
-    fn visit_return(&mut self, line: u64, value: Option<&crate::expr::Expression>) -> Self::Output {
+    fn visit_return(
+        &mut self,
+        id: usize,
+        line: u64,
+        value: Option<&crate::expr::Expression>,
+    ) -> Self::Output {
         let children = match value {
             Some(e) => {
                 vec![e.accept(self)]
@@ -309,7 +339,7 @@ impl StmtVisitor for AstSerializer {
             }
         };
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Return".to_string(),
             label: "".to_string(),
             line: Some(line),
@@ -319,6 +349,7 @@ impl StmtVisitor for AstSerializer {
 
     fn visit_class(
         &mut self,
+        id: usize,
         name: &String,
         line: u64,
         superclass: &Option<crate::expr::Expression>,
@@ -343,7 +374,7 @@ impl StmtVisitor for AstSerializer {
         }
 
         AstNode {
-            id: None,
+            id: Some(id),
             kind: "Class".to_string(),
             label: name.clone(),
             line: Some(line),

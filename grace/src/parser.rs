@@ -66,24 +66,32 @@ impl Parser {
                 let value = *value;
                 let line = self.peek().line;
                 self.advance();
-                Ok(Expression::Literal(TokenLiteral::Number(value), line))
+                let id = next_id();
+                Ok(Expression::Literal(TokenLiteral::Number(value), line, id))
             }
             TokenType::StringLiteral(value) => {
                 let value = value.to_string();
                 let line = self.peek().line;
                 self.advance();
-                Ok(Expression::Literal(TokenLiteral::StringLiteral(value), line))
+                let id = next_id();
+                Ok(Expression::Literal(
+                    TokenLiteral::StringLiteral(value),
+                    line,
+                    id,
+                ))
             }
             TokenType::Boolean(value) => {
                 let value = *value;
                 let line = self.peek().line;
                 self.advance();
-                Ok(Expression::Literal(TokenLiteral::Boolean(value), line))
+                let id = next_id();
+                Ok(Expression::Literal(TokenLiteral::Boolean(value), line, id))
             }
             TokenType::Null => {
                 let line = self.peek().line;
                 self.advance();
-                Ok(Expression::Literal(TokenLiteral::Null, line))
+                let id = next_id();
+                Ok(Expression::Literal(TokenLiteral::Null, line, id))
             }
             TokenType::LeftParen => {
                 self.advance();
@@ -91,7 +99,8 @@ impl Parser {
                 match self.peek().token_type {
                     TokenType::RightParen => {
                         self.advance();
-                        Ok(Expression::Grouping(Box::new(expr)))
+                        let id = next_id();
+                        Ok(Expression::Grouping(Box::new(expr), id))
                     }
                     _ => Err(self.error(format!(
                         "Esperava ')' para fechar o parêntese, mas encontrei '{}'.",
@@ -169,12 +178,14 @@ impl Parser {
                 }
                 let paren = self.peek().clone();
                 self.advance();
-                callee = Expression::Call(Box::new(callee), args, paren);
+                let id = next_id();
+                callee = Expression::Call(Box::new(callee), args, paren, id);
             } else if self.check(&TokenType::Dot) {
                 self.advance();
                 match &self.peek().token_type {
                     TokenType::Identifier(_t) => {
-                        callee = Expression::Get(Box::new(callee), self.peek().clone());
+                        let id = next_id();
+                        callee = Expression::Get(Box::new(callee), self.peek().clone(), id);
                         self.advance();
                     }
                     _ => {
@@ -197,12 +208,19 @@ impl Parser {
             TokenType::Bang => {
                 self.advance();
                 let operand = self.unary()?;
-                Ok(Expression::Unary(UnaryOp::Bang, line, Box::new(operand)))
+                let id = next_id();
+                Ok(Expression::Unary(UnaryOp::Bang, line, Box::new(operand), id))
             }
             TokenType::Minus => {
                 self.advance();
                 let operand = self.unary()?;
-                Ok(Expression::Unary(UnaryOp::Minus, line, Box::new(operand)))
+                let id = next_id();
+                Ok(Expression::Unary(
+                    UnaryOp::Minus,
+                    line,
+                    Box::new(operand),
+                    id,
+                ))
             }
             _ => self.call(),
         }
@@ -219,7 +237,8 @@ impl Parser {
             };
             self.advance();
             let right = self.unary()?;
-            left = Expression::Binary(Box::new(left), operator, line, Box::new(right));
+            let id = next_id();
+            left = Expression::Binary(Box::new(left), operator, line, Box::new(right), id);
         }
         Ok(left)
     }
@@ -235,7 +254,8 @@ impl Parser {
             };
             self.advance();
             let right = self.factor()?;
-            left = Expression::Binary(Box::new(left), operator, line, Box::new(right));
+            let id = next_id();
+            left = Expression::Binary(Box::new(left), operator, line, Box::new(right), id);
         }
         Ok(left)
     }
@@ -257,7 +277,8 @@ impl Parser {
             };
             self.advance();
             let right = self.term()?;
-            left = Expression::Binary(Box::new(left), operator, line, Box::new(right));
+            let id = next_id();
+            left = Expression::Binary(Box::new(left), operator, line, Box::new(right), id);
         }
         Ok(left)
     }
@@ -273,7 +294,8 @@ impl Parser {
             };
             self.advance();
             let right = self.comparison()?;
-            left = Expression::Binary(Box::new(left), operator, line, Box::new(right));
+            let id = next_id();
+            left = Expression::Binary(Box::new(left), operator, line, Box::new(right), id);
         }
         Ok(left)
     }
@@ -284,7 +306,8 @@ impl Parser {
             let line = self.peek().line;
             self.advance();
             let right = self.equality()?;
-            left = Expression::Logical(Box::new(left), LogicalOp::And, line, Box::new(right));
+            let id = next_id();
+            left = Expression::Logical(Box::new(left), LogicalOp::And, line, Box::new(right), id);
         }
         Ok(left)
     }
@@ -295,7 +318,8 @@ impl Parser {
             let line = self.peek().line;
             self.advance();
             let right = self.and()?;
-            left = Expression::Logical(Box::new(left), LogicalOp::Or, line, Box::new(right));
+            let id = next_id();
+            left = Expression::Logical(Box::new(left), LogicalOp::Or, line, Box::new(right), id);
         }
         Ok(left)
     }
@@ -310,9 +334,10 @@ impl Parser {
                     let value = self.assigment()?;
                     return Ok(Expression::Assign(name, line, Box::new(value), assign_id));
                 }
-                Expression::Get(expr, token) => {
+                Expression::Get(expr, token, _id) => {
                     let value = self.assigment()?;
-                    return Ok(Expression::Set(expr, token, Box::new(value)));
+                    let id = next_id();
+                    return Ok(Expression::Set(expr, token, Box::new(value), id));
                 }
                 _ => {
                      return Err(self.error( "Não é possível atribuir a esta expressão. Só variáveis e propriedades podem receber valores.".to_string()))

@@ -126,6 +126,7 @@ impl ExprVisitor for Resolver {
     type Output = Result<(), ResolveError>;
     fn visit_binary(
         &mut self,
+        _id: usize,
         left: &Expression,
         _o: &crate::token::BinaryOp,
         _l: &u64,
@@ -135,11 +136,17 @@ impl ExprVisitor for Resolver {
         right.accept(self)?;
         Ok(())
     }
-    fn visit_literal(&mut self, _literal: &crate::token::TokenLiteral, _line: u64) -> Self::Output {
+    fn visit_literal(
+        &mut self,
+        _id: usize,
+        _literal: &crate::token::TokenLiteral,
+        _line: u64,
+    ) -> Self::Output {
         Ok(())
     }
     fn visit_unary(
         &mut self,
+        _id: usize,
         _u: &crate::token::UnaryOp,
         _l: &u64,
         expr: &Expression,
@@ -147,7 +154,7 @@ impl ExprVisitor for Resolver {
         expr.accept(self)?;
         Ok(())
     }
-    fn visit_grouping(&mut self, expr: &Expression) -> Self::Output {
+    fn visit_grouping(&mut self, _id: usize, expr: &Expression) -> Self::Output {
         expr.accept(self)?;
         Ok(())
     }
@@ -174,6 +181,7 @@ impl ExprVisitor for Resolver {
     }
     fn visit_logical(
         &mut self,
+        _id: usize,
         left: &Expression,
         _o: &crate::token::LogicalOp,
         _l: &u64,
@@ -185,6 +193,7 @@ impl ExprVisitor for Resolver {
     }
     fn visit_call(
         &mut self,
+        _id: usize,
         callee: &Expression,
         args: &Vec<Expression>,
         _p: &Token,
@@ -195,11 +204,17 @@ impl ExprVisitor for Resolver {
         }
         Ok(())
     }
-    fn visit_get(&mut self, expr: &Expression, _t: &Token) -> Self::Output {
+    fn visit_get(&mut self, _id: usize, expr: &Expression, _t: &Token) -> Self::Output {
         expr.accept(self)?;
         Ok(())
     }
-    fn visit_set(&mut self, expr: &Expression, _t: &Token, value: &Expression) -> Self::Output {
+    fn visit_set(
+        &mut self,
+        _id: usize,
+        expr: &Expression,
+        _t: &Token,
+        value: &Expression,
+    ) -> Self::Output {
         expr.accept(self)?;
         value.accept(self)?;
         Ok(())

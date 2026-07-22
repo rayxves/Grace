@@ -46,7 +46,8 @@ impl Parser {
             )));
         }
         self.advance();
-        Ok(Statement::Print(value, line))
+        let id = next_id();
+        Ok(Statement::Print(value, line, id))
     }
 
     pub fn expr_statement(&mut self) -> Result<Statement, ParseError> {
@@ -54,7 +55,8 @@ impl Parser {
         let expr = self.expression()?;
         if self.check(&TokenType::Semicolon) {
             self.advance();
-            Ok(Statement::ExprStatement(expr, line))
+            let id = next_id();
+            Ok(Statement::ExprStatement(expr, line, id))
         } else {
             Err(self.error(format!(
                 "Esperava ';' no fim do comando, mas encontrei '{}'.",
@@ -92,7 +94,8 @@ impl Parser {
 
         if self.check(&TokenType::Semicolon) {
             self.advance();
-            Ok(Statement::Var(name, initializer, line))
+            let id = next_id();
+            Ok(Statement::Var(name, initializer, line, id))
         } else {
             Err(self.error(format!(
                 "Esperava ';' após declaração de variável, mas encontrei '{}'.",
@@ -149,7 +152,8 @@ impl Parser {
             return None;
         }
         self.advance();
-        Some(Statement::Block(body, line))
+        let id = next_id();
+        Some(Statement::Block(body, line, id))
     }
 
     pub fn if_statement(&mut self) -> Option<Statement> {
@@ -191,16 +195,27 @@ impl Parser {
         if self.check(&TokenType::Else) {
             self.advance();
             match self.statement() {
-                Some(else_branch) => Some(Statement::If(
-                    condition,
-                    Box::new(then_branch),
-                    Some(Box::new(else_branch)),
-                    line,
-                )),
+                Some(else_branch) => {
+                    let id = next_id();
+                    Some(Statement::If(
+                        condition,
+                        Box::new(then_branch),
+                        Some(Box::new(else_branch)),
+                        line,
+                        id,
+                    ))
+                }
                 None => None,
             }
         } else {
-            Some(Statement::If(condition, Box::new(then_branch), None, line))
+            let id = next_id();
+            Some(Statement::If(
+                condition,
+                Box::new(then_branch),
+                None,
+                line,
+                id,
+            ))
         }
     }
 
@@ -236,7 +251,10 @@ impl Parser {
         self.advance();
 
         match self.statement() {
-            Some(body) => Some(Statement::While(condition, Box::new(body), line)),
+            Some(body) => {
+                let id = next_id();
+                Some(Statement::While(condition, Box::new(body), line, id))
+            }
             None => None,
         }
     }
@@ -313,15 +331,28 @@ impl Parser {
 
         match self.statement() {
             Some(body) => {
+                let increment_id = next_id();
+                let while_body_id = next_id();
                 let while_body = Statement::Block(
-                    vec![body, Statement::ExprStatement(increment, line)],
+                    vec![
+                        body,
+                        Statement::ExprStatement(increment, line, increment_id),
+                    ],
                     line,
+                    while_body_id,
                 );
-                let mut outer = vec![Statement::While(condition, Box::new(while_body), line)];
+                let while_id = next_id();
+                let mut outer = vec![Statement::While(
+                    condition,
+                    Box::new(while_body),
+                    line,
+                    while_id,
+                )];
                 if let Some(init) = initializer {
                     outer.insert(0, init);
                 }
-                Some(Statement::Block(outer, line))
+                let outer_id = next_id();
+                Some(Statement::Block(outer, line, outer_id))
             }
             None => None,
         }
@@ -375,8 +406,9 @@ impl Parser {
                 }
                 self.advance();
                 match self.block_statement() {
-                    Some(Statement::Block(stmts, _)) => {
-                        return Some(Statement::Function(name, params, stmts, line));
+                    Some(Statement::Block(stmts, ..)) => {
+                        let id = next_id();
+                        return Some(Statement::Function(name, params, stmts, line, id));
                     }
                     _ => return None,
                 }
@@ -396,11 +428,13 @@ impl Parser {
         self.advance();
         if self.check(&TokenType::Semicolon) {
             self.advance();
-            return Some(Statement::Return(line, None));
+            let id = next_id();
+            return Some(Statement::Return(line, None, id));
         } else {
             match self.expression() {
                 Ok(expr) => {
-                    let expr = Some(Statement::Return(self.peek().line, Some(expr)));
+                    let id = next_id();
+                    let expr = Some(Statement::Return(self.peek().line, Some(expr), id));
                     if self.check(&TokenType::Semicolon) {
                         self.advance();
                         return expr;
@@ -455,8 +489,9 @@ impl Parser {
                 }
                 self.advance();
                 match self.block_statement() {
-                    Some(Statement::Block(stmts, _)) => {
-                        return Some(Statement::Function(name, params, stmts, line));
+                    Some(Statement::Block(stmts, ..)) => {
+                        let id = next_id();
+                        return Some(Statement::Function(name, params, stmts, line, id));
                     }
                     _ => return None,
                 }
@@ -555,12 +590,14 @@ impl Parser {
                                     Expression::Variable(n.clone(), self.peek().line, id);
                                 self.advance();
                                 let (attributes, methods) = self.parse_class_body()?;
+                                let class_id = next_id();
                                 Some(Statement::Class(
                                     name,
                                     line,
                                     Some(expr_variable),
                                     attributes,
                                     methods,
+                                    class_id,
                                 ))
                             }
                             _ => {
@@ -574,7 +611,10 @@ impl Parser {
                     }
                     TokenType::LeftBrace => {
                         let (attributes, methods) = self.parse_class_body()?;
-                        return Some(Statement::Class(name, line, None, attributes, methods));
+                        let class_id = next_id();
+                        return Some(Statement::Class(
+                            name, line, None, attributes, methods, class_id,
+                        ));
                     }
                     _ => {
                         self.error(format!(

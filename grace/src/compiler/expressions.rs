@@ -13,6 +13,7 @@ impl ExprVisitor for Compiler {
 
     fn visit_binary(
         &mut self,
+        _id: usize,
         left: &Expression,
         operator: &BinaryOp,
         line: &u64,
@@ -43,7 +44,7 @@ impl ExprVisitor for Compiler {
         };
     }
 
-    fn visit_literal(&mut self, literal: &TokenLiteral, line: u64) -> Self::Output {
+    fn visit_literal(&mut self, _id: usize, literal: &TokenLiteral, line: u64) -> Self::Output {
         match literal {
             TokenLiteral::Number(n) => self.emit_constant(Value::Number(*n), line),
             TokenLiteral::StringLiteral(s) => self.emit_constant(Value::Str(s.clone()), line),
@@ -53,7 +54,13 @@ impl ExprVisitor for Compiler {
         }
     }
 
-    fn visit_unary(&mut self, unary_op: &UnaryOp, line: &u64, expr: &Expression) -> Self::Output {
+    fn visit_unary(
+        &mut self,
+        _id: usize,
+        unary_op: &UnaryOp,
+        line: &u64,
+        expr: &Expression,
+    ) -> Self::Output {
         expr.accept(self);
         let opcode = match unary_op {
             UnaryOp::Minus => OpCode::Negate,
@@ -62,7 +69,7 @@ impl ExprVisitor for Compiler {
         self.emit_op(opcode, *line);
     }
 
-    fn visit_grouping(&mut self, expr: &Expression) -> Self::Output {
+    fn visit_grouping(&mut self, _id: usize, expr: &Expression) -> Self::Output {
         expr.accept(self);
     }
 
@@ -89,6 +96,7 @@ impl ExprVisitor for Compiler {
 
     fn visit_logical(
         &mut self,
+        _id: usize,
         left: &Expression,
         operator: &LogicalOp,
         line: &u64,
@@ -116,6 +124,7 @@ impl ExprVisitor for Compiler {
 
     fn visit_call(
         &mut self,
+        _id: usize,
         callee: &Expression,
         args: &Vec<Expression>,
         paren: &Token,
@@ -127,7 +136,7 @@ impl ExprVisitor for Compiler {
         self.emit_with_operand(OpCode::Call, args.len() as u8, paren.line);
     }
 
-    fn visit_get(&mut self, expr: &Expression, token: &Token) -> Self::Output {
+    fn visit_get(&mut self, _id: usize, expr: &Expression, token: &Token) -> Self::Output {
         expr.accept(self);
         self.emit_named(
             OpCode::GetProperty,
@@ -136,7 +145,13 @@ impl ExprVisitor for Compiler {
         );
     }
 
-    fn visit_set(&mut self, expr: &Expression, token: &Token, value: &Expression) -> Self::Output {
+    fn visit_set(
+        &mut self,
+        _id: usize,
+        expr: &Expression,
+        token: &Token,
+        value: &Expression,
+    ) -> Self::Output {
         expr.accept(self);
         value.accept(self);
         self.emit_named(

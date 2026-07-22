@@ -7,16 +7,22 @@ use crate::{
 impl StmtVisitor for Resolver {
     type Output = Result<(), ResolveError>;
 
-    fn visit_print(&mut self, expr: &Expression, _line: u64) -> Self::Output {
+    fn visit_print(&mut self, _id: usize, expr: &Expression, _line: u64) -> Self::Output {
         expr.accept(self)?;
         Ok(())
     }
-    fn visit_expr_statement(&mut self, expr: &Expression, _line: u64) -> Self::Output {
+    fn visit_expr_statement(&mut self, _id: usize, expr: &Expression, _line: u64) -> Self::Output {
         expr.accept(self)?;
         Ok(())
     }
 
-    fn visit_var(&mut self, name: &String, expr: Option<&Expression>, line: u64) -> Self::Output {
+    fn visit_var(
+        &mut self,
+        _id: usize,
+        name: &String,
+        expr: Option<&Expression>,
+        line: u64,
+    ) -> Self::Output {
         self.declare(name.clone(), line)?;
         if let Some(e) = expr {
             e.accept(self)?;
@@ -25,7 +31,7 @@ impl StmtVisitor for Resolver {
         Ok(())
     }
 
-    fn visit_block(&mut self, statements: &Vec<Statement>, _line: u64) -> Self::Output {
+    fn visit_block(&mut self, _id: usize, statements: &Vec<Statement>, _line: u64) -> Self::Output {
         self.begin_scope();
         for stmt in statements {
             stmt.accept(self)?;
@@ -36,6 +42,7 @@ impl StmtVisitor for Resolver {
 
     fn visit_if(
         &mut self,
+        _id: usize,
         expr: &Expression,
         stmt: &Statement,
         else_stmt: Option<&Statement>,
@@ -49,7 +56,13 @@ impl StmtVisitor for Resolver {
         Ok(())
     }
 
-    fn visit_while(&mut self, expr: &Expression, stmt: &Statement, _line: u64) -> Self::Output {
+    fn visit_while(
+        &mut self,
+        _id: usize,
+        expr: &Expression,
+        stmt: &Statement,
+        _line: u64,
+    ) -> Self::Output {
         expr.accept(self)?;
         stmt.accept(self)?;
         Ok(())
@@ -57,6 +70,7 @@ impl StmtVisitor for Resolver {
 
     fn visit_function(
         &mut self,
+        _id: usize,
         name: &String,
         params: &Vec<String>,
         stmts: &Vec<Statement>,
@@ -79,7 +93,7 @@ impl StmtVisitor for Resolver {
         Ok(())
     }
 
-    fn visit_return(&mut self, line: u64, value: Option<&Expression>) -> Self::Output {
+    fn visit_return(&mut self, _id: usize, line: u64, value: Option<&Expression>) -> Self::Output {
         if matches!(self.is_function, IsFunction::None) {
             return Err(self.error(
                 "'retorna' só pode ser usado dentro de uma função.".to_string(),
@@ -96,6 +110,7 @@ impl StmtVisitor for Resolver {
 
     fn visit_class(
         &mut self,
+        _id: usize,
         name: &String,
         line: u64,
         superclass: &Option<Expression>,
@@ -135,7 +150,7 @@ impl StmtVisitor for Resolver {
             self.define(atributo.clone());
         }
         for stmt in statements {
-            if let Statement::Function(n, params, body, _line) = stmt {
+            if let Statement::Function(n, params, body, _line, _id) = stmt {
                 let prev_fn = self.is_function;
                 self.is_function = if n == "init" {
                     IsFunction::Initializer

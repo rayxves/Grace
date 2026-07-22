@@ -11,17 +11,23 @@ use crate::{
 impl StmtVisitor for Compiler {
     type Output = ();
 
-    fn visit_print(&mut self, expr: &Expression, line: u64) -> Self::Output {
+    fn visit_print(&mut self, _id: usize, expr: &Expression, line: u64) -> Self::Output {
         expr.accept(self);
         self.emit_op(OpCode::Print, line);
     }
 
-    fn visit_expr_statement(&mut self, expr: &Expression, line: u64) -> Self::Output {
+    fn visit_expr_statement(&mut self, _id: usize, expr: &Expression, line: u64) -> Self::Output {
         expr.accept(self);
         self.emit_op(OpCode::Pop, line);
     }
 
-    fn visit_var(&mut self, name: &String, expr: Option<&Expression>, line: u64) -> Self::Output {
+    fn visit_var(
+        &mut self,
+        _id: usize,
+        name: &String,
+        expr: Option<&Expression>,
+        line: u64,
+    ) -> Self::Output {
         if let Some(e) = expr {
             e.accept(self);
         } else {
@@ -34,7 +40,7 @@ impl StmtVisitor for Compiler {
         }
     }
 
-    fn visit_block(&mut self, statements: &Vec<Statement>, line: u64) -> Self::Output {
+    fn visit_block(&mut self, _id: usize, statements: &Vec<Statement>, line: u64) -> Self::Output {
         self.begin_scope();
         for stmt in statements {
             stmt.accept(self);
@@ -45,6 +51,7 @@ impl StmtVisitor for Compiler {
 
     fn visit_if(
         &mut self,
+        _id: usize,
         expr: &Expression,
         stmt: &Statement,
         else_stmt: Option<&Statement>,
@@ -64,7 +71,13 @@ impl StmtVisitor for Compiler {
         self.patch_jump(else_jump);
     }
 
-    fn visit_while(&mut self, expr: &Expression, stmt: &Statement, line: u64) -> Self::Output {
+    fn visit_while(
+        &mut self,
+        _id: usize,
+        expr: &Expression,
+        stmt: &Statement,
+        line: u64,
+    ) -> Self::Output {
         let loop_start = self.chunk.code.len();
         expr.accept(self);
         let exit_jump = self.emit_jump(OpCode::JumpIfFalse, line);
@@ -77,6 +90,7 @@ impl StmtVisitor for Compiler {
 
     fn visit_function(
         &mut self,
+        _id: usize,
         name: &String,
         params: &Vec<String>,
         stmts: &Vec<Statement>,
@@ -91,7 +105,7 @@ impl StmtVisitor for Compiler {
         }
     }
 
-    fn visit_return(&mut self, line: u64, value: Option<&Expression>) -> Self::Output {
+    fn visit_return(&mut self, _id: usize, line: u64, value: Option<&Expression>) -> Self::Output {
         match value {
             Some(v) => v.accept(self),
             None => self.emit_op(OpCode::Null, line),
@@ -101,6 +115,7 @@ impl StmtVisitor for Compiler {
 
     fn visit_class(
         &mut self,
+        _id: usize,
         name: &String,
         line: u64,
         superclass: &Option<Expression>,
@@ -210,7 +225,7 @@ impl Compiler {
         }));
 
         for method_stmt in statements {
-            if let Statement::Function(m_name, m_params, m_body, m_line) = method_stmt {
+            if let Statement::Function(m_name, m_params, m_body, m_line, _id) = method_stmt {
                 let method = self.compile_function(m_name, m_params, m_body, *m_line);
                 methods.insert(m_name.clone(), Rc::new(method));
             }
