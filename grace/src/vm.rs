@@ -21,16 +21,24 @@ pub struct Vm {
     pub(crate) frames: Vec<CallFrame>,
     pub(crate) globals: HashMap<String, Value>,
     pub(crate) sink: SharedSink,
+    instruction_offset: usize,
+    popped_this_step: Vec<Value>,
+    pushed_this_step: Vec<Value>,
 }
 
 pub struct VmError {
     pub message: String,
     pub line: u64,
+    pub offset: usize,
 }
 
 impl VmError {
-    pub fn new(message: String, line: u64) -> VmError {
-        VmError { message, line }
+    pub fn new(message: String, line: u64, offset: usize) -> VmError {
+        VmError {
+            message,
+            line,
+            offset,
+        }
     }
 }
 
@@ -41,6 +49,9 @@ impl Vm {
             frames: Vec::new(),
             globals: HashMap::new(),
             sink,
+            instruction_offset: 0,
+            popped_this_step: Vec::new(),
+            pushed_this_step: Vec::new(),
         }
     }
 
@@ -63,6 +74,9 @@ impl Vm {
             let step_name = opcode
                 .map(|op| op.description())
                 .unwrap_or_else(|| "?".to_string());
+            self.instruction_offset = step_offset;
+            self.popped_this_step.clear();
+            self.pushed_this_step.clear();
             match OpCode::from_byte(byte) {
                 Some(OpCode::Constant) => {
                     let index = self.read_byte(&function);
@@ -124,6 +138,7 @@ impl Vm {
                     return Err(VmError::new(
                         format!("Erro interno: instrução desconhecida (byte {}).", byte),
                         self.cur_line(&function),
+                        self.cur_offset(),
                     ));
                 }
             }
@@ -133,11 +148,24 @@ impl Vm {
 
     fn emit_step(&self, offset: usize, line: u64, instruction: String) {
         let stack: Vec<String> = self.stack.iter().skip(1).map(|v| v.to_display()).collect();
+        let popped: Vec<String> = self
+            .popped_this_step
+            .iter()
+            .rev()
+            .map(|v| v.to_display())
+            .collect();
+        let pushed: Vec<String> = self
+            .pushed_this_step
+            .iter()
+            .map(|v| v.to_display())
+            .collect();
         self.sink.borrow_mut().emit(Event::Vm(VmEvent::Step {
             offset,
             line,
             instruction,
             stack,
+            popped,
+            pushed,
         }));
     }
 
@@ -159,6 +187,10 @@ impl Vm {
             .unwrap_or(0)
     }
 
+    pub(crate) fn cur_offset(&self) -> usize {
+        self.instruction_offset
+    }
+
     pub(crate) fn read_byte(&mut self, function: &Rc<Function>) -> u8 {
         let ip = self.frame().ip;
         let byte = function.chunk.code[ip];
@@ -173,21 +205,26 @@ impl Vm {
             _ => Err(VmError::new(
                 "Erro interno: esperava um nome no pool de constantes.".to_string(),
                 self.cur_line(function),
+                self.cur_offset(),
             )),
         }
     }
 
     pub(crate) fn push(&mut self, value: Value) {
+        self.pushed_this_step.push(value.clone());
         self.stack.push(value);
     }
 
     pub(crate) fn pop(&mut self, function: &Rc<Function>) -> Result<Value, VmError> {
-        self.stack.pop().ok_or_else(|| {
+        let value = self.stack.pop().ok_or_else(|| {
             VmError::new(
                 "Erro interno: a pilha está vazia.".to_string(),
                 self.cur_line(function),
+                self.cur_offset(),
             )
-        })
+        })?;
+        self.popped_this_step.push(value.clone());
+        Ok(value)
     }
 
     pub(crate) fn peek(&self, function: &Rc<Function>) -> Result<Value, VmError> {
@@ -195,6 +232,7 @@ impl Vm {
             VmError::new(
                 "Erro interno: a pilha está vazia.".to_string(),
                 self.cur_line(function),
+                self.cur_offset(),
             )
         })
     }
@@ -208,6 +246,7 @@ impl Vm {
                     other.to_display()
                 ),
                 self.cur_line(function),
+                self.cur_offset(),
             )),
         }
     }

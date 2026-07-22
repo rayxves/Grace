@@ -69,6 +69,7 @@ pub fn gera_trace(fonte: &str) -> String {
         sink.borrow_mut().emit(Event::Vm(VmEvent::Error {
             message: vm_error.message,
             line: vm_error.line,
+            offset: vm_error.offset,
         }));
     }
 

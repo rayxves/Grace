@@ -49,8 +49,6 @@ pub enum TokenType {
     This,
     Var,
     While,
-    Switch,
-    Case,
     Constructor,
 
     EOF,
@@ -103,8 +101,6 @@ pub static KEYWORDS: LazyLock<HashMap<&str, TokenType>> = LazyLock::new(|| {
         ("retorna", TokenType::Return),
         ("enquanto", TokenType::While),
         ("para", TokenType::For),
-        ("escolha", TokenType::Switch),
-        ("caso", TokenType::Case),
         ("imprima", TokenType::Print),
         ("nulo", TokenType::Null),
         ("classe", TokenType::Class),

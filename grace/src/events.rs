@@ -63,9 +63,12 @@ pub enum VmEvent {
         line: u64,
         instruction: String,
         stack: Vec<String>,
+        popped: Vec<String>,
+        pushed: Vec<String>,
     },
     Error {
         message: String,
         line: u64,
+        offset: usize,
     },
 }

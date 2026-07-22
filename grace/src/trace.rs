@@ -9,14 +9,18 @@ pub struct StepJson {
     pub line: u64,
     pub instruction: String,
     pub stack: Vec<String>,
+    pub popped: Vec<String>,
+    pub pushed: Vec<String>,
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct TraceView<'a> {
     ast: &'a Option<AstNode>,
     bytecode: &'a Vec<BytecodeJson>,
     steps: &'a Vec<StepJson>,
     error: &'a Option<String>,
+    error_offset: &'a Option<usize>,
 }
 
 #[derive(Serialize)]
@@ -29,6 +33,7 @@ pub struct BytecodeJson {
 pub struct TraceCollector {
     steps: Vec<StepJson>,
     error: Option<String>,
+    error_offset: Option<usize>,
 }
 
 impl TraceCollector {
@@ -36,6 +41,7 @@ impl TraceCollector {
         TraceCollector {
             steps: Vec::new(),
             error: None,
+            error_offset: None,
         }
     }
 
@@ -45,6 +51,7 @@ impl TraceCollector {
             bytecode,
             steps: &self.steps,
             error: &self.error,
+            error_offset: &self.error_offset,
         };
         serde_json::to_string_pretty(&trace).unwrap_or_else(|_| "{}".to_string())
     }
@@ -58,16 +65,29 @@ impl EventSink for TraceCollector {
                 line,
                 instruction,
                 stack,
+                popped,
+                pushed,
             }) => {
                 self.steps.push(StepJson {
                     offset,
                     line,
                     instruction,
                     stack,
+                    popped,
+                    pushed,
                 });
             }
-            Event::Vm(VmEvent::Error { message, line })
-            | Event::Scan(ScanEvent::Error { message, line })
+            Event::Vm(VmEvent::Error {
+                message,
+                line,
+                offset,
+            }) => {
+                if self.error.is_none() {
+                    self.error = Some(format!("Linha {}: {}", line, message));
+                    self.error_offset = Some(offset);
+                }
+            }
+            Event::Scan(ScanEvent::Error { message, line })
             | Event::Parse(ParseEvent::Error { message, line })
             | Event::Resolve(ResolveEvent::Error { message, line })
             | Event::Compile(CompileEvent::Error { message, line }) => {

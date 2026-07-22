@@ -21,15 +21,45 @@ impl Vm {
         function: &Rc<Function>,
         op: BinaryOpCode,
     ) -> Result<(), VmError> {
-        let b = self.pop_number(function)?;
-        let a = self.pop_number(function)?;
-        let result = match op {
-            BinaryOpCode::Add => a + b,
-            BinaryOpCode::Subtract => a - b,
-            BinaryOpCode::Multiply => a * b,
-        };
-        self.push(Value::Number(result));
-        Ok(())
+        match op {
+            BinaryOpCode::Add => self.op_add(function),
+            BinaryOpCode::Subtract => {
+                let b = self.pop_number(function)?;
+                let a = self.pop_number(function)?;
+                self.push(Value::Number(a - b));
+                Ok(())
+            }
+            BinaryOpCode::Multiply => {
+                let b = self.pop_number(function)?;
+                let a = self.pop_number(function)?;
+                self.push(Value::Number(a * b));
+                Ok(())
+            }
+        }
+    }
+
+    fn op_add(&mut self, function: &Rc<Function>) -> Result<(), VmError> {
+        let b = self.pop(function)?;
+        let a = self.pop(function)?;
+        match (a, b) {
+            (Value::Number(a), Value::Number(b)) => {
+                self.push(Value::Number(a + b));
+                Ok(())
+            }
+            (Value::Str(a), Value::Str(b)) => {
+                self.push(Value::Str(format!("{}{}", a, b)));
+                Ok(())
+            }
+            (a, b) => Err(VmError::new(
+                format!(
+                    "O operador '+' funciona com dois números (soma) ou duas strings (concatenação), mas recebi '{}' e '{}'.",
+                    a.to_display(),
+                    b.to_display()
+                ),
+                self.cur_line(function),
+                self.cur_offset(),
+            )),
+        }
     }
 
     pub(crate) fn op_divide(&mut self, function: &Rc<Function>) -> Result<(), VmError> {
@@ -39,6 +69,7 @@ impl Vm {
             return Err(VmError::new(
                 "Não é possível dividir por zero.".to_string(),
                 self.cur_line(function),
+                self.cur_offset(),
             ));
         }
         self.push(Value::Number(a / b));
@@ -85,6 +116,7 @@ impl Vm {
                     name, name
                 ),
                 self.cur_line(function),
+                self.cur_offset(),
             )),
         }
     }
@@ -102,6 +134,7 @@ impl Vm {
                     name, name
                 ),
                 self.cur_line(function),
+                self.cur_offset(),
             ))
         }
     }
@@ -144,6 +177,7 @@ impl Vm {
                     other.to_display()
                 ),
                 self.cur_line(function),
+                self.cur_offset(),
             )),
         }
     }
@@ -219,6 +253,7 @@ impl Vm {
                             class.name, class.name
                         ),
                         self.cur_line(function),
+                        self.cur_offset(),
                     ));
                 }
                 self.stack.truncate(base);
@@ -243,6 +278,7 @@ impl Vm {
                     what, name, expected, received
                 ),
                 self.cur_line(function),
+                self.cur_offset(),
             ));
         }
         Ok(())
@@ -275,6 +311,7 @@ impl Vm {
                 available_attributes(&borrowed.class.attributes)
             ),
             self.cur_line(function),
+            self.cur_offset(),
         ))
     }
 
@@ -301,6 +338,7 @@ impl Vm {
                     name
                 ),
                 self.cur_line(function),
+                self.cur_offset(),
             ))
         }
     }
@@ -313,6 +351,7 @@ impl Vm {
                 return Err(VmError::new(
                     "Erro interno: esperava um método no pool para o 'super'.".to_string(),
                     self.cur_line(function),
+                    self.cur_offset(),
                 ));
             }
         };
@@ -326,6 +365,7 @@ impl Vm {
                         other.to_display()
                     ),
                     self.cur_line(function),
+                    self.cur_offset(),
                 ));
             }
         };
@@ -354,6 +394,7 @@ impl Vm {
                     other.to_display()
                 ),
                 self.cur_line(function),
+                self.cur_offset(),
             )),
         }
     }
