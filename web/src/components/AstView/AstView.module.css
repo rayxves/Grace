@@ -1,7 +1,7 @@
 .panel {
 	display: flex;
 	flex-direction: column;
-	flex: 3;
+	flex: 1;
 	min-height: 0;
 	background: var(--color-surface);
 	border: 1px solid var(--color-border);
@@ -73,7 +73,7 @@
 .nodeLabel {
 	fill: var(--color-node-text);
 	font-family: var(--font-mono);
-	font-size: 0.75rem;
+	font-size: 0.9375rem;
 	font-weight: 600;
 	stroke: none;
 }
@@ -84,7 +84,7 @@
 
 .nodeKind {
 	fill: var(--color-node-kind);
-	font-size: 0.725rem;
+	font-size: 0.8125rem;
 	font-weight: 400;
 	stroke: none;
 }

@@ -2,13 +2,23 @@ import { useCallback, useMemo, useState } from "react";
 import { Toolbar } from "./components/Toolbar/Toolbar";
 import { CodeEditor } from "./components/CodeEditor/CodeEditor";
 import { AstView } from "./components/AstView/AstView";
+import { BytecodeView } from "./components/BytecodeView/BytecodeView";
 import { StackView } from "./components/StackView/StackView";
+import { ViewTabs } from "./components/ViewTabs/ViewTabs";
 import { usePlayer } from "./hooks/usePlayer";
 import { useTheme } from "./hooks/useTheme";
 import { runGrace } from "./lib/grace";
 import { collectOutput } from "./lib/instructions";
+import { parseErrorLine } from "./lib/errors";
 import type { Trace } from "./types";
 import styles from "./App.module.css";
+
+type StructureView = "bytecode" | "tree";
+
+const STRUCTURE_VIEW_TABS: { id: StructureView; label: string }[] = [
+	{ id: "bytecode", label: "bytecode" },
+	{ id: "tree", label: "árvore" },
+];
 
 const DEFAULT_SOURCE = `var x = 10;
 imprima(x + 5);
@@ -21,6 +31,7 @@ enquanto (contador < 3) {
 `;
 
 const EMPTY_STEPS: Trace["steps"] = [];
+const EMPTY_BYTECODE: Trace["bytecode"] = [];
 
 function App() {
 	const { theme, toggleTheme } = useTheme();
@@ -28,6 +39,7 @@ function App() {
 	const [trace, setTrace] = useState<Trace | null>(null);
 	const [running, setRunning] = useState(false);
 	const [runtimeError, setRuntimeError] = useState<string | null>(null);
+	const [structureView, setStructureView] = useState<StructureView>("bytecode");
 
 	const steps = trace?.steps ?? EMPTY_STEPS;
 	const player = usePlayer(steps);
@@ -50,13 +62,16 @@ function App() {
 	const currentLine = player.currentStep?.line ?? null;
 	const errorMessage = runtimeError ?? trace?.error ?? null;
 
-	const errorLine = useMemo(() => {
-		const match = errorMessage ? /^Linha (\d+)/.exec(errorMessage) : null;
-		return match ? Number(match[1]) : null;
-	}, [errorMessage]);
+	const errorLine = useMemo(
+		() => parseErrorLine(errorMessage),
+		[errorMessage],
+	);
 
 	const atLastStep = hasTrace && player.index >= player.total - 1;
 	const errorReached = errorMessage !== null && (!hasTrace || atLastStep);
+
+	const gatedCurrentLine = hasTrace ? currentLine : null;
+	const gatedErrorLine = errorReached ? errorLine : null;
 
 	const previousStep =
 		hasTrace && player.index > 0 ? steps[player.index - 1] : null;
@@ -90,18 +105,34 @@ function App() {
 					<CodeEditor
 						value={source}
 						onChange={setSource}
-						currentLine={hasTrace ? currentLine : null}
-						errorLine={errorReached ? errorLine : null}
+						currentLine={gatedCurrentLine}
+						errorLine={gatedErrorLine}
 					/>
 				</div>
 				<div className={styles.visualColumn}>
-					<AstView
-						ast={trace?.ast ?? null}
-						steps={steps}
-						stepIndex={player.index}
-						currentLine={hasTrace ? currentLine : null}
-						errorLine={errorReached ? errorLine : null}
-					/>
+					<div className={styles.structurePanel}>
+						<ViewTabs<StructureView>
+							tabs={STRUCTURE_VIEW_TABS}
+							activeId={structureView}
+							onSelect={setStructureView}
+						/>
+						{structureView === "tree" ? (
+							<AstView
+								ast={trace?.ast ?? null}
+								steps={steps}
+								stepIndex={player.index}
+								currentLine={gatedCurrentLine}
+								errorLine={gatedErrorLine}
+							/>
+						) : (
+							<BytecodeView
+								bytecode={trace?.bytecode ?? EMPTY_BYTECODE}
+								steps={steps}
+								stepIndex={player.index}
+								errorLine={gatedErrorLine}
+							/>
+						)}
+					</div>
 					<StackView
 						step={hasTrace ? player.currentStep : null}
 						previousStep={previousStep}

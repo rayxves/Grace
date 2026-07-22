@@ -6,7 +6,14 @@ export interface AstNode {
 	children: AstNode[];
 }
 
+export interface BytecodeInstruction {
+	offset: number;
+	text: string;
+	line: number;
+}
+
 export interface Step {
+	offset: number;
 	line: number;
 	instruction: string;
 	stack: string[];
@@ -14,6 +21,7 @@ export interface Step {
 
 export interface Trace {
 	ast: AstNode | null;
+	bytecode: BytecodeInstruction[];
 	steps: Step[];
 	error: string | null;
 }
