@@ -11,19 +11,19 @@ use crate::{
 impl StmtVisitor for Compiler {
     type Output = ();
 
-    fn visit_print(&mut self, _id: usize, expr: &Expression, line: u64) -> Self::Output {
+    fn visit_print(&mut self, id: usize, expr: &Expression, line: u64) -> Self::Output {
         expr.accept(self);
-        self.emit_op(OpCode::Print, line);
+        self.emit_op(OpCode::Print, line, Some(id));
     }
 
-    fn visit_expr_statement(&mut self, _id: usize, expr: &Expression, line: u64) -> Self::Output {
+    fn visit_expr_statement(&mut self, id: usize, expr: &Expression, line: u64) -> Self::Output {
         expr.accept(self);
-        self.emit_op(OpCode::Pop, line);
+        self.emit_op(OpCode::Pop, line, Some(id));
     }
 
     fn visit_var(
         &mut self,
-        _id: usize,
+        id: usize,
         name: &String,
         expr: Option<&Expression>,
         line: u64,
@@ -31,40 +31,40 @@ impl StmtVisitor for Compiler {
         if let Some(e) = expr {
             e.accept(self);
         } else {
-            self.emit_op(OpCode::Null, line);
+            self.emit_op(OpCode::Null, line, Some(id));
         }
         if self.scope_depth > 0 {
             self.add_local(name.to_string());
         } else {
-            self.emit_named(OpCode::DefineGlobal, Value::Str(name.to_string()), line);
+            self.emit_named(OpCode::DefineGlobal, Value::Str(name.to_string()), line, Some(id));
         }
     }
 
-    fn visit_block(&mut self, _id: usize, statements: &Vec<Statement>, line: u64) -> Self::Output {
+    fn visit_block(&mut self, id: usize, statements: &Vec<Statement>, line: u64) -> Self::Output {
         self.begin_scope();
         for stmt in statements {
             stmt.accept(self);
         }
         let end_line = statements.last().map(|s| s.line()).unwrap_or(line);
-        self.end_scope(end_line);
+        self.end_scope(end_line, Some(id));
     }
 
     fn visit_if(
         &mut self,
-        _id: usize,
+        id: usize,
         expr: &Expression,
         stmt: &Statement,
         else_stmt: Option<&Statement>,
         line: u64,
     ) -> Self::Output {
         expr.accept(self);
-        let then_jump = self.emit_jump(OpCode::JumpIfFalse, line);
-        self.emit_op(OpCode::Pop, line);
+        let then_jump = self.emit_jump(OpCode::JumpIfFalse, line, Some(id));
+        self.emit_op(OpCode::Pop, line, Some(id));
         stmt.accept(self);
 
-        let else_jump = self.emit_jump(OpCode::Jump, line);
+        let else_jump = self.emit_jump(OpCode::Jump, line, Some(id));
         self.patch_jump(then_jump);
-        self.emit_op(OpCode::Pop, line);
+        self.emit_op(OpCode::Pop, line, Some(id));
         if let Some(e) = else_stmt {
             e.accept(self);
         }
@@ -73,49 +73,49 @@ impl StmtVisitor for Compiler {
 
     fn visit_while(
         &mut self,
-        _id: usize,
+        id: usize,
         expr: &Expression,
         stmt: &Statement,
         line: u64,
     ) -> Self::Output {
         let loop_start = self.chunk.code.len();
         expr.accept(self);
-        let exit_jump = self.emit_jump(OpCode::JumpIfFalse, line);
-        self.emit_op(OpCode::Pop, line);
+        let exit_jump = self.emit_jump(OpCode::JumpIfFalse, line, Some(id));
+        self.emit_op(OpCode::Pop, line, Some(id));
         stmt.accept(self);
-        self.emit_loop(loop_start, line);
+        self.emit_loop(loop_start, line, Some(id));
         self.patch_jump(exit_jump);
-        self.emit_op(OpCode::Pop, line);
+        self.emit_op(OpCode::Pop, line, Some(id));
     }
 
     fn visit_function(
         &mut self,
-        _id: usize,
+        id: usize,
         name: &String,
         params: &Vec<String>,
         stmts: &Vec<Statement>,
         line: u64,
     ) -> Self::Output {
         let function = self.compile_function(name, params, stmts, line);
-        self.emit_constant(Value::Function(Rc::new(function)), line);
+        self.emit_constant(Value::Function(Rc::new(function)), line, Some(id));
         if self.scope_depth > 0 {
             self.add_local(name.to_string());
         } else {
-            self.emit_named(OpCode::DefineGlobal, Value::Str(name.to_string()), line);
+            self.emit_named(OpCode::DefineGlobal, Value::Str(name.to_string()), line, Some(id));
         }
     }
 
-    fn visit_return(&mut self, _id: usize, line: u64, value: Option<&Expression>) -> Self::Output {
+    fn visit_return(&mut self, id: usize, line: u64, value: Option<&Expression>) -> Self::Output {
         match value {
             Some(v) => v.accept(self),
-            None => self.emit_op(OpCode::Null, line),
+            None => self.emit_op(OpCode::Null, line, Some(id)),
         }
-        self.emit_op(OpCode::Return, line);
+        self.emit_op(OpCode::Return, line, Some(id));
     }
 
     fn visit_class(
         &mut self,
-        _id: usize,
+        id: usize,
         name: &String,
         line: u64,
         superclass: &Option<Expression>,
@@ -138,11 +138,11 @@ impl StmtVisitor for Compiler {
         });
         self.classes.insert(name.clone(), class.clone());
 
-        self.emit_constant(Value::Class(class), line);
+        self.emit_constant(Value::Class(class), line, Some(id));
         if self.scope_depth > 0 {
             self.add_local(name.to_string());
         } else {
-            self.emit_named(OpCode::DefineGlobal, Value::Str(name.to_string()), line);
+            self.emit_named(OpCode::DefineGlobal, Value::Str(name.to_string()), line, Some(id));
         }
     }
 }

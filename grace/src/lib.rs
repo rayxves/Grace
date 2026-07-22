@@ -88,7 +88,13 @@ fn build_bytecode_list(chunk: &chunk::Chunk) -> Vec<trace::BytecodeJson> {
             Some(opcode) => {
                 let text = chunk::debug::describe(chunk, opcode, offset);
                 let line = chunk.lines.get(offset).copied().unwrap_or(0);
-                list.push(trace::BytecodeJson { offset, text, line });
+                let node_id = chunk.node_ids.get(offset).copied().flatten();
+                list.push(trace::BytecodeJson {
+                    offset,
+                    text,
+                    line,
+                    node_id,
+                });
                 offset += opcode.size();
             }
             None => {

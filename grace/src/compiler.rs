@@ -62,9 +62,9 @@ impl Compiler {
         }));
     }
 
-    pub fn emit_op(&mut self, opcode: OpCode, line: u64) {
+    pub fn emit_op(&mut self, opcode: OpCode, line: u64, node_id: Option<usize>) {
         let offset = self.chunk.code.len();
-        self.chunk.append(opcode as u8, line);
+        self.chunk.append(opcode as u8, line, node_id);
         self.sink.borrow_mut().emit(Compile(CompileEvent::Emit {
             offset,
             opcode: opcode.description(),
@@ -72,24 +72,30 @@ impl Compiler {
         }));
     }
 
-    pub fn emit_with_operand(&mut self, opcode: OpCode, operand: u8, line: u64) {
-        self.emit_op(opcode, line);
-        self.chunk.append(operand, line);
+    pub fn emit_with_operand(
+        &mut self,
+        opcode: OpCode,
+        operand: u8,
+        line: u64,
+        node_id: Option<usize>,
+    ) {
+        self.emit_op(opcode, line, node_id);
+        self.chunk.append(operand, line, node_id);
     }
 
-    pub fn emit_constant(&mut self, value: Value, line: u64) {
+    pub fn emit_constant(&mut self, value: Value, line: u64, node_id: Option<usize>) {
         let index = self.chunk.add_constant(value);
-        self.emit_with_operand(OpCode::Constant, index as u8, line);
+        self.emit_with_operand(OpCode::Constant, index as u8, line, node_id);
     }
 
-    pub fn emit_named(&mut self, opcode: OpCode, value: Value, line: u64) {
+    pub fn emit_named(&mut self, opcode: OpCode, value: Value, line: u64, node_id: Option<usize>) {
         let index = self.chunk.add_constant(value);
-        self.emit_with_operand(opcode, index as u8, line);
+        self.emit_with_operand(opcode, index as u8, line, node_id);
     }
 
-    pub fn emit_jump(&mut self, opcode: OpCode, line: u64) -> usize {
-        self.emit_op(opcode, line);
-        self.chunk.append(0xff, line);
+    pub fn emit_jump(&mut self, opcode: OpCode, line: u64, node_id: Option<usize>) -> usize {
+        self.emit_op(opcode, line, node_id);
+        self.chunk.append(0xff, line, node_id);
         self.chunk.code.len() - 1
     }
 
@@ -98,21 +104,21 @@ impl Compiler {
         self.chunk.code[placeholder] = jump as u8;
     }
 
-    pub fn emit_loop(&mut self, loop_start: usize, line: u64) {
-        self.emit_op(OpCode::Loop, line);
+    pub fn emit_loop(&mut self, loop_start: usize, line: u64, node_id: Option<usize>) {
+        self.emit_op(OpCode::Loop, line, node_id);
         let offset = self.chunk.code.len() + 1 - loop_start;
-        self.chunk.append(offset as u8, line);
+        self.chunk.append(offset as u8, line, node_id);
     }
 
     pub fn begin_scope(&mut self) {
         self.scope_depth += 1;
     }
 
-    pub fn end_scope(&mut self, line: u64) {
+    pub fn end_scope(&mut self, line: u64, node_id: Option<usize>) {
         self.scope_depth -= 1;
         while let Some(local) = self.locals.last() {
             if local.depth > self.scope_depth {
-                self.emit_op(OpCode::Pop, line);
+                self.emit_op(OpCode::Pop, line, node_id);
                 self.locals.pop();
             } else {
                 break;
@@ -141,7 +147,7 @@ impl Compiler {
             stmt.accept(self);
         }
         let last_line = statements.last().map(|s| s.line()).unwrap_or(1);
-        self.emit_op(OpCode::Return, last_line);
+        self.emit_op(OpCode::Return, last_line, None);
     }
 
     pub fn into_chunk(self) -> Chunk {
@@ -169,11 +175,11 @@ impl Compiler {
 
         let end_line = body.last().map(|s| s.line()).unwrap_or(line);
         if name == "construtor" {
-            fn_compiler.emit_with_operand(OpCode::GetLocal, 0, end_line);
+            fn_compiler.emit_with_operand(OpCode::GetLocal, 0, end_line, None);
         } else {
-            fn_compiler.emit_op(OpCode::Null, end_line);
+            fn_compiler.emit_op(OpCode::Null, end_line, None);
         }
-        fn_compiler.emit_op(OpCode::Return, end_line);
+        fn_compiler.emit_op(OpCode::Return, end_line, None);
 
         let fn_errors = fn_compiler.errors.clone();
         self.errors.extend(fn_errors);

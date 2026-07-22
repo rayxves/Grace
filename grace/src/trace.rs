@@ -4,9 +4,11 @@ use crate::ast_serializer::AstNode;
 use crate::events::{CompileEvent, Event, EventSink, ParseEvent, ResolveEvent, ScanEvent, VmEvent};
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct StepJson {
     pub offset: usize,
     pub line: u64,
+    pub node_id: Option<usize>,
     pub instruction: String,
     pub stack: Vec<String>,
     pub popped: Vec<String>,
@@ -24,10 +26,12 @@ struct TraceView<'a> {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BytecodeJson {
     pub offset: usize,
     pub text: String,
     pub line: u64,
+    pub node_id: Option<usize>,
 }
 
 pub struct TraceCollector {
@@ -63,6 +67,7 @@ impl EventSink for TraceCollector {
             Event::Vm(VmEvent::Step {
                 offset,
                 line,
+                node_id,
                 instruction,
                 stack,
                 popped,
@@ -71,6 +76,7 @@ impl EventSink for TraceCollector {
                 self.steps.push(StepJson {
                     offset,
                     line,
+                    node_id,
                     instruction,
                     stack,
                     popped,

@@ -69,6 +69,12 @@ impl Vm {
                 .get(self.frame().ip)
                 .copied()
                 .unwrap_or(0);
+            let step_node_id = function
+                .chunk
+                .node_ids
+                .get(self.frame().ip)
+                .copied()
+                .flatten();
             let byte = self.read_byte(&function);
             let opcode = OpCode::from_byte(byte);
             let step_name = opcode
@@ -142,11 +148,11 @@ impl Vm {
                     ));
                 }
             }
-            self.emit_step(step_offset, step_line, step_name);
+            self.emit_step(step_offset, step_line, step_node_id, step_name);
         }
     }
 
-    fn emit_step(&self, offset: usize, line: u64, instruction: String) {
+    fn emit_step(&self, offset: usize, line: u64, node_id: Option<usize>, instruction: String) {
         let stack: Vec<String> = self.stack.iter().skip(1).map(|v| v.to_display()).collect();
         let popped: Vec<String> = self
             .popped_this_step
@@ -162,6 +168,7 @@ impl Vm {
         self.sink.borrow_mut().emit(Event::Vm(VmEvent::Step {
             offset,
             line,
+            node_id,
             instruction,
             stack,
             popped,

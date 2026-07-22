@@ -10,11 +10,13 @@ export interface BytecodeInstruction {
 	offset: number;
 	text: string;
 	line: number;
+	nodeId: number | null;
 }
 
 export interface Step {
 	offset: number;
 	line: number;
+	nodeId: number | null;
 	instruction: string;
 	stack: string[];
 	popped: string[];

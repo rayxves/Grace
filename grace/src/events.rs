@@ -61,6 +61,7 @@ pub enum VmEvent {
     Step {
         offset: usize,
         line: u64,
+        node_id: Option<usize>,
         instruction: String,
         stack: Vec<String>,
         popped: Vec<String>,
