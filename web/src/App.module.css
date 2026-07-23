@@ -44,6 +44,9 @@
 }
 
 .compareToggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
 	padding: 0.3125rem 0.75rem;
 	border-radius: var(--radius-md);
 	border: 1px solid var(--color-border);

@@ -1,3 +1,13 @@
+import {
+	ChevronLeft,
+	ChevronRight,
+	ChevronsRight,
+	Moon,
+	Pause,
+	Play,
+	SkipBack,
+	Sun,
+} from "lucide-react";
 import type { Theme } from "../../hooks/useTheme";
 import { PLAYER_SPEEDS } from "../../hooks/usePlayer";
 import type { Step } from "../../types";
@@ -25,6 +35,8 @@ interface ToolbarProps {
 	theme: Theme;
 	onToggleTheme: () => void;
 }
+
+const ICON_SIZE = "1.125rem";
 
 const SPEED_TABS = PLAYER_SPEEDS.map((speed) => ({
 	id: String(speed),
@@ -86,7 +98,7 @@ export function Toolbar({
 							disabled={!hasTrace || atStart}
 							title="reiniciar"
 						>
-							⏮
+							<SkipBack size={ICON_SIZE} />
 						</button>
 						<button
 							className={styles.controlBack}
@@ -94,7 +106,8 @@ export function Toolbar({
 							disabled={!hasTrace || atStart}
 							title="voltar um passo (seta esquerda)"
 						>
-							◀ voltar
+							<ChevronLeft size={ICON_SIZE} />
+							voltar
 						</button>
 						<button
 							className={styles.control}
@@ -102,7 +115,11 @@ export function Toolbar({
 							disabled={!hasTrace || atEnd}
 							title={playing ? "pausar (espaço)" : "correr (espaço)"}
 						>
-							{playing ? "⏸" : "▶"}
+							{playing ? (
+								<Pause size={ICON_SIZE} />
+							) : (
+								<Play size={ICON_SIZE} />
+							)}
 						</button>
 						<button
 							className={styles.control}
@@ -110,7 +127,7 @@ export function Toolbar({
 							disabled={!hasTrace || atEnd}
 							title="próximo passo (seta direita)"
 						>
-							→
+							<ChevronRight size={ICON_SIZE} />
 						</button>
 						<button
 							className={styles.controlLabeled}
@@ -118,7 +135,8 @@ export function Toolbar({
 							disabled={!hasTrace || atEnd}
 							title="avançar até a próxima linha"
 						>
-							linha →
+							linha
+							<ChevronsRight size={ICON_SIZE} />
 						</button>
 					</div>
 
@@ -134,7 +152,11 @@ export function Toolbar({
 					onClick={onToggleTheme}
 					title={theme === "light" ? "tema escuro" : "tema claro"}
 				>
-					{theme === "light" ? "🌙" : "☀️"}
+					{theme === "light" ? (
+						<Moon size={ICON_SIZE} />
+					) : (
+						<Sun size={ICON_SIZE} />
+					)}
 				</button>
 			</div>
 

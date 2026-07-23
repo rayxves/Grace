@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { Columns2 } from "lucide-react";
 import { Toolbar } from "./components/Toolbar/Toolbar";
 import { CodeEditor } from "./components/CodeEditor/CodeEditor";
 import { AstView } from "./components/AstView/AstView";
@@ -197,7 +198,8 @@ function App() {
 								onClick={toggleCompareMode}
 								title="ver árvore e bytecode lado a lado"
 							>
-								⇄ comparar
+								<Columns2 size="1rem" />
+								comparar
 							</button>
 						</div>
 						{structureContent}

@@ -72,6 +72,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	gap: 0.25rem;
 	min-width: 2rem;
 	height: 2rem;
 	padding: 0 0.5rem;
@@ -79,6 +80,10 @@
 	font-size: 0.875rem;
 	color: var(--color-heading);
 	transition: background 0.15s ease;
+}
+
+.control svg {
+	flex-shrink: 0;
 }
 
 .controlLabeled {
