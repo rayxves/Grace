@@ -97,9 +97,6 @@
 	stroke: none;
 }
 
-.nodeActive .nodeLabel {
-	fill: var(--color-node-active-stroke);
-}
 
 .nodeKind {
 	fill: var(--color-node-kind);
