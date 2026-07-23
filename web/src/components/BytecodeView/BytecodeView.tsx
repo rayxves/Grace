@@ -10,6 +10,8 @@ interface BytecodeViewProps {
 	errorOffset: number | null;
 	hoveredNodeId: number | null;
 	onHoverNode: (nodeId: number | null) => void;
+	currentOffset?: number | null;
+	pendingOffsets?: ReadonlySet<number> | null;
 }
 
 export function BytecodeView({
@@ -19,11 +21,14 @@ export function BytecodeView({
 	errorOffset,
 	hoveredNodeId,
 	onHoverNode,
+	currentOffset,
+	pendingOffsets = null,
 }: Readonly<BytecodeViewProps>) {
 	const currentRowRef = useRef<HTMLDivElement>(null);
 
-	const currentOffset = steps[stepIndex]?.offset ?? null;
-	const highlightOffset = errorOffset ?? currentOffset;
+	const resolvedCurrentOffset =
+		currentOffset !== undefined ? currentOffset : (steps[stepIndex]?.offset ?? null);
+	const highlightOffset = errorOffset ?? resolvedCurrentOffset;
 
 	const executedOffsets = useMemo(() => {
 		const offsets = new Set<number>();
@@ -63,6 +68,7 @@ export function BytecodeView({
 										!isCurrent &&
 										instruction.nodeId !== null &&
 										instruction.nodeId === hoveredNodeId;
+									const isPending = pendingOffsets?.has(instruction.offset) ?? false;
 									let highlightClass = "";
 									if (isError) {
 										highlightClass = styles.rowError;
@@ -74,6 +80,7 @@ export function BytecodeView({
 										highlightClass,
 										isExecuted ? styles.rowExecuted : "",
 										isHovered ? styles.rowHovered : "",
+										isPending ? styles.rowPending : "",
 									].join(" ");
 
 									return (

@@ -41,6 +41,8 @@
 	--color-node-kind: #8a8695;
 	--color-node-active-fill: rgba(139, 47, 214, 0.12);
 	--color-node-active-stroke: #8b2fd6;
+	--color-node-trail-fill: rgba(139, 47, 214, 0.05);
+	--color-node-trail-stroke: rgba(139, 47, 214, 0.45);
 	--color-node-collapsed-fill: #f0eff4;
 	--color-tree-link: #d8d6df;
 

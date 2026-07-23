@@ -114,6 +114,16 @@
 	background: var(--color-accent-soft);
 }
 
+.rowPending {
+	border-style: dashed;
+	border-color: var(--color-border-strong);
+}
+
+.rowPending .text {
+	color: var(--color-text-muted);
+	font-style: italic;
+}
+
 .emptyState {
 	flex: 1;
 	display: flex;

@@ -10,8 +10,7 @@ import {
 } from "lucide-react";
 import type { Theme } from "../../hooks/useTheme";
 import { PLAYER_SPEEDS } from "../../hooks/usePlayer";
-import type { Step } from "../../types";
-import { Scrubber } from "../Scrubber/Scrubber";
+import { Scrubber, type ScrubberMarker } from "../Scrubber/Scrubber";
 import { ViewTabs } from "../ViewTabs/ViewTabs";
 import styles from "./Toolbar.module.css";
 
@@ -19,7 +18,8 @@ interface ToolbarProps {
 	onRun: () => void;
 	running: boolean;
 	hasTrace: boolean;
-	steps: Step[];
+	markers: ScrubberMarker[];
+	mode: "execution" | "compilation";
 	playing: boolean;
 	speed: number;
 	stepIndex: number;
@@ -47,7 +47,8 @@ export function Toolbar({
 	onRun,
 	running,
 	hasTrace,
-	steps,
+	markers,
+	mode,
 	playing,
 	speed,
 	stepIndex,
@@ -79,7 +80,9 @@ export function Toolbar({
 			<div className={styles.topRow}>
 				<div className={styles.brand}>
 					<span className={styles.logo}>Grace</span>
-					<span className={styles.subtitle}>visualizador de execução</span>
+					<span className={styles.subtitle}>
+						{mode === "compilation" ? "visualizador de compilação" : "visualizador de execução"}
+					</span>
 				</div>
 
 				<div className={styles.controls}>
@@ -129,15 +132,17 @@ export function Toolbar({
 						>
 							<ChevronRight size={ICON_SIZE} />
 						</button>
-						<button
-							className={styles.controlLabeled}
-							onClick={onNextLine}
-							disabled={!hasTrace || atEnd}
-							title="avançar até a próxima linha"
-						>
-							linha
-							<ChevronsRight size={ICON_SIZE} />
-						</button>
+						{mode === "execution" && (
+							<button
+								className={styles.controlLabeled}
+								onClick={onNextLine}
+								disabled={!hasTrace || atEnd}
+								title="avançar até a próxima linha"
+							>
+								linha
+								<ChevronsRight size={ICON_SIZE} />
+							</button>
+						)}
 					</div>
 
 					<ViewTabs<string>
@@ -161,7 +166,12 @@ export function Toolbar({
 			</div>
 
 			<div className={styles.scrubberRow}>
-				<Scrubber steps={steps} index={stepIndex} onSeek={onSeek} />
+				<Scrubber
+					length={totalSteps}
+					index={stepIndex}
+					onSeek={onSeek}
+					markers={markers}
+				/>
 				<span className={styles.position}>{positionText}</span>
 			</div>
 		</header>

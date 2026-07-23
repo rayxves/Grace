@@ -19,6 +19,8 @@ interface AstViewProps {
 	errorLine: number | null;
 	hoveredNodeId: number | null;
 	onHoverNode: (nodeId: number | null) => void;
+	trailNodeIds?: ReadonlySet<number> | null;
+	revealedNodeIds?: ReadonlySet<number> | null;
 }
 
 const NODE_SIZE = { x: 130, y: 110 };
@@ -31,6 +33,7 @@ function AstNodeElement(
 	errorNodeId: number | null,
 	hoveredNodeId: number | null,
 	onHoverNode: (nodeId: number | null) => void,
+	trailNodeIds: ReadonlySet<number> | null,
 ) {
 	const nodeId =
 		typeof nodeDatum.attributes?.nodeId === "number"
@@ -39,6 +42,11 @@ function AstNodeElement(
 	const hasError = errorNodeId !== null && nodeId === errorNodeId;
 	const isActive =
 		!hasError && currentNodeId !== null && nodeId === currentNodeId;
+	const isTrail =
+		!hasError &&
+		!isActive &&
+		nodeId !== null &&
+		(trailNodeIds?.has(nodeId) ?? false);
 	const isHovered =
 		!hasError && !isActive && nodeId !== null && nodeId === hoveredNodeId;
 	const isCollapsed =
@@ -48,6 +56,7 @@ function AstNodeElement(
 		styles.node,
 		hasError ? styles.nodeError : "",
 		isActive ? styles.nodeActive : "",
+		isTrail ? styles.nodeTrail : "",
 		isHovered ? styles.nodeHovered : "",
 		isCollapsed ? styles.nodeCollapsed : "",
 	].join(" ");
@@ -83,6 +92,8 @@ export function AstView({
 	errorLine,
 	hoveredNodeId,
 	onHoverNode,
+	trailNodeIds = null,
+	revealedNodeIds = null,
 }: Readonly<AstViewProps>) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const treeRef = useRef<Tree>(null);
@@ -101,10 +112,11 @@ export function AstView({
 		return () => observer.disconnect();
 	}, []);
 
-	const revealedIds = useMemo(
+	const computedRevealedIds = useMemo(
 		() => revealedNodeIdsUpTo(steps, stepIndex),
 		[steps, stepIndex],
 	);
+	const revealedIds = revealedNodeIds ?? computedRevealedIds;
 
 	const treeData = useMemo(
 		() =>
@@ -154,6 +166,7 @@ export function AstView({
 								errorNodeId,
 								hoveredNodeId,
 								onHoverNode,
+								trailNodeIds,
 							)
 						}
 					/>

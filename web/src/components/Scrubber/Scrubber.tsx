@@ -1,32 +1,25 @@
-import { useMemo } from "react";
-import type { Step } from "../../types";
 import styles from "./Scrubber.module.css";
 
-interface ScrubberProps {
-	steps: Step[];
-	index: number;
-	onSeek: (index: number) => void;
-}
-
-interface Marker {
+export interface ScrubberMarker {
 	index: number;
 	kind: "print" | "loop";
+	title: string;
 }
 
-export function Scrubber({ steps, index, onSeek }: Readonly<ScrubberProps>) {
-	const lastIndex = Math.max(0, steps.length - 1);
+interface ScrubberProps {
+	length: number;
+	index: number;
+	onSeek: (index: number) => void;
+	markers?: ScrubberMarker[];
+}
 
-	const markers = useMemo(() => {
-		const found: Marker[] = [];
-		steps.forEach((step, i) => {
-			if (step.instruction === "imprime") {
-				found.push({ index: i, kind: "print" });
-			} else if (step.instruction === "volta (laço)") {
-				found.push({ index: i, kind: "loop" });
-			}
-		});
-		return found;
-	}, [steps]);
+export function Scrubber({
+	length,
+	index,
+	onSeek,
+	markers = [],
+}: Readonly<ScrubberProps>) {
+	const lastIndex = Math.max(0, length - 1);
 
 	return (
 		<div className={styles.scrubber}>
@@ -36,9 +29,9 @@ export function Scrubber({ steps, index, onSeek }: Readonly<ScrubberProps>) {
 				min={0}
 				max={lastIndex}
 				value={index}
-				disabled={steps.length === 0}
+				disabled={length === 0}
 				onChange={(event) => onSeek(Number(event.target.value))}
-				aria-label="navegar pelos passos da execução"
+				aria-label="navegar pelos passos"
 			/>
 			<div className={styles.markers}>
 				{markers.map((marker) => (
@@ -50,11 +43,7 @@ export function Scrubber({ steps, index, onSeek }: Readonly<ScrubberProps>) {
 						style={{
 							left: `${lastIndex > 0 ? (marker.index / lastIndex) * 100 : 0}%`,
 						}}
-						title={
-							marker.kind === "print"
-								? `passo ${marker.index + 1}: imprime`
-								: `passo ${marker.index + 1}: volta do laço`
-						}
+						title={marker.title}
 					/>
 				))}
 			</div>

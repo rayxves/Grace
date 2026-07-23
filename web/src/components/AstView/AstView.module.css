@@ -55,6 +55,12 @@
 	stroke-width: 0.1875rem;
 }
 
+.nodeTrail .nodeShape {
+	fill: var(--color-node-trail-fill);
+	stroke: var(--color-node-trail-stroke);
+	stroke-width: 0.125rem;
+}
+
 .nodeError .nodeShape {
 	fill: var(--color-node-error-fill);
 	stroke: var(--color-node-error-stroke);

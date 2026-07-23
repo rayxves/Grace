@@ -4,7 +4,7 @@ import { displayKind, displayLabel } from "./astLabels";
 
 function qualifies(
 	node: AstNode,
-	revealedIds: Set<number>,
+	revealedIds: ReadonlySet<number>,
 	errorNodeId: number | null,
 	errorLine: number | null,
 ): boolean {
@@ -20,7 +20,7 @@ function qualifies(
 
 export function buildRevealedTree(
 	node: AstNode,
-	revealedIds: Set<number>,
+	revealedIds: ReadonlySet<number>,
 	errorNodeId: number | null,
 	errorLine: number | null,
 ): RawNodeDatum | null {

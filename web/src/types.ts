@@ -37,10 +37,24 @@ export interface Step {
 	callStack: CallStackEntry[];
 }
 
+export type CompileStep =
+	| { kind: "enter"; nodeId: number; nodeKind: string; line: number | null }
+	| { kind: "exit"; nodeId: number }
+	| { kind: "emit"; nodeId: number | null; offset: number; opcode: string; line: number }
+	| { kind: "patch"; offset: number; target: number };
+
+export interface TokenInfo {
+	text: string;
+	kind: string;
+	line: number;
+}
+
 export interface Trace {
 	ast: AstNode | null;
 	bytecode: BytecodeInstruction[];
 	steps: Step[];
+	compileSteps: CompileStep[];
+	tokens: TokenInfo[];
 	error: string | null;
 	errorOffset: number | null;
 }

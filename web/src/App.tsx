@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
-import { Columns2 } from "lucide-react";
+import { Binary, Columns2 } from "lucide-react";
 import { Toolbar } from "./components/Toolbar/Toolbar";
 import { CodeEditor } from "./components/CodeEditor/CodeEditor";
 import { AstView } from "./components/AstView/AstView";
@@ -7,6 +7,7 @@ import { BytecodeView } from "./components/BytecodeView/BytecodeView";
 import { StackView } from "./components/StackView/StackView";
 import { VariablesView } from "./components/VariablesView/VariablesView";
 import { ViewTabs } from "./components/ViewTabs/ViewTabs";
+import type { ScrubberMarker } from "./components/Scrubber/Scrubber";
 import { usePlayer } from "./hooks/usePlayer";
 import { useTheme } from "./hooks/useTheme";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
@@ -14,6 +15,7 @@ import { useHighlightState } from "./hooks/useHighlightState";
 import { runGrace } from "./lib/grace";
 import { collectOutput } from "./lib/instructions";
 import { parseErrorLine } from "./lib/errors";
+import { computeCompileProgress, growBytecodeUpTo } from "./lib/compileProgress";
 import type { Trace } from "./types";
 import styles from "./App.module.css";
 
@@ -36,6 +38,7 @@ enquanto (contador < 3) {
 
 const EMPTY_STEPS: Trace["steps"] = [];
 const EMPTY_BYTECODE: Trace["bytecode"] = [];
+const EMPTY_COMPILE_STEPS: Trace["compileSteps"] = [];
 
 function App() {
 	const { theme, toggleTheme } = useTheme();
@@ -45,11 +48,14 @@ function App() {
 	const [runtimeError, setRuntimeError] = useState<string | null>(null);
 	const [structureView, setStructureView] = useState<StructureView>("bytecode");
 	const [compareMode, setCompareMode] = useState(false);
+	const [compileMode, setCompileMode] = useState(false);
 	const [hoveredNodeId, setHoveredNodeId] = useState<number | null>(null);
 
 	const steps = trace?.steps ?? EMPTY_STEPS;
 	const bytecode = trace?.bytecode ?? EMPTY_BYTECODE;
-	const player = usePlayer(steps);
+	const compileSteps = trace?.compileSteps ?? EMPTY_COMPILE_STEPS;
+	const player = usePlayer(steps, (step) => step.line);
+	const compilePlayer = usePlayer(compileSteps, () => null);
 
 	const run = useCallback(async () => {
 		setRunning(true);
@@ -66,6 +72,7 @@ function App() {
 	}, [source]);
 
 	const hasTrace = trace !== null && steps.length > 0;
+	const hasCompileTrace = trace !== null && compileSteps.length > 0;
 	const errorMessage = runtimeError ?? trace?.error ?? null;
 	const errorLine = useMemo(() => parseErrorLine(errorMessage), [errorMessage]);
 
@@ -97,6 +104,31 @@ function App() {
 	const previousStep =
 		hasTrace && player.index > 0 ? steps[player.index - 1] : null;
 
+	const compileProgress = useMemo(
+		() => computeCompileProgress(compileSteps, compilePlayer.index),
+		[compileSteps, compilePlayer.index],
+	);
+
+	const grownBytecode = useMemo(
+		() => growBytecodeUpTo(bytecode, compileSteps, compilePlayer.index),
+		[bytecode, compileSteps, compilePlayer.index],
+	);
+
+	const pendingOffsets = useMemo(
+		() => new Set(grownBytecode.filter((instr) => instr.pending).map((instr) => instr.offset)),
+		[grownBytecode],
+	);
+
+	const compileCurrentStep = compilePlayer.currentStep;
+	const compileCurrentOffset =
+		compileCurrentStep?.kind === "emit"
+			? compileCurrentStep.offset
+			: (grownBytecode.at(-1)?.offset ?? null);
+	const compileCurrentLine =
+		compileCurrentStep?.kind === "enter" || compileCurrentStep?.kind === "emit"
+			? compileCurrentStep.line
+			: null;
+
 	const selectStructureView = useCallback((view: StructureView) => {
 		setStructureView(view);
 		setCompareMode(false);
@@ -106,13 +138,32 @@ function App() {
 		setCompareMode((value) => !value);
 	}, []);
 
+	const toggleCompileMode = useCallback(() => {
+		setCompileMode((value) => !value);
+	}, []);
+
+	const activeHasTrace = compileMode ? hasCompileTrace : hasTrace;
+	const activeCurrentLine = compileMode ? compileCurrentLine : gatedCurrentLine;
+
 	useKeyboardShortcuts({
-		enabled: hasTrace,
-		onNext: player.next,
-		onPrevious: player.previous,
-		onTogglePlay: player.togglePlay,
-		onReset: player.reset,
+		enabled: activeHasTrace,
+		onNext: compileMode ? compilePlayer.next : player.next,
+		onPrevious: compileMode ? compilePlayer.previous : player.previous,
+		onTogglePlay: compileMode ? compilePlayer.togglePlay : player.togglePlay,
+		onReset: compileMode ? compilePlayer.reset : player.reset,
 	});
+
+	const executionMarkers = useMemo<ScrubberMarker[]>(() => {
+		const found: ScrubberMarker[] = [];
+		steps.forEach((step, i) => {
+			if (step.instruction === "imprime") {
+				found.push({ index: i, kind: "print", title: `passo ${i + 1}: imprime` });
+			} else if (step.instruction === "volta (laço)") {
+				found.push({ index: i, kind: "loop", title: `passo ${i + 1}: volta do laço` });
+			}
+		});
+		return found;
+	}, [steps]);
 
 	const astViewProps = {
 		ast: trace?.ast ?? null,
@@ -138,8 +189,39 @@ function App() {
 		? `${styles.compareToggle} ${styles.compareToggleActive}`
 		: styles.compareToggle;
 
+	const compileToggleClassName = compileMode
+		? `${styles.compareToggle} ${styles.compareToggleActive}`
+		: styles.compareToggle;
+
 	let structureContent: ReactNode;
-	if (compareMode) {
+	if (compileMode) {
+		structureContent = (
+			<div className={styles.compareRow}>
+				<AstView
+					ast={trace?.ast ?? null}
+					steps={steps}
+					stepIndex={player.index}
+					currentNodeId={compileProgress.currentNodeId}
+					errorNodeId={null}
+					errorLine={null}
+					hoveredNodeId={hoveredNodeId}
+					onHoverNode={setHoveredNodeId}
+					trailNodeIds={compileProgress.trailNodeIds}
+					revealedNodeIds={compileProgress.revealedNodeIds}
+				/>
+				<BytecodeView
+					bytecode={grownBytecode}
+					steps={steps}
+					stepIndex={player.index}
+					errorOffset={null}
+					hoveredNodeId={hoveredNodeId}
+					onHoverNode={setHoveredNodeId}
+					currentOffset={compileCurrentOffset}
+					pendingOffsets={pendingOffsets}
+				/>
+			</div>
+		);
+	} else if (compareMode) {
 		structureContent = (
 			<div className={styles.compareRow}>
 				<AstView {...astViewProps} />
@@ -157,20 +239,21 @@ function App() {
 			<Toolbar
 				onRun={run}
 				running={running}
-				hasTrace={hasTrace}
-				steps={steps}
-				playing={player.playing}
-				speed={player.speed}
-				stepIndex={player.index}
-				totalSteps={player.total}
-				currentLine={gatedCurrentLine}
-				onTogglePlay={player.togglePlay}
-				onPrevious={player.previous}
-				onNext={player.next}
-				onNextLine={player.nextLine}
-				onReset={player.reset}
-				onSeek={player.goTo}
-				onSpeedChange={player.setSpeed}
+				hasTrace={activeHasTrace}
+				markers={compileMode ? [] : executionMarkers}
+				mode={compileMode ? "compilation" : "execution"}
+				playing={compileMode ? compilePlayer.playing : player.playing}
+				speed={compileMode ? compilePlayer.speed : player.speed}
+				stepIndex={compileMode ? compilePlayer.index : player.index}
+				totalSteps={compileMode ? compilePlayer.total : player.total}
+				currentLine={activeCurrentLine}
+				onTogglePlay={compileMode ? compilePlayer.togglePlay : player.togglePlay}
+				onPrevious={compileMode ? compilePlayer.previous : player.previous}
+				onNext={compileMode ? compilePlayer.next : player.next}
+				onNextLine={compileMode ? compilePlayer.nextLine : player.nextLine}
+				onReset={compileMode ? compilePlayer.reset : player.reset}
+				onSeek={compileMode ? compilePlayer.goTo : player.goTo}
+				onSpeedChange={compileMode ? compilePlayer.setSpeed : player.setSpeed}
 				theme={theme}
 				onToggleTheme={toggleTheme}
 			/>
@@ -180,42 +263,61 @@ function App() {
 					<CodeEditor
 						value={source}
 						onChange={setSource}
-						currentLine={gatedCurrentLine}
-						errorLine={gatedErrorLine}
+						currentLine={activeCurrentLine}
+						errorLine={compileMode ? null : gatedErrorLine}
 						hoverLine={hoverLine}
 					/>
 				</div>
 				<div className={styles.visualColumn}>
 					<div className={styles.structurePanel}>
 						<div className={styles.structureHeader}>
-							<ViewTabs<StructureView>
-								tabs={STRUCTURE_VIEW_TABS}
-								activeId={structureView}
-								onSelect={selectStructureView}
-							/>
+							{compileMode ? (
+								<span className={styles.depthIndicator}>
+									profundidade da travessia: {compileProgress.depth}
+								</span>
+							) : (
+								<>
+									<ViewTabs<StructureView>
+										tabs={STRUCTURE_VIEW_TABS}
+										activeId={structureView}
+										onSelect={selectStructureView}
+									/>
+									<button
+										className={compareToggleClassName}
+										onClick={toggleCompareMode}
+										title="ver árvore e bytecode lado a lado"
+									>
+										<Columns2 size="1rem" />
+										comparar
+									</button>
+								</>
+							)}
 							<button
-								className={compareToggleClassName}
-								onClick={toggleCompareMode}
-								title="ver árvore e bytecode lado a lado"
+								className={compileToggleClassName}
+								onClick={toggleCompileMode}
+								disabled={!hasCompileTrace}
+								title="ver a árvore virando bytecode, passo a passo"
 							>
-								<Columns2 size="1rem" />
-								comparar
+								<Binary size="1rem" />
+								{compileMode ? "voltar à execução" : "modo compilação"}
 							</button>
 						</div>
 						{structureContent}
 					</div>
-					<div className={styles.bottomRow}>
-						<VariablesView
-							step={hasTrace ? player.currentStep : null}
-							previousStep={previousStep}
-						/>
-						<StackView
-							step={hasTrace ? player.currentStep : null}
-							output={output}
-							error={errorReached ? errorMessage : null}
-							hasBytecode={(trace?.bytecode.length ?? 0) > 0}
-						/>
-					</div>
+					{!compileMode && (
+						<div className={styles.bottomRow}>
+							<VariablesView
+								step={hasTrace ? player.currentStep : null}
+								previousStep={previousStep}
+							/>
+							<StackView
+								step={hasTrace ? player.currentStep : null}
+								output={output}
+								error={errorReached ? errorMessage : null}
+								hasBytecode={(trace?.bytecode.length ?? 0) > 0}
+							/>
+						</div>
+					)}
 				</div>
 			</main>
 		</div>
