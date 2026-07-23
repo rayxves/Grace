@@ -70,6 +70,11 @@
 	stroke-dasharray: 0.25rem;
 }
 
+.nodeHovered .nodeShape {
+	stroke: var(--color-accent);
+	stroke-width: 0.125rem;
+}
+
 .nodeLabel {
 	fill: var(--color-node-text);
 	font-family: var(--font-mono);

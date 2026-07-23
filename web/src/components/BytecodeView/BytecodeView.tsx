@@ -8,6 +8,8 @@ interface BytecodeViewProps {
 	steps: Step[];
 	stepIndex: number;
 	errorOffset: number | null;
+	hoveredNodeId: number | null;
+	onHoverNode: (nodeId: number | null) => void;
 }
 
 export function BytecodeView({
@@ -15,6 +17,8 @@ export function BytecodeView({
 	steps,
 	stepIndex,
 	errorOffset,
+	hoveredNodeId,
+	onHoverNode,
 }: Readonly<BytecodeViewProps>) {
 	const currentRowRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +59,10 @@ export function BytecodeView({
 									const isError = isCurrent && errorOffset !== null;
 									const isExecuted =
 										!isCurrent && executedOffsets.has(instruction.offset);
+									const isHovered =
+										!isCurrent &&
+										instruction.nodeId !== null &&
+										instruction.nodeId === hoveredNodeId;
 									let highlightClass = "";
 									if (isError) {
 										highlightClass = styles.rowError;
@@ -65,6 +73,7 @@ export function BytecodeView({
 										styles.row,
 										highlightClass,
 										isExecuted ? styles.rowExecuted : "",
+										isHovered ? styles.rowHovered : "",
 									].join(" ");
 
 									return (
@@ -72,6 +81,11 @@ export function BytecodeView({
 											key={instruction.offset}
 											ref={isCurrent ? currentRowRef : undefined}
 											className={rowClass}
+											onMouseEnter={() =>
+												instruction.nodeId !== null &&
+												onHoverNode(instruction.nodeId)
+											}
+											onMouseLeave={() => onHoverNode(null)}
 										>
 											<span className={styles.offset}>
 												{String(instruction.offset).padStart(4, "0")}

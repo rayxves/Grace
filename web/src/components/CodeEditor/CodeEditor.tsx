@@ -34,6 +34,7 @@ interface CodeEditorProps {
 	onChange: (value: string) => void;
 	currentLine: number | null;
 	errorLine: number | null;
+	hoverLine: number | null;
 }
 
 interface LineHighlight {
@@ -61,6 +62,30 @@ const highlightedLineField = StateField.define<DecorationSet>({
 					const className = highlight.error ? "cm-errorLine" : "cm-execLine";
 					decorations = Decoration.set([
 						Decoration.line({ class: className }).range(docLine.from),
+					]);
+				}
+			}
+		}
+		return decorations;
+	},
+	provide: (field) => EditorView.decorations.from(field),
+});
+
+const setHoverLine = StateEffect.define<number | null>();
+
+const hoverLineField = StateField.define<DecorationSet>({
+	create: () => Decoration.none,
+	update(decorations, transaction) {
+		decorations = decorations.map(transaction.changes);
+		for (const effect of transaction.effects) {
+			if (effect.is(setHoverLine)) {
+				const line = effect.value;
+				if (line === null || line < 1 || line > transaction.state.doc.lines) {
+					decorations = Decoration.none;
+				} else {
+					const docLine = transaction.state.doc.line(line);
+					decorations = Decoration.set([
+						Decoration.line({ class: "cm-hoverLine" }).range(docLine.from),
 					]);
 				}
 			}
@@ -120,6 +145,9 @@ const editorTheme = EditorView.theme({
 		backgroundColor: "var(--color-error-line)",
 		boxShadow: "inset 0.1875rem 0 0 var(--color-error-line-border)",
 	},
+	".cm-hoverLine": {
+		boxShadow: "inset 0.1875rem 0 0 var(--color-accent)",
+	},
 	".cm-tooltip": {
 		backgroundColor: "var(--color-surface)",
 		color: "var(--color-text)",
@@ -156,6 +184,7 @@ export function CodeEditor({
 	onChange,
 	currentLine,
 	errorLine,
+	hoverLine,
 }: Readonly<CodeEditorProps>) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const viewRef = useRef<EditorView | null>(null);
@@ -194,6 +223,7 @@ export function CodeEditor({
 				]),
 				...graceLanguage,
 				highlightedLineField,
+				hoverLineField,
 				editorTheme,
 				EditorView.updateListener.of((update) => {
 					if (update.docChanged) {
@@ -228,6 +258,12 @@ export function CodeEditor({
 		}
 		view.dispatch({ effects });
 	}, [currentLine, errorLine]);
+
+	useEffect(() => {
+		const view = viewRef.current;
+		if (!view) return;
+		view.dispatch({ effects: [setHoverLine.of(hoverLine)] });
+	}, [hoverLine]);
 
 	return (
 		<section className={styles.panel}>

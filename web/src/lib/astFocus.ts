@@ -1,13 +1,13 @@
 import { hierarchy, tree as d3tree } from "d3-hierarchy";
 import type { RawNodeDatum } from "react-d3-tree";
 
-export function findNodeByLine(
+export function findNodeById(
 	node: RawNodeDatum,
-	line: number,
+	nodeId: number,
 ): RawNodeDatum | null {
-	if (node.attributes?.line === line) return node;
+	if (node.attributes?.nodeId === nodeId) return node;
 	for (const child of node.children ?? []) {
-		const found = findNodeByLine(child, line);
+		const found = findNodeById(child, nodeId);
 		if (found) return found;
 	}
 	return null;

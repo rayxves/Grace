@@ -36,6 +36,45 @@
 	gap: var(--space-sm);
 }
 
+.structureHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-sm);
+}
+
+.compareToggle {
+	padding: 0.3125rem 0.75rem;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--color-border);
+	background: var(--color-surface-alt);
+	color: var(--color-text-muted);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	white-space: nowrap;
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.compareToggle:hover {
+	color: var(--color-heading);
+}
+
+.compareToggleActive {
+	background: var(--color-accent-soft);
+	border-color: var(--color-accent-border);
+	color: var(--color-accent);
+}
+
+.compareRow {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	gap: var(--space-lg);
+}
+
 .bottomRow {
 	flex: 2;
 	min-height: 0;
@@ -55,6 +94,15 @@
 
 	.visualColumn {
 		min-height: 60rem;
+	}
+
+	.compareToggle {
+		display: none;
+	}
+
+	.compareRow {
+		flex-direction: column;
+		min-height: 40rem;
 	}
 
 	.bottomRow {

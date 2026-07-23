@@ -17,8 +17,6 @@ const keywords = [
 	"retorna",
 	"enquanto",
 	"para",
-	"escolha",
-	"caso",
 	"imprima",
 	"nulo",
 	"classe",

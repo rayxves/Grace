@@ -6,16 +6,19 @@ import type {
 } from "react-d3-tree";
 import type { HierarchyPointNode } from "d3-hierarchy";
 import type { AstNode, Step } from "../../types";
-import { buildRevealedTree, revealedLinesUpTo } from "../../lib/astReveal";
-import { findNodeByLine, locateNode } from "../../lib/astFocus";
+import { buildRevealedTree, revealedNodeIdsUpTo } from "../../lib/astReveal";
+import { findNodeById, locateNode } from "../../lib/astFocus";
 import styles from "./AstView.module.css";
 
 interface AstViewProps {
 	ast: AstNode | null;
 	steps: Step[];
 	stepIndex: number;
-	currentLine: number | null;
+	currentNodeId: number | null;
+	errorNodeId: number | null;
 	errorLine: number | null;
+	hoveredNodeId: number | null;
+	onHoverNode: (nodeId: number | null) => void;
 }
 
 const NODE_SIZE = { x: 130, y: 110 };
@@ -24,13 +27,20 @@ const SCALE_EXTENT = { min: 0.3, max: 2 };
 
 function AstNodeElement(
 	{ nodeDatum, toggleNode }: CustomNodeElementProps,
-	currentLine: number | null,
-	errorLine: number | null,
+	currentNodeId: number | null,
+	errorNodeId: number | null,
+	hoveredNodeId: number | null,
+	onHoverNode: (nodeId: number | null) => void,
 ) {
-	const nodeLine = nodeDatum.attributes?.line;
-	const hasError = errorLine !== null && nodeLine === errorLine;
+	const nodeId =
+		typeof nodeDatum.attributes?.nodeId === "number"
+			? nodeDatum.attributes.nodeId
+			: null;
+	const hasError = errorNodeId !== null && nodeId === errorNodeId;
 	const isActive =
-		!hasError && currentLine !== null && nodeLine === currentLine;
+		!hasError && currentNodeId !== null && nodeId === currentNodeId;
+	const isHovered =
+		!hasError && !isActive && nodeId !== null && nodeId === hoveredNodeId;
 	const isCollapsed =
 		(nodeDatum.__rd3t.collapsed ?? false) &&
 		(nodeDatum.children?.length ?? 0) > 0;
@@ -38,13 +48,19 @@ function AstNodeElement(
 		styles.node,
 		hasError ? styles.nodeError : "",
 		isActive ? styles.nodeActive : "",
+		isHovered ? styles.nodeHovered : "",
 		isCollapsed ? styles.nodeCollapsed : "",
 	].join(" ");
 
 	const kind = String(nodeDatum.attributes?.kind ?? "");
 
 	return (
-		<g onClick={toggleNode} className={nodeClass}>
+		<g
+			onClick={toggleNode}
+			onMouseEnter={() => nodeId !== null && onHoverNode(nodeId)}
+			onMouseLeave={() => onHoverNode(null)}
+			className={nodeClass}
+		>
 			<circle r={40} className={styles.nodeShape} />
 			<text dy="0.35em" textAnchor="middle" className={styles.nodeLabel}>
 				{nodeDatum.name}
@@ -62,8 +78,11 @@ export function AstView({
 	ast,
 	steps,
 	stepIndex,
-	currentLine,
+	currentNodeId,
+	errorNodeId,
 	errorLine,
+	hoveredNodeId,
+	onHoverNode,
 }: Readonly<AstViewProps>) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const treeRef = useRef<Tree>(null);
@@ -82,32 +101,32 @@ export function AstView({
 		return () => observer.disconnect();
 	}, []);
 
-	const revealedLines = useMemo(
-		() => revealedLinesUpTo(steps, stepIndex),
+	const revealedIds = useMemo(
+		() => revealedNodeIdsUpTo(steps, stepIndex),
 		[steps, stepIndex],
 	);
 
 	const treeData = useMemo(
 		() =>
 			ast && ast.children.length > 0
-				? buildRevealedTree(ast, revealedLines, errorLine)
+				? buildRevealedTree(ast, revealedIds, errorNodeId, errorLine)
 				: null,
-		[ast, revealedLines, errorLine],
+		[ast, revealedIds, errorNodeId, errorLine],
 	);
 
-	const focusLine = errorLine ?? currentLine;
+	const focusNodeId = errorNodeId ?? currentNodeId;
 
 	useEffect(() => {
-		if (!treeData || focusLine === null) return;
+		if (!treeData || focusNodeId === null) return;
 		if (!dimensions.width || !dimensions.height) return;
-		const target = findNodeByLine(treeData, focusLine);
+		const target = findNodeById(treeData, focusNodeId);
 		if (!target) return;
 		const point = locateNode(treeData, target, NODE_SIZE, SEPARATION);
 		if (!point) return;
 		treeRef.current?.centerNode(
 			point as unknown as HierarchyPointNode<TreeNodeDatum>,
 		);
-	}, [treeData, focusLine, dimensions]);
+	}, [treeData, focusNodeId, dimensions]);
 
 	return (
 		<section className={styles.panel}>
@@ -129,7 +148,13 @@ export function AstView({
 						pathFunc="diagonal"
 						transitionDuration={200}
 						renderCustomNodeElement={(props) =>
-							AstNodeElement(props, currentLine, errorLine)
+							AstNodeElement(
+								props,
+								currentNodeId,
+								errorNodeId,
+								hoveredNodeId,
+								onHoverNode,
+							)
 						}
 					/>
 				) : (

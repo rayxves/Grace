@@ -109,6 +109,11 @@
 	color: var(--color-danger);
 }
 
+.rowHovered {
+	border-color: var(--color-accent-border);
+	background: var(--color-accent-soft);
+}
+
 .emptyState {
 	flex: 1;
 	display: flex;
