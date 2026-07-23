@@ -29,6 +29,19 @@ pub struct Locals {
     start_offset: usize,
 }
 
+struct NodeGuard {
+    sink: SharedSink,
+    node_id: usize,
+}
+
+impl Drop for NodeGuard {
+    fn drop(&mut self) {
+        self.sink.borrow_mut().emit(Compile(CompileEvent::ExitNode {
+            node_id: self.node_id,
+        }));
+    }
+}
+
 pub struct Compiler {
     pub(crate) chunk: Chunk,
     pub(crate) sink: SharedSink,
@@ -66,10 +79,23 @@ impl Compiler {
         }));
     }
 
+    fn enter_node(&mut self, node_id: usize, kind: &str, line: Option<u64>) -> NodeGuard {
+        self.sink.borrow_mut().emit(Compile(CompileEvent::EnterNode {
+            node_id,
+            node_kind: kind.to_string(),
+            line,
+        }));
+        NodeGuard {
+            sink: self.sink.clone(),
+            node_id,
+        }
+    }
+
     pub fn emit_op(&mut self, opcode: OpCode, line: u64, node_id: Option<usize>) {
         let offset = self.chunk.code.len();
         self.chunk.append(opcode as u8, line, node_id);
         self.sink.borrow_mut().emit(Compile(CompileEvent::Emit {
+            node_id,
             offset,
             opcode: opcode.description(),
             line,
@@ -106,6 +132,11 @@ impl Compiler {
     pub fn patch_jump(&mut self, placeholder: usize) {
         let jump = self.chunk.code.len() - placeholder - 1;
         self.chunk.code[placeholder] = jump as u8;
+        let target = self.chunk.code.len();
+        self.sink.borrow_mut().emit(Compile(CompileEvent::Patch {
+            offset: placeholder,
+            target,
+        }));
     }
 
     pub fn emit_loop(&mut self, loop_start: usize, line: u64, node_id: Option<usize>) {

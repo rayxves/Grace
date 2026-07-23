@@ -46,10 +46,23 @@ pub enum ResolveEvent {
 }
 
 pub enum CompileEvent {
+    EnterNode {
+        node_id: usize,
+        node_kind: String,
+        line: Option<u64>,
+    },
+    ExitNode {
+        node_id: usize,
+    },
     Emit {
+        node_id: Option<usize>,
         offset: usize,
         opcode: String,
         line: u64,
+    },
+    Patch {
+        offset: usize,
+        target: usize,
     },
     Error {
         message: String,

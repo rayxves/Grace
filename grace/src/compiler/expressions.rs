@@ -19,6 +19,7 @@ impl ExprVisitor for Compiler {
         line: &u64,
         right: &Expression,
     ) -> Self::Output {
+        let _guard = self.enter_node(id, "Binary", Some(*line));
         left.accept(self);
         right.accept(self);
         match operator {
@@ -45,6 +46,7 @@ impl ExprVisitor for Compiler {
     }
 
     fn visit_literal(&mut self, id: usize, literal: &TokenLiteral, line: u64) -> Self::Output {
+        let _guard = self.enter_node(id, "Literal", Some(line));
         match literal {
             TokenLiteral::Number(n) => self.emit_constant(Value::Number(*n), line, Some(id)),
             TokenLiteral::StringLiteral(s) => {
@@ -63,6 +65,7 @@ impl ExprVisitor for Compiler {
         line: &u64,
         expr: &Expression,
     ) -> Self::Output {
+        let _guard = self.enter_node(id, "Unary", Some(*line));
         expr.accept(self);
         let opcode = match unary_op {
             UnaryOp::Minus => OpCode::Negate,
@@ -71,11 +74,13 @@ impl ExprVisitor for Compiler {
         self.emit_op(opcode, *line, Some(id));
     }
 
-    fn visit_grouping(&mut self, _id: usize, expr: &Expression) -> Self::Output {
+    fn visit_grouping(&mut self, id: usize, expr: &Expression) -> Self::Output {
+        let _guard = self.enter_node(id, "Grouping", None);
         expr.accept(self);
     }
 
     fn visit_variable(&mut self, name: &String, line: u64, id: usize) -> Self::Output {
+        let _guard = self.enter_node(id, "Variable", Some(line));
         match self.resolve_local(name) {
             Some(slot) => self.emit_with_operand(OpCode::GetLocal, slot as u8, line, Some(id)),
             None => {
@@ -91,6 +96,7 @@ impl ExprVisitor for Compiler {
         expr: &Expression,
         id: usize,
     ) -> Self::Output {
+        let _guard = self.enter_node(id, "Assign", Some(line));
         expr.accept(self);
         match self.resolve_local(name) {
             Some(slot) => self.emit_with_operand(OpCode::SetLocal, slot as u8, line, Some(id)),
@@ -108,6 +114,7 @@ impl ExprVisitor for Compiler {
         line: &u64,
         right: &Expression,
     ) -> Self::Output {
+        let _guard = self.enter_node(id, "Logical", Some(*line));
         match operator {
             LogicalOp::And => {
                 left.accept(self);
@@ -135,6 +142,7 @@ impl ExprVisitor for Compiler {
         args: &Vec<Expression>,
         paren: &Token,
     ) -> Self::Output {
+        let _guard = self.enter_node(id, "Call", Some(paren.line));
         callee.accept(self);
         for arg in args {
             arg.accept(self);
@@ -143,6 +151,7 @@ impl ExprVisitor for Compiler {
     }
 
     fn visit_get(&mut self, id: usize, expr: &Expression, token: &Token) -> Self::Output {
+        let _guard = self.enter_node(id, "Get", Some(token.line));
         expr.accept(self);
         self.emit_named(
             OpCode::GetProperty,
@@ -159,6 +168,7 @@ impl ExprVisitor for Compiler {
         token: &Token,
         value: &Expression,
     ) -> Self::Output {
+        let _guard = self.enter_node(id, "Set", Some(token.line));
         expr.accept(self);
         value.accept(self);
         self.emit_named(
@@ -170,10 +180,12 @@ impl ExprVisitor for Compiler {
     }
 
     fn visit_this(&mut self, token: &Token, id: usize) -> Self::Output {
+        let _guard = self.enter_node(id, "This", Some(token.line));
         self.emit_with_operand(OpCode::GetLocal, 0, token.line, Some(id));
     }
 
     fn visit_super(&mut self, key_super: &Token, method: &Token, id: usize) -> Self::Output {
+        let _guard = self.enter_node(id, "Super", Some(key_super.line));
         let parent = match &self.current_class {
             Some(class) => match &class.superclass {
                 Some(p) => p.clone(),

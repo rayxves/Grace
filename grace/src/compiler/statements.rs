@@ -12,11 +12,13 @@ impl StmtVisitor for Compiler {
     type Output = ();
 
     fn visit_print(&mut self, id: usize, expr: &Expression, line: u64) -> Self::Output {
+        let _guard = self.enter_node(id, "Print", Some(line));
         expr.accept(self);
         self.emit_op(OpCode::Print, line, Some(id));
     }
 
     fn visit_expr_statement(&mut self, id: usize, expr: &Expression, line: u64) -> Self::Output {
+        let _guard = self.enter_node(id, "ExprStmt", Some(line));
         expr.accept(self);
         self.emit_op(OpCode::Pop, line, Some(id));
     }
@@ -28,6 +30,7 @@ impl StmtVisitor for Compiler {
         expr: Option<&Expression>,
         line: u64,
     ) -> Self::Output {
+        let _guard = self.enter_node(id, "VarDecl", Some(line));
         if let Some(e) = expr {
             e.accept(self);
         } else {
@@ -41,6 +44,7 @@ impl StmtVisitor for Compiler {
     }
 
     fn visit_block(&mut self, id: usize, statements: &Vec<Statement>, line: u64) -> Self::Output {
+        let _guard = self.enter_node(id, "Block", Some(line));
         self.begin_scope();
         for stmt in statements {
             stmt.accept(self);
@@ -57,6 +61,7 @@ impl StmtVisitor for Compiler {
         else_stmt: Option<&Statement>,
         line: u64,
     ) -> Self::Output {
+        let _guard = self.enter_node(id, "If", Some(line));
         expr.accept(self);
         let then_jump = self.emit_jump(OpCode::JumpIfFalse, line, Some(id));
         self.emit_op(OpCode::Pop, line, Some(id));
@@ -78,6 +83,7 @@ impl StmtVisitor for Compiler {
         stmt: &Statement,
         line: u64,
     ) -> Self::Output {
+        let _guard = self.enter_node(id, "While", Some(line));
         let loop_start = self.chunk.code.len();
         expr.accept(self);
         let exit_jump = self.emit_jump(OpCode::JumpIfFalse, line, Some(id));
@@ -102,6 +108,7 @@ impl StmtVisitor for Compiler {
         stmts: &Vec<Statement>,
         line: u64,
     ) -> Self::Output {
+        let _guard = self.enter_node(id, "Function", Some(line));
         let function = self.compile_function(name, params, stmts, line);
         self.emit_constant(Value::Function(Rc::new(function)), line, Some(id));
         if self.scope_depth > 0 {
@@ -112,6 +119,7 @@ impl StmtVisitor for Compiler {
     }
 
     fn visit_return(&mut self, id: usize, line: u64, value: Option<&Expression>) -> Self::Output {
+        let _guard = self.enter_node(id, "Return", Some(line));
         match value {
             Some(v) => v.accept(self),
             None => self.emit_op(OpCode::Null, line, Some(id)),
@@ -128,6 +136,7 @@ impl StmtVisitor for Compiler {
         attributes: &Vec<String>,
         statements: &Vec<Statement>,
     ) -> Self::Output {
+        let _guard = self.enter_node(id, "Class", Some(line));
         let parent = self.resolve_superclass(superclass, line);
         if superclass.is_some() && parent.is_none() {
             return;
