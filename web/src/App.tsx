@@ -9,6 +9,7 @@ import { VariablesView } from "./components/VariablesView/VariablesView";
 import { ViewTabs } from "./components/ViewTabs/ViewTabs";
 import type { ScrubberMarker } from "./components/Scrubber/Scrubber";
 import { CompileChipLayer } from "./components/CompileChipLayer/CompileChipLayer";
+import { CompileNarration } from "./components/CompileNarration/CompileNarration";
 import { usePlayer } from "./hooks/usePlayer";
 import { useTheme } from "./hooks/useTheme";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
@@ -18,6 +19,8 @@ import { runGrace } from "./lib/grace";
 import { collectOutput } from "./lib/instructions";
 import { parseErrorLine } from "./lib/errors";
 import { computeCompileProgress, growBytecodeUpTo } from "./lib/compileProgress";
+import { buildAstNodeIndex } from "./lib/astIndex";
+import { countEmitsByNode } from "./lib/compileNarration";
 import type { Trace } from "./types";
 import styles from "./App.module.css";
 
@@ -122,6 +125,9 @@ function App() {
 	);
 
 	const compileFlight = useCompileFlight(compileMode, compilePlayer.index, compileSteps);
+
+	const astIndex = useMemo(() => buildAstNodeIndex(trace?.ast ?? null), [trace]);
+	const emitCountByNode = useMemo(() => countEmitsByNode(compileSteps), [compileSteps]);
 
 	const compileCurrentStep = compilePlayer.currentStep;
 	const compileCurrentOffset =
@@ -309,7 +315,15 @@ function App() {
 						</div>
 						{structureContent}
 					</div>
-					{!compileMode && (
+					{compileMode ? (
+						<div className={styles.bottomRowCompact}>
+							<CompileNarration
+								step={compileCurrentStep}
+								astIndex={astIndex}
+								emitCountByNode={emitCountByNode}
+							/>
+						</div>
+					) : (
 						<div className={styles.bottomRow}>
 							<VariablesView
 								step={hasTrace ? player.currentStep : null}

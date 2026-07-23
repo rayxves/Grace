@@ -91,6 +91,12 @@
 	gap: var(--space-lg);
 }
 
+.bottomRowCompact {
+	flex: 0 0 auto;
+	display: flex;
+	gap: var(--space-lg);
+}
+
 @media (max-width: 64rem) {
 	.workspace {
 		flex-direction: column;
