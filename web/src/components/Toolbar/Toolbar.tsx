@@ -12,6 +12,7 @@ import type { Theme } from "../../hooks/useTheme";
 import { PLAYER_SPEEDS } from "../../hooks/usePlayer";
 import { Scrubber, type ScrubberMarker } from "../Scrubber/Scrubber";
 import { ViewTabs } from "../ViewTabs/ViewTabs";
+import { PipelineStrip, type Phase } from "../PipelineStrip/PipelineStrip";
 import styles from "./Toolbar.module.css";
 
 interface ToolbarProps {
@@ -34,6 +35,9 @@ interface ToolbarProps {
 	onSpeedChange: (speed: number) => void;
 	theme: Theme;
 	onToggleTheme: () => void;
+	phase: Phase;
+	compiling: boolean;
+	onSelectPhase: (phase: Phase) => void;
 }
 
 const ICON_SIZE = "1.125rem";
@@ -63,6 +67,9 @@ export function Toolbar({
 	onSpeedChange,
 	theme,
 	onToggleTheme,
+	phase,
+	compiling,
+	onSelectPhase,
 }: Readonly<ToolbarProps>) {
 	const atStart = stepIndex === 0;
 	const atEnd = totalSteps === 0 || stepIndex >= totalSteps - 1;
@@ -174,6 +181,8 @@ export function Toolbar({
 				/>
 				<span className={styles.position}>{positionText}</span>
 			</div>
+
+			<PipelineStrip phase={phase} compiling={compiling} onSelect={onSelectPhase} />
 		</header>
 	);
 }

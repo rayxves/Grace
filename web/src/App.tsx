@@ -1,12 +1,13 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
-import { Binary, Columns2 } from "lucide-react";
+import { Binary } from "lucide-react";
 import { Toolbar } from "./components/Toolbar/Toolbar";
 import { CodeEditor } from "./components/CodeEditor/CodeEditor";
 import { AstView } from "./components/AstView/AstView";
 import { BytecodeView } from "./components/BytecodeView/BytecodeView";
+import { TokensView } from "./components/TokensView/TokensView";
+import type { Phase } from "./components/PipelineStrip/PipelineStrip";
 import { StackView } from "./components/StackView/StackView";
 import { VariablesView } from "./components/VariablesView/VariablesView";
-import { ViewTabs } from "./components/ViewTabs/ViewTabs";
 import type { ScrubberMarker } from "./components/Scrubber/Scrubber";
 import { CompileChipLayer } from "./components/CompileChipLayer/CompileChipLayer";
 import { CompileNarration } from "./components/CompileNarration/CompileNarration";
@@ -23,13 +24,6 @@ import { buildAstNodeIndex } from "./lib/astIndex";
 import { countEmitsByNode } from "./lib/compileNarration";
 import type { Trace } from "./types";
 import styles from "./App.module.css";
-
-type StructureView = "bytecode" | "tree";
-
-const STRUCTURE_VIEW_TABS: { id: StructureView; label: string }[] = [
-	{ id: "bytecode", label: "bytecode" },
-	{ id: "tree", label: "árvore" },
-];
 
 const DEFAULT_SOURCE = `var x = 10;
 imprima(x + 5);
@@ -51,10 +45,10 @@ function App() {
 	const [trace, setTrace] = useState<Trace | null>(null);
 	const [running, setRunning] = useState(false);
 	const [runtimeError, setRuntimeError] = useState<string | null>(null);
-	const [structureView, setStructureView] = useState<StructureView>("bytecode");
-	const [compareMode, setCompareMode] = useState(false);
+	const [phase, setPhase] = useState<Phase>("bytecode");
 	const [compileMode, setCompileMode] = useState(false);
 	const [hoveredNodeId, setHoveredNodeId] = useState<number | null>(null);
+	const [hoveredTokenLine, setHoveredTokenLine] = useState<number | null>(null);
 
 	const steps = trace?.steps ?? EMPTY_STEPS;
 	const bytecode = trace?.bytecode ?? EMPTY_BYTECODE;
@@ -139,21 +133,24 @@ function App() {
 			? compileCurrentStep.line
 			: null;
 
-	const selectStructureView = useCallback((view: StructureView) => {
-		setStructureView(view);
-		setCompareMode(false);
-	}, []);
-
-	const toggleCompareMode = useCallback(() => {
-		setCompareMode((value) => !value);
+	const selectPhase = useCallback((next: Phase) => {
+		if (next === "codigo" || next === "tokens") {
+			setCompileMode(false);
+		}
+		setPhase(next);
 	}, []);
 
 	const toggleCompileMode = useCallback(() => {
-		setCompileMode((value) => !value);
-	}, []);
+		const next = !compileMode;
+		setCompileMode(next);
+		if (next && (phase === "codigo" || phase === "tokens")) {
+			setPhase("execucao");
+		}
+	}, [compileMode, phase]);
 
 	const activeHasTrace = compileMode ? hasCompileTrace : hasTrace;
 	const activeCurrentLine = compileMode ? compileCurrentLine : gatedCurrentLine;
+	const effectiveHoverLine = hoveredTokenLine ?? hoverLine;
 
 	useKeyboardShortcuts({
 		enabled: activeHasTrace,
@@ -195,54 +192,78 @@ function App() {
 		onHoverNode: setHoveredNodeId,
 	};
 
-	const compareToggleClassName = compareMode
-		? `${styles.compareToggle} ${styles.compareToggleActive}`
-		: styles.compareToggle;
-
 	const compileToggleClassName = compileMode
 		? `${styles.compareToggle} ${styles.compareToggleActive}`
 		: styles.compareToggle;
 
 	let structureContent: ReactNode;
-	if (compileMode) {
+	if (phase === "codigo") {
 		structureContent = (
-			<div className={styles.compareRow}>
-				<AstView
-					ast={trace?.ast ?? null}
-					steps={steps}
-					stepIndex={player.index}
-					currentNodeId={compileProgress.currentNodeId}
-					errorNodeId={null}
-					errorLine={null}
-					hoveredNodeId={hoveredNodeId}
-					onHoverNode={setHoveredNodeId}
-					trailNodeIds={compileProgress.trailNodeIds}
-					revealedNodeIds={compileProgress.revealedNodeIds}
-				/>
-				<BytecodeView
-					bytecode={grownBytecode}
-					steps={steps}
-					stepIndex={player.index}
-					errorOffset={null}
-					hoveredNodeId={hoveredNodeId}
-					onHoverNode={setHoveredNodeId}
-					currentOffset={compileCurrentOffset}
-					pendingOffsets={pendingOffsets}
-				/>
-				<CompileChipLayer flight={compileFlight} />
+			<div className={styles.codePhaseNotice}>
+				<p>
+					O código-fonte é o ponto de partida de todo o resto. Passe o mouse
+					pelas outras fases para ver a correspondência com cada linha aqui.
+				</p>
 			</div>
 		);
-	} else if (compareMode) {
+	} else if (phase === "tokens") {
 		structureContent = (
-			<div className={styles.compareRow}>
-				<AstView {...astViewProps} />
-				<BytecodeView {...bytecodeViewProps} />
-			</div>
+			<TokensView
+				tokens={trace?.tokens ?? []}
+				hoveredLine={effectiveHoverLine}
+				onHoverLine={setHoveredTokenLine}
+			/>
 		);
-	} else if (structureView === "tree") {
-		structureContent = <AstView {...astViewProps} />;
 	} else {
-		structureContent = <BytecodeView {...bytecodeViewProps} />;
+		const showTree = phase === "arvore" || phase === "execucao";
+		const showBytecode = phase === "bytecode" || phase === "execucao";
+		const showBoth = showTree && showBytecode;
+
+		const tree = compileMode ? (
+			<AstView
+				ast={trace?.ast ?? null}
+				steps={steps}
+				stepIndex={player.index}
+				currentNodeId={compileProgress.currentNodeId}
+				errorNodeId={null}
+				errorLine={null}
+				hoveredNodeId={hoveredNodeId}
+				onHoverNode={setHoveredNodeId}
+				trailNodeIds={compileProgress.trailNodeIds}
+				revealedNodeIds={compileProgress.revealedNodeIds}
+			/>
+		) : (
+			<AstView {...astViewProps} />
+		);
+
+		const bytecodePanel = compileMode ? (
+			<BytecodeView
+				bytecode={grownBytecode}
+				steps={steps}
+				stepIndex={player.index}
+				errorOffset={null}
+				hoveredNodeId={hoveredNodeId}
+				onHoverNode={setHoveredNodeId}
+				currentOffset={compileCurrentOffset}
+				pendingOffsets={pendingOffsets}
+			/>
+		) : (
+			<BytecodeView {...bytecodeViewProps} />
+		);
+
+		const inner = (
+			<>
+				{showTree && tree}
+				{showBytecode && bytecodePanel}
+				{compileMode && showBoth && <CompileChipLayer flight={compileFlight} />}
+			</>
+		);
+
+		structureContent = showBoth ? (
+			<div className={styles.compareRow}>{inner}</div>
+		) : (
+			inner
+		);
 	}
 
 	return (
@@ -267,6 +288,9 @@ function App() {
 				onSpeedChange={compileMode ? compilePlayer.setSpeed : player.setSpeed}
 				theme={theme}
 				onToggleTheme={toggleTheme}
+				phase={phase}
+				compiling={compileMode}
+				onSelectPhase={selectPhase}
 			/>
 
 			<main className={styles.workspace}>
@@ -276,32 +300,16 @@ function App() {
 						onChange={setSource}
 						currentLine={activeCurrentLine}
 						errorLine={compileMode ? null : gatedErrorLine}
-						hoverLine={hoverLine}
+						hoverLine={effectiveHoverLine}
 					/>
 				</div>
 				<div className={styles.visualColumn}>
 					<div className={styles.structurePanel}>
 						<div className={styles.structureHeader}>
-							{compileMode ? (
+							{compileMode && (
 								<span className={styles.depthIndicator}>
 									profundidade da travessia: {compileProgress.depth}
 								</span>
-							) : (
-								<>
-									<ViewTabs<StructureView>
-										tabs={STRUCTURE_VIEW_TABS}
-										activeId={structureView}
-										onSelect={selectStructureView}
-									/>
-									<button
-										className={compareToggleClassName}
-										onClick={toggleCompareMode}
-										title="ver árvore e bytecode lado a lado"
-									>
-										<Columns2 size="1rem" />
-										comparar
-									</button>
-								</>
 							)}
 							<button
 								className={compileToggleClassName}
