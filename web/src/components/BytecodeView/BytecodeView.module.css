@@ -16,7 +16,15 @@
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 	color: var(--color-text-muted);
-	padding: var(--space-md) var(--space-md) var(--space-sm);
+	padding: var(--space-md) var(--space-md) 0;
+}
+
+.caption {
+	margin: 0;
+	padding: 0.125rem var(--space-md) var(--space-sm);
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--color-text);
 }
 
 .list {
@@ -65,6 +73,8 @@
 	padding: 0.25rem 0.5rem;
 	border-radius: var(--radius-sm);
 	border: 1px solid transparent;
+	border-left-width: 0.1875rem;
+	border-left-color: var(--row-accent, transparent);
 	transition:
 		background-color 0.15s ease,
 		border-color 0.15s ease,
@@ -90,8 +100,8 @@
 }
 
 .rowCurrent {
-	background: var(--color-exec-line);
-	border-color: var(--color-exec-line-border);
+	background: var(--row-accent-fill, var(--color-exec-line));
+	border-color: var(--row-accent, var(--color-exec-line-border));
 }
 
 .rowCurrent .offset,
@@ -110,8 +120,8 @@
 }
 
 .rowHovered {
-	border-color: var(--color-accent-border);
-	background: var(--color-accent-soft);
+	border-color: var(--row-accent, var(--color-accent-border));
+	background: var(--row-accent-fill, var(--color-accent-soft));
 }
 
 .rowPending {

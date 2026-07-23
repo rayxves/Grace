@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, type CSSProperties } from "react";
 import type { BytecodeInstruction, Step } from "../../types";
 import { groupBytecodeByLine } from "../../lib/bytecode";
+import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
 import styles from "./BytecodeView.module.css";
 
 interface BytecodeViewProps {
@@ -48,8 +49,13 @@ export function BytecodeView({
 	}, [highlightOffset]);
 
 	return (
-		<section className={styles.panel}>
+		<section className={styles.panel} data-role="bytecode-panel">
 			<h2 className={styles.title}>bytecode</h2>
+			{bytecode.length > 0 && (
+				<p className={styles.caption}>
+					a cor à esquerda de cada linha é a cor do nó da árvore que a gerou
+				</p>
+			)}
 			<div className={styles.list}>
 				{bytecode.length > 0 ? (
 					groups.map((group) => (
@@ -83,11 +89,23 @@ export function BytecodeView({
 										isPending ? styles.rowPending : "",
 									].join(" ");
 
+									const accent = nodeAccentColor(instruction.nodeId);
+									const accentFill = nodeAccentFill(instruction.nodeId);
+
 									return (
 										<div
 											key={instruction.offset}
 											ref={isCurrent ? currentRowRef : undefined}
 											className={rowClass}
+											data-offset={instruction.offset}
+											style={
+												accent
+													? ({
+															"--row-accent": accent,
+															"--row-accent-fill": accentFill,
+														} as CSSProperties)
+													: undefined
+											}
 											onMouseEnter={() =>
 												instruction.nodeId !== null &&
 												onHoverNode(instruction.nodeId)

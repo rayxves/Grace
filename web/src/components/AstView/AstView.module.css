@@ -16,7 +16,15 @@
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 	color: var(--color-text-muted);
-	padding: var(--space-md) var(--space-md) var(--space-sm);
+	padding: var(--space-md) var(--space-md) 0;
+}
+
+.caption {
+	margin: 0;
+	padding: 0.125rem var(--space-md) var(--space-sm);
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--color-text);
 }
 
 .treeContainer {
@@ -42,7 +50,7 @@
 
 .nodeShape {
 	fill: var(--color-node-fill);
-	stroke: var(--color-node-stroke);
+	stroke: var(--node-accent, var(--color-node-stroke));
 	stroke-width: 0.09375rem;
 	transition:
 		fill 0.2s ease,
@@ -50,14 +58,14 @@
 }
 
 .nodeActive .nodeShape {
-	fill: var(--color-node-active-fill);
-	stroke: var(--color-node-active-stroke);
+	fill: var(--node-accent-fill, var(--color-node-active-fill));
+	stroke: var(--node-accent, var(--color-node-active-stroke));
 	stroke-width: 0.1875rem;
 }
 
 .nodeTrail .nodeShape {
-	fill: var(--color-node-trail-fill);
-	stroke: var(--color-node-trail-stroke);
+	fill: var(--node-accent-fill, var(--color-node-trail-fill));
+	stroke: var(--node-accent, var(--color-node-trail-stroke));
 	stroke-width: 0.125rem;
 }
 

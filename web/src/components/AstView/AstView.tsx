@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Tree from "react-d3-tree";
 import type {
 	CustomNodeElementProps,
@@ -8,6 +8,7 @@ import type { HierarchyPointNode } from "d3-hierarchy";
 import type { AstNode, Step } from "../../types";
 import { buildRevealedTree, revealedNodeIdsUpTo } from "../../lib/astReveal";
 import { findNodeById, locateNode } from "../../lib/astFocus";
+import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
 import styles from "./AstView.module.css";
 
 interface AstViewProps {
@@ -62,6 +63,8 @@ function AstNodeElement(
 	].join(" ");
 
 	const kind = String(nodeDatum.attributes?.kind ?? "");
+	const accent = nodeAccentColor(nodeId);
+	const accentFill = nodeAccentFill(nodeId);
 
 	return (
 		<g
@@ -69,6 +72,12 @@ function AstNodeElement(
 			onMouseEnter={() => nodeId !== null && onHoverNode(nodeId)}
 			onMouseLeave={() => onHoverNode(null)}
 			className={nodeClass}
+			data-node-id={nodeId ?? undefined}
+			style={
+				accent
+					? ({ "--node-accent": accent, "--node-accent-fill": accentFill } as CSSProperties)
+					: undefined
+			}
 		>
 			<circle r={40} className={styles.nodeShape} />
 			<text dy="0.35em" textAnchor="middle" className={styles.nodeLabel}>
@@ -141,8 +150,13 @@ export function AstView({
 	}, [treeData, focusNodeId, dimensions]);
 
 	return (
-		<section className={styles.panel}>
+		<section className={styles.panel} data-role="ast-panel">
 			<h2 className={styles.title}>Árvore do programa</h2>
+			{treeData && (
+				<p className={styles.caption}>
+					cada nó tem uma cor própria — a mesma cor aparece nas linhas de bytecode que ele gerou
+				</p>
+			)}
 			<div ref={containerRef} className={styles.treeContainer}>
 				{treeData ? (
 					<Tree

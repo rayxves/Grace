@@ -8,10 +8,12 @@ import { StackView } from "./components/StackView/StackView";
 import { VariablesView } from "./components/VariablesView/VariablesView";
 import { ViewTabs } from "./components/ViewTabs/ViewTabs";
 import type { ScrubberMarker } from "./components/Scrubber/Scrubber";
+import { CompileChipLayer } from "./components/CompileChipLayer/CompileChipLayer";
 import { usePlayer } from "./hooks/usePlayer";
 import { useTheme } from "./hooks/useTheme";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useHighlightState } from "./hooks/useHighlightState";
+import { useCompileFlight } from "./hooks/useCompileFlight";
 import { runGrace } from "./lib/grace";
 import { collectOutput } from "./lib/instructions";
 import { parseErrorLine } from "./lib/errors";
@@ -119,6 +121,8 @@ function App() {
 		[grownBytecode],
 	);
 
+	const compileFlight = useCompileFlight(compileMode, compilePlayer.index, compileSteps);
+
 	const compileCurrentStep = compilePlayer.currentStep;
 	const compileCurrentOffset =
 		compileCurrentStep?.kind === "emit"
@@ -219,6 +223,7 @@ function App() {
 					currentOffset={compileCurrentOffset}
 					pendingOffsets={pendingOffsets}
 				/>
+				<CompileChipLayer flight={compileFlight} />
 			</div>
 		);
 	} else if (compareMode) {

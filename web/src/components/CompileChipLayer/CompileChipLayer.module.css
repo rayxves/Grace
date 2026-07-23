@@ -1,0 +1,19 @@
+.chip {
+	position: fixed;
+	top: 0;
+	left: 0;
+	translate: -50% -50%;
+	z-index: 50;
+	pointer-events: none;
+	padding: 0.5rem 1.125rem;
+	border-radius: var(--radius-md);
+	background: hsl(var(--chip-hue) 70% 42%);
+	color: #ffffff;
+	font-family: var(--font-mono);
+	font-size: 1.25rem;
+	font-weight: 700;
+	white-space: nowrap;
+	box-shadow:
+		0 0 0 0.1875rem hsl(var(--chip-hue) 70% 42% / 0.25),
+		0 0.5rem 1.25rem hsl(var(--chip-hue) 70% 35% / 0.5);
+}
