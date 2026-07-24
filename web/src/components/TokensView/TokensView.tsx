@@ -13,11 +13,14 @@ export function TokensView({
 	onHoverLine,
 }: Readonly<TokensViewProps>) {
 	return (
-		<section className={styles.panel} data-role="tokens-panel">
+		<section
+			className={styles.panel}
+			data-role="tokens-panel">
 			<h2 className={styles.title}>tokens</h2>
 			{tokens.length > 0 && (
 				<p className={styles.caption}>
-					o primeiro passo do compilador é picar o texto em pedaços — cada peça é um token
+					O primeiro passo do compilador é "separar" o texto em pedaços, cada peça
+					é um token
 				</p>
 			)}
 			<div className={styles.list}>
@@ -34,15 +37,16 @@ export function TokensView({
 								}
 								onMouseEnter={() => onHoverLine(token.line)}
 								onMouseLeave={() => onHoverLine(null)}
-								title={`linha ${token.line} · ${token.kind}`}
-							>
+								title={`linha ${token.line} · ${token.kind}`}>
 								{token.text || token.kind}
 							</span>
 						))
 				) : (
-					<p className={styles.placeholder}>
-						execute um programa para ver os tokens gerados
-					</p>
+					<div className={styles.empty}>
+						<p className={styles.placeholder}>
+							Execute um programa para ver os tokens gerados
+						</p>
+					</div>
 				)}
 			</div>
 		</section>

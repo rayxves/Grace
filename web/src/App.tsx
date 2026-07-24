@@ -193,8 +193,8 @@ function App() {
 	};
 
 	const compileToggleClassName = compileMode
-		? `${styles.compareToggle} ${styles.compareToggleActive}`
-		: styles.compareToggle;
+		? `${styles.modeToggle} ${styles.modeToggleActive}`
+		: styles.modeToggle;
 
 	let structureContent: ReactNode;
 	if (phase === "codigo") {

@@ -65,3 +65,26 @@ h3 {
 	stroke: var(--color-tree-link) !important;
 	stroke-width: 0.09375rem !important;
 }
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+	width: 0.5rem;
+	height: 0.5rem;
+}
+
+*::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: var(--color-border-strong);
+	border-radius: 999rem;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+	background-color: var(--color-text-muted);
+}

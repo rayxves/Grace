@@ -144,4 +144,28 @@
 	align-items: center;
 	gap: var(--space-md);
 	padding: 0 0.125rem;
+	flex-wrap: wrap;
 }
+
+@media (max-width: 40rem) {
+	.topRow {
+		flex-wrap: wrap;
+		row-gap: var(--space-xs);
+	}
+
+	.subtitle {
+		display: none;
+	}
+
+	.controls {
+		order: 3;
+		flex-basis: 100%;
+		justify-content: center;
+	}
+
+	.position {
+		flex-basis: 100%;
+		text-align: right;
+	}
+}
+

@@ -53,7 +53,7 @@ export function BytecodeView({
 			<h2 className={styles.title}>bytecode</h2>
 			{bytecode.length > 0 && (
 				<p className={styles.caption}>
-					a cor à esquerda de cada linha é a cor do nó da árvore que a gerou
+					A cor à esquerda de cada linha é a cor do nó da árvore que a gerou
 				</p>
 			)}
 			<div className={styles.list}>
@@ -125,7 +125,7 @@ export function BytecodeView({
 				) : (
 					<div className={styles.emptyState}>
 						<p className={styles.placeholder}>
-							execute um programa para ver o bytecode gerado
+							Execute um programa para ver o bytecode gerado
 						</p>
 					</div>
 				)}

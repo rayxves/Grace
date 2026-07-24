@@ -16,7 +16,7 @@
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 	color: var(--color-text-muted);
-	padding: var(--space-md) var(--space-md) 0;
+	padding: var(--space-md) var(--space-md);
 }
 
 .caption {

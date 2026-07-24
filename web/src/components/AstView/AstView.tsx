@@ -154,7 +154,7 @@ export function AstView({
 			<h2 className={styles.title}>Árvore do programa</h2>
 			{treeData && (
 				<p className={styles.caption}>
-					cada nó tem uma cor própria — a mesma cor aparece nas linhas de bytecode que ele gerou
+					Cada nó tem uma cor própria, a mesma cor aparece nas linhas de bytecode que ele gerou
 				</p>
 			)}
 			<div ref={containerRef} className={styles.treeContainer}>
