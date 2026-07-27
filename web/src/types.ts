@@ -57,4 +57,5 @@ export interface Trace {
 	tokens: TokenInfo[];
 	error: string | null;
 	errorOffset: number | null;
+	truncated: boolean;
 }

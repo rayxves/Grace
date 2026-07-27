@@ -291,6 +291,7 @@ function App() {
 				phase={phase}
 				compiling={compileMode}
 				onSelectPhase={selectPhase}
+				truncated={trace?.truncated ?? false}
 			/>
 
 			<main className={styles.workspace}>

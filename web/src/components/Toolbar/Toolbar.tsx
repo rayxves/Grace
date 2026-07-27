@@ -38,6 +38,7 @@ interface ToolbarProps {
 	phase: Phase;
 	compiling: boolean;
 	onSelectPhase: (phase: Phase) => void;
+	truncated: boolean;
 }
 
 const ICON_SIZE = "1.125rem";
@@ -70,6 +71,7 @@ export function Toolbar({
 	phase,
 	compiling,
 	onSelectPhase,
+	truncated,
 }: Readonly<ToolbarProps>) {
 	const atStart = stepIndex === 0;
 	const atEnd = totalSteps === 0 || stepIndex >= totalSteps - 1;
@@ -180,6 +182,14 @@ export function Toolbar({
 					markers={markers}
 				/>
 				<span className={styles.position}>{positionText}</span>
+				{truncated && (
+					<span
+						className={styles.truncatedNotice}
+						title="O programa gerou mais passos do que o visualizador consegue mostrar. Os passos depois deste ponto foram omitidos, mas a execução completa foi levada em conta."
+					>
+						passos a mais foram omitidos
+					</span>
+				)}
 			</div>
 
 			<PipelineStrip phase={phase} compiling={compiling} onSelect={onSelectPhase} />

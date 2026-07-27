@@ -16,6 +16,9 @@ use crate::{
     events::SharedSink,
 };
 
+// Keep this in sync with the "1.000.000" spelled out in the step-limit error message below.
+const MAX_STEPS: usize = 1_000_000;
+
 pub struct Vm {
     pub(crate) stack: Vec<Value>,
     pub(crate) frames: Vec<CallFrame>,
@@ -24,6 +27,7 @@ pub struct Vm {
     instruction_offset: usize,
     popped_this_step: Vec<Value>,
     pushed_this_step: Vec<Value>,
+    steps_executed: usize,
 }
 
 pub struct VmError {
@@ -52,6 +56,7 @@ impl Vm {
             instruction_offset: 0,
             popped_this_step: Vec::new(),
             pushed_this_step: Vec::new(),
+            steps_executed: 0,
         }
     }
 
@@ -83,6 +88,19 @@ impl Vm {
             self.instruction_offset = step_offset;
             self.popped_this_step.clear();
             self.pushed_this_step.clear();
+
+            self.steps_executed += 1;
+            if self.steps_executed > MAX_STEPS {
+                return Err(VmError::new(
+                    "O programa passou de 1.000.000 de passos e foi interrompido. Isso \
+                     normalmente significa que um laço nunca termina — verifique se a condição \
+                     do 'enquanto' chega a ficar falsa em algum momento."
+                        .to_string(),
+                    self.cur_line(&function),
+                    self.cur_offset(),
+                ));
+            }
+
             match OpCode::from_byte(byte) {
                 Some(OpCode::Constant) => {
                     let index = self.read_byte(&function);

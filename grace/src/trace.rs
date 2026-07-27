@@ -73,6 +73,7 @@ struct TraceView<'a> {
     tokens: &'a Vec<TokenJson>,
     error: &'a Option<String>,
     error_offset: &'a Option<usize>,
+    truncated: bool,
 }
 
 #[derive(Serialize)]
@@ -84,12 +85,17 @@ pub struct BytecodeJson {
     pub node_id: Option<usize>,
 }
 
+// UI/JSON size cap, independent of the VM's own MAX_STEPS safety limit: a program can finish
+// well within MAX_STEPS and still produce more steps than the player/scrubber should hold.
+const MAX_TRACE_STEPS: usize = 5_000;
+
 pub struct TraceCollector {
     steps: Vec<StepJson>,
     compile_steps: Vec<CompileStepJson>,
     tokens: Vec<TokenJson>,
     error: Option<String>,
     error_offset: Option<usize>,
+    truncated: bool,
 }
 
 impl TraceCollector {
@@ -100,6 +106,7 @@ impl TraceCollector {
             tokens: Vec::new(),
             error: None,
             error_offset: None,
+            truncated: false,
         }
     }
 
@@ -112,6 +119,7 @@ impl TraceCollector {
             tokens: &self.tokens,
             error: &self.error,
             error_offset: &self.error_offset,
+            truncated: self.truncated,
         };
         serde_json::to_string_pretty(&trace).unwrap_or_else(|_| "{}".to_string())
     }
@@ -171,6 +179,10 @@ impl EventSink for TraceCollector {
                 locals,
                 call_stack,
             }) => {
+                if self.steps.len() >= MAX_TRACE_STEPS {
+                    self.truncated = true;
+                    return;
+                }
                 self.steps.push(StepJson {
                     offset,
                     line,
