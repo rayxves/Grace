@@ -191,6 +191,7 @@
 	background: var(--color-output-bg);
 	font-family: var(--font-mono);
 	font-size: 0.8125rem;
+	min-height: min-content;
 	max-height: 9rem;
 	overflow-y: auto;
 }
@@ -218,7 +219,7 @@
 	font-style: italic;
 }
 
-.empty{
+.empty {
 	display: flex;
 	min-height: 100%;
 	min-width: 100%;
