@@ -1,0 +1,268 @@
+.screen {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	overflow: hidden;
+}
+
+.sidebar {
+	flex: 0 0 16rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.125rem;
+	padding: var(--space-md);
+	overflow-y: auto;
+	border-right: 1px solid var(--color-border);
+	background: var(--color-surface);
+}
+
+.navItem {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	padding: 0.5rem 0.625rem;
+	border-radius: var(--radius-md);
+	color: var(--color-text-muted);
+	font-size: 0.875rem;
+	text-align: left;
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease;
+}
+
+.navItem:hover {
+	background: var(--color-surface-alt);
+	color: var(--color-heading);
+}
+
+.navItemActive {
+	background: var(--color-accent-soft);
+	color: var(--color-accent);
+	font-weight: 600;
+}
+
+.navNumero {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	border-radius: 999rem;
+	background: var(--color-surface-alt);
+	color: var(--color-text-muted);
+	font-size: 0.75rem;
+	font-weight: 700;
+}
+
+.navItemActive .navNumero {
+	background: var(--color-accent);
+	color: var(--color-on-accent);
+}
+
+.content {
+	flex: 1;
+	min-width: 0;
+	overflow-y: auto;
+	padding: var(--space-xl) var(--space-lg);
+}
+
+.lesson {
+	max-width: 40rem;
+	margin: 0 auto;
+}
+
+.lessonHeader {
+	margin-bottom: var(--space-lg);
+}
+
+.lessonProgress {
+	display: block;
+	margin-bottom: var(--space-xs);
+	color: var(--color-text-muted);
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.lessonTitle {
+	margin: 0 0 var(--space-xs);
+	font-size: 1.5rem;
+}
+
+.lessonSyntax {
+	display: inline-block;
+	padding: 0.125rem 0.5rem;
+	border-radius: var(--radius-sm);
+	background: var(--color-surface-alt);
+	color: var(--color-accent);
+	font-family: var(--font-mono);
+	font-size: 0.8125rem;
+}
+
+.paragraph {
+	margin: 0 0 var(--space-md);
+	color: var(--color-text);
+	font-size: 0.9375rem;
+	line-height: 1.65;
+}
+
+.exampleBlock,
+.errorBlock {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-sm);
+	margin: var(--space-lg) 0;
+	padding: var(--space-md);
+	background: var(--color-surface);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-soft);
+}
+
+.exampleTitle {
+	margin: 0;
+	font-size: 0.9375rem;
+	color: var(--color-heading);
+}
+
+.code {
+	margin: 0;
+	padding: var(--space-sm);
+	background: var(--color-editor-bg);
+	border-radius: var(--radius-sm);
+	color: var(--syntax-variable);
+	font-family: var(--font-mono);
+	font-size: 0.8125rem;
+	line-height: 1.5;
+	overflow-x: auto;
+	white-space: pre;
+	tab-size: 2;
+}
+
+.experimentar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.375rem;
+	align-self: flex-start;
+	padding: 0.375rem 0.875rem;
+	border-radius: var(--radius-md);
+	background: var(--color-accent);
+	color: var(--color-on-accent);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	transition: opacity 0.15s ease;
+}
+
+.experimentar:hover {
+	opacity: 0.85;
+}
+
+.aviso {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--space-sm);
+	margin: var(--space-lg) 0;
+	padding: var(--space-md);
+	border: 1px solid var(--color-danger-border);
+	border-radius: var(--radius-lg);
+	background: var(--color-danger-soft);
+}
+
+.avisoIcon {
+	flex-shrink: 0;
+	margin-top: 0.125rem;
+	color: var(--color-danger);
+}
+
+.avisoText {
+	margin: 0;
+	color: var(--color-text);
+	font-size: 0.875rem;
+	line-height: 1.6;
+}
+
+.desafio {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--space-sm);
+	margin: var(--space-lg) 0;
+	padding: var(--space-md);
+	border: 1px solid var(--color-accent-border);
+	border-radius: var(--radius-lg);
+	background: var(--color-accent-soft);
+}
+
+.desafioIcon {
+	flex-shrink: 0;
+	margin-top: 0.125rem;
+	color: var(--color-accent);
+}
+
+.desafioLabel {
+	display: block;
+	margin-bottom: 0.25rem;
+	color: var(--color-accent);
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.desafioText {
+	margin: 0;
+	color: var(--color-text);
+	font-size: 0.875rem;
+	line-height: 1.6;
+}
+
+.pager {
+	display: flex;
+	justify-content: space-between;
+	gap: var(--space-md);
+	max-width: 40rem;
+	margin: var(--space-xl) auto 0;
+}
+
+.pagerButton {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0.5rem 0.875rem;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-md);
+	background: var(--color-surface);
+	color: var(--color-text);
+	font-size: 0.8125rem;
+	font-weight: 600;
+}
+
+.pagerButton:hover:not(:disabled) {
+	border-color: var(--color-accent-border);
+	color: var(--color-accent);
+}
+
+@media (max-width: 48rem) {
+	.screen {
+		flex-direction: column;
+		overflow-y: auto;
+	}
+
+	.sidebar {
+		flex: 0 0 auto;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		border-right: none;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.navItem {
+		flex-shrink: 0;
+	}
+
+	.content {
+		overflow-y: visible;
+	}
+}

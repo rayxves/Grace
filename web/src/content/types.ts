@@ -15,3 +15,15 @@ export interface Topic {
 	description: string;
 	examples: VerifiedExample[];
 }
+
+export interface Licao {
+	id: string;
+	numero: number;
+	titulo: string;
+	sintaxe: string;
+	conceito: string[];
+	exemplo: VerifiedExample;
+	aviso?: string;
+	erroDemonstrado?: VerifiedExample;
+	desafio?: string;
+}

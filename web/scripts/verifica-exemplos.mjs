@@ -8,7 +8,24 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(webRoot, "..");
 
-const CONTENT_MODULES = [{ file: "src/content/galeria.ts", exportName: "galeria" }];
+const CONTENT_MODULES = [
+	{
+		file: "src/content/galeria.ts",
+		exportName: "galeria",
+		extract: (topic) => topic.examples.map((example) => ({ id: `${topic.id}/${example.id}`, example })),
+	},
+	{
+		file: "src/content/licoes.ts",
+		exportName: "licoes",
+		extract: (licao) => {
+			const entries = [{ id: `${licao.id}/${licao.exemplo.id}`, example: licao.exemplo }];
+			if (licao.erroDemonstrado) {
+				entries.push({ id: `${licao.id}/${licao.erroDemonstrado.id}`, example: licao.erroDemonstrado });
+			}
+			return entries;
+		},
+	},
+];
 
 async function loadContentModule(relPath) {
 	const entry = path.join(webRoot, relPath);
@@ -44,15 +61,11 @@ function collectOutput(trace) {
 	return lines;
 }
 
-function flattenExamples(items, file) {
+function flattenExamples(items, file, extract) {
 	const flat = [];
 	for (const item of items) {
-		if (Array.isArray(item.examples)) {
-			for (const example of item.examples) {
-				flat.push({ label: `${file}#${item.id}/${example.id}`, example });
-			}
-		} else {
-			flat.push({ label: `${file}#${item.id}`, example: item });
+		for (const { id, example } of extract(item)) {
+			flat.push({ label: `${file}#${id}`, example });
 		}
 	}
 	return flat;
@@ -61,7 +74,7 @@ function flattenExamples(items, file) {
 let total = 0;
 let failures = 0;
 
-for (const { file, exportName } of CONTENT_MODULES) {
+for (const { file, exportName, extract } of CONTENT_MODULES) {
 	const mod = await loadContentModule(file);
 	const items = mod[exportName];
 	if (!Array.isArray(items)) {
@@ -70,7 +83,7 @@ for (const { file, exportName } of CONTENT_MODULES) {
 		continue;
 	}
 
-	for (const { label, example } of flattenExamples(items, file)) {
+	for (const { label, example } of flattenExamples(items, file, extract)) {
 		total++;
 		const trace = run(example.code);
 
