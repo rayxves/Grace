@@ -43,6 +43,13 @@ export type CompileStep =
 	| { kind: "emit"; nodeId: number | null; offset: number; opcode: string; line: number }
 	| { kind: "patch"; offset: number; target: number };
 
+export type ResolveStep =
+	| { kind: "scopeBegin" }
+	| { kind: "scopeEnd" }
+	| { kind: "declare"; name: string; line: number }
+	| { kind: "define"; name: string }
+	| { kind: "resolve"; id: number; name: string; depth: number };
+
 export interface TokenInfo {
 	text: string;
 	kind: string;
@@ -53,6 +60,7 @@ export interface Trace {
 	ast: AstNode | null;
 	bytecode: BytecodeInstruction[];
 	steps: Step[];
+	resolveSteps: ResolveStep[];
 	compileSteps: CompileStep[];
 	tokens: TokenInfo[];
 	error: string | null;

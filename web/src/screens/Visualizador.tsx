@@ -8,6 +8,8 @@ import { TokensView } from "../components/TokensView/TokensView";
 import { isPhase, type Phase } from "../components/PipelineStrip/PipelineStrip";
 import { StackView } from "../components/StackView/StackView";
 import { VariablesView } from "../components/VariablesView/VariablesView";
+import { ScopeView } from "../components/ScopeView/ScopeView";
+import { ResolveNarration } from "../components/ResolveNarration/ResolveNarration";
 import type { ScrubberMarker } from "../components/Scrubber/Scrubber";
 import { CompileChipLayer } from "../components/CompileChipLayer/CompileChipLayer";
 import { CompileNarration } from "../components/CompileNarration/CompileNarration";
@@ -21,6 +23,7 @@ import { runGrace } from "../lib/grace";
 import { collectOutput } from "../lib/instructions";
 import { parseErrorLine } from "../lib/errors";
 import { computeCompileProgress, growBytecodeUpTo } from "../lib/compileProgress";
+import { computeResolveProgress } from "../lib/resolveProgress";
 import { buildAstNodeIndex } from "../lib/astIndex";
 import { countEmitsByNode } from "../lib/compileNarration";
 import type { Trace } from "../types";
@@ -29,6 +32,21 @@ import styles from "./Visualizador.module.css";
 const EMPTY_STEPS: Trace["steps"] = [];
 const EMPTY_BYTECODE: Trace["bytecode"] = [];
 const EMPTY_COMPILE_STEPS: Trace["compileSteps"] = [];
+const EMPTY_RESOLVE_STEPS: Trace["resolveSteps"] = [];
+
+interface PlayerControls {
+	index: number;
+	total: number;
+	playing: boolean;
+	speed: number;
+	next: () => void;
+	previous: () => void;
+	togglePlay: () => void;
+	nextLine: () => void;
+	reset: () => void;
+	goTo: (index: number) => void;
+	setSpeed: (speed: number) => void;
+}
 
 export function Visualizador() {
 	const { program, setProgram, route, navigate } = useRoute();
@@ -44,8 +62,10 @@ export function Visualizador() {
 	const steps = trace?.steps ?? EMPTY_STEPS;
 	const bytecode = trace?.bytecode ?? EMPTY_BYTECODE;
 	const compileSteps = trace?.compileSteps ?? EMPTY_COMPILE_STEPS;
+	const resolveSteps = trace?.resolveSteps ?? EMPTY_RESOLVE_STEPS;
 	const player = usePlayer(steps, (step) => step.line);
 	const compilePlayer = usePlayer(compileSteps, () => null);
+	const resolvePlayer = usePlayer(resolveSteps, () => null);
 
 	const run = useCallback(async () => {
 		setRunning(true);
@@ -63,6 +83,7 @@ export function Visualizador() {
 
 	const hasTrace = trace !== null && steps.length > 0;
 	const hasCompileTrace = trace !== null && compileSteps.length > 0;
+	const hasResolveTrace = trace !== null && resolveSteps.length > 0;
 	const errorMessage = runtimeError ?? trace?.error ?? null;
 	const errorLine = useMemo(() => parseErrorLine(errorMessage), [errorMessage]);
 
@@ -124,6 +145,15 @@ export function Visualizador() {
 			? compileCurrentStep.line
 			: null;
 
+	const resolveProgress = useMemo(
+		() => computeResolveProgress(resolveSteps, resolvePlayer.index),
+		[resolveSteps, resolvePlayer.index],
+	);
+	const resolveCurrentStep = resolvePlayer.currentStep;
+	const resolveCurrentLine = resolveCurrentStep?.kind === "declare" ? resolveCurrentStep.line : null;
+
+	const isSemantica = phase === "semantica";
+
 	const selectPhase = useCallback(
 		(next: Phase) => {
 			if (next === "codigo" || next === "tokens") {
@@ -137,21 +167,47 @@ export function Visualizador() {
 	const toggleCompileMode = useCallback(() => {
 		const next = !compileMode;
 		setCompileMode(next);
-		if (next && (phase === "codigo" || phase === "tokens")) {
+		if (next && (phase === "codigo" || phase === "tokens" || phase === "semantica")) {
 			navigate("visualizador", "execucao");
 		}
 	}, [compileMode, phase, navigate]);
 
-	const activeHasTrace = compileMode ? hasCompileTrace : hasTrace;
-	const activeCurrentLine = compileMode ? compileCurrentLine : gatedCurrentLine;
+	let activeMode: "execution" | "compilation" | "resolution" = "execution";
+	if (isSemantica) {
+		activeMode = "resolution";
+	} else if (compileMode) {
+		activeMode = "compilation";
+	}
+
+	let activePlayer: PlayerControls = player;
+	if (isSemantica) {
+		activePlayer = resolvePlayer;
+	} else if (compileMode) {
+		activePlayer = compilePlayer;
+	}
+
+	let activeHasTrace = hasTrace;
+	if (isSemantica) {
+		activeHasTrace = hasResolveTrace;
+	} else if (compileMode) {
+		activeHasTrace = hasCompileTrace;
+	}
+
+	let activeCurrentLine = gatedCurrentLine;
+	if (isSemantica) {
+		activeCurrentLine = resolveCurrentLine;
+	} else if (compileMode) {
+		activeCurrentLine = compileCurrentLine;
+	}
+
 	const effectiveHoverLine = hoveredTokenLine ?? hoverLine;
 
 	useKeyboardShortcuts({
 		enabled: activeHasTrace,
-		onNext: compileMode ? compilePlayer.next : player.next,
-		onPrevious: compileMode ? compilePlayer.previous : player.previous,
-		onTogglePlay: compileMode ? compilePlayer.togglePlay : player.togglePlay,
-		onReset: compileMode ? compilePlayer.reset : player.reset,
+		onNext: activePlayer.next,
+		onPrevious: activePlayer.previous,
+		onTogglePlay: activePlayer.togglePlay,
+		onReset: activePlayer.reset,
 	});
 
 	const executionMarkers = useMemo<ScrubberMarker[]>(() => {
@@ -206,6 +262,15 @@ export function Visualizador() {
 				tokens={trace?.tokens ?? []}
 				hoveredLine={effectiveHoverLine}
 				onHoverLine={setHoveredTokenLine}
+			/>
+		);
+	} else if (phase === "semantica") {
+		structureContent = (
+			<ScopeView
+				frames={resolveProgress.frames}
+				log={resolveProgress.log}
+				currentStepIndex={resolveProgress.currentStepIndex}
+				currentTargetSymbolId={resolveProgress.currentTargetSymbolId}
 			/>
 		);
 	} else {
@@ -266,20 +331,20 @@ export function Visualizador() {
 				onRun={run}
 				running={running}
 				hasTrace={activeHasTrace}
-				markers={compileMode ? [] : executionMarkers}
-				mode={compileMode ? "compilation" : "execution"}
-				playing={compileMode ? compilePlayer.playing : player.playing}
-				speed={compileMode ? compilePlayer.speed : player.speed}
-				stepIndex={compileMode ? compilePlayer.index : player.index}
-				totalSteps={compileMode ? compilePlayer.total : player.total}
+				markers={activeMode === "execution" ? executionMarkers : []}
+				mode={activeMode}
+				playing={activePlayer.playing}
+				speed={activePlayer.speed}
+				stepIndex={activePlayer.index}
+				totalSteps={activePlayer.total}
 				currentLine={activeCurrentLine}
-				onTogglePlay={compileMode ? compilePlayer.togglePlay : player.togglePlay}
-				onPrevious={compileMode ? compilePlayer.previous : player.previous}
-				onNext={compileMode ? compilePlayer.next : player.next}
-				onNextLine={compileMode ? compilePlayer.nextLine : player.nextLine}
-				onReset={compileMode ? compilePlayer.reset : player.reset}
-				onSeek={compileMode ? compilePlayer.goTo : player.goTo}
-				onSpeedChange={compileMode ? compilePlayer.setSpeed : player.setSpeed}
+				onTogglePlay={activePlayer.togglePlay}
+				onPrevious={activePlayer.previous}
+				onNext={activePlayer.next}
+				onNextLine={activePlayer.nextLine}
+				onReset={activePlayer.reset}
+				onSeek={activePlayer.goTo}
+				onSpeedChange={activePlayer.setSpeed}
 				theme={theme}
 				onToggleTheme={toggleTheme}
 				phase={phase}
@@ -294,7 +359,7 @@ export function Visualizador() {
 						value={program}
 						onChange={setProgram}
 						currentLine={activeCurrentLine}
-						errorLine={compileMode ? null : gatedErrorLine}
+						errorLine={activeMode === "execution" ? gatedErrorLine : null}
 						hoverLine={effectiveHoverLine}
 					/>
 				</div>
@@ -318,7 +383,12 @@ export function Visualizador() {
 						</div>
 						{structureContent}
 					</div>
-					{compileMode ? (
+					{isSemantica && (
+						<div className={styles.bottomRowCompact}>
+							<ResolveNarration step={resolveCurrentStep} />
+						</div>
+					)}
+					{!isSemantica && compileMode && (
 						<div className={styles.bottomRowCompact}>
 							<CompileNarration
 								step={compileCurrentStep}
@@ -326,7 +396,8 @@ export function Visualizador() {
 								emitCountByNode={emitCountByNode}
 							/>
 						</div>
-					) : (
+					)}
+					{!isSemantica && !compileMode && (
 						<div className={styles.bottomRow}>
 							<VariablesView
 								step={hasTrace ? player.currentStep : null}

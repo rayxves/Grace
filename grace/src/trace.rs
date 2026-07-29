@@ -34,6 +34,25 @@ pub struct StepJson {
 
 #[derive(Serialize)]
 #[serde(tag = "kind", rename_all = "camelCase", rename_all_fields = "camelCase")]
+pub enum ResolveStepJson {
+    ScopeBegin,
+    ScopeEnd,
+    Declare {
+        name: String,
+        line: u64,
+    },
+    Define {
+        name: String,
+    },
+    Resolve {
+        id: usize,
+        name: String,
+        depth: usize,
+    },
+}
+
+#[derive(Serialize)]
+#[serde(tag = "kind", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum CompileStepJson {
     Enter {
         node_id: usize,
@@ -69,6 +88,7 @@ struct TraceView<'a> {
     ast: &'a Option<AstNode>,
     bytecode: &'a Vec<BytecodeJson>,
     steps: &'a Vec<StepJson>,
+    resolve_steps: &'a Vec<ResolveStepJson>,
     compile_steps: &'a Vec<CompileStepJson>,
     tokens: &'a Vec<TokenJson>,
     error: &'a Option<String>,
@@ -91,6 +111,7 @@ const MAX_TRACE_STEPS: usize = 5_000;
 
 pub struct TraceCollector {
     steps: Vec<StepJson>,
+    resolve_steps: Vec<ResolveStepJson>,
     compile_steps: Vec<CompileStepJson>,
     tokens: Vec<TokenJson>,
     error: Option<String>,
@@ -102,6 +123,7 @@ impl TraceCollector {
     pub fn new() -> TraceCollector {
         TraceCollector {
             steps: Vec::new(),
+            resolve_steps: Vec::new(),
             compile_steps: Vec::new(),
             tokens: Vec::new(),
             error: None,
@@ -115,6 +137,7 @@ impl TraceCollector {
             ast,
             bytecode,
             steps: &self.steps,
+            resolve_steps: &self.resolve_steps,
             compile_steps: &self.compile_steps,
             tokens: &self.tokens,
             error: &self.error,
@@ -226,6 +249,22 @@ impl EventSink for TraceCollector {
                 if self.error.is_none() {
                     self.error = Some(format!("Linha {}: {}", line, message));
                 }
+            }
+            Event::Resolve(ResolveEvent::ScopeBegin) => {
+                self.resolve_steps.push(ResolveStepJson::ScopeBegin);
+            }
+            Event::Resolve(ResolveEvent::ScopeEnd) => {
+                self.resolve_steps.push(ResolveStepJson::ScopeEnd);
+            }
+            Event::Resolve(ResolveEvent::Declare { name, line }) => {
+                self.resolve_steps.push(ResolveStepJson::Declare { name, line });
+            }
+            Event::Resolve(ResolveEvent::Define { name }) => {
+                self.resolve_steps.push(ResolveStepJson::Define { name });
+            }
+            Event::Resolve(ResolveEvent::Resolve { id, name, depth }) => {
+                self.resolve_steps
+                    .push(ResolveStepJson::Resolve { id, name, depth });
             }
             _ => {}
         }

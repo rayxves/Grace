@@ -1,6 +1,8 @@
 # Grace
 
-Grace é uma linguagem de programação com sintaxe em português, escrita em Rust e compilada para WebAssembly. Este repositório tem duas partes:
+Grace é uma linguagem de programação com sintaxe em português, escrita em Rust e compilada para WebAssembly — e um visualizador interativo de como um compilador e uma máquina virtual funcionam por dentro. A plataforma web acompanha, passo a passo, todas as fases reais do pipeline: análise léxica (tokens), análise sintática (AST), resolução de escopos e variáveis, geração de bytecode e execução na VM (pilha, variáveis, frames de chamada).
+
+Este repositório tem duas partes:
 
 ```
 grace/   a linguagem: scanner, parser, resolver, compilador, VM, e o binding WASM (pkg/)
