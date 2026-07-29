@@ -19,6 +19,7 @@ use ast_serializer::{AstNode, AstSerializer};
 use compiler::Compiler;
 use events::{Event, ScanEvent, SharedSink, VmEvent};
 use parser::Parser;
+use resolver::Resolver;
 use scanner::Scanner;
 use stmt::StmtVisitor;
 use trace::TraceCollector;
@@ -45,6 +46,9 @@ pub fn gera_trace(fonte: &str) -> String {
 
     let mut parser = Parser::new(tokens, sink.clone());
     let statements = parser.parse();
+
+    let mut resolver = Resolver::new(sink.clone());
+    let _ = resolver.resolve(&statements);
 
     let mut serializer = AstSerializer;
     let ast_nodes: Vec<AstNode> = statements

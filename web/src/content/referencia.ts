@@ -812,6 +812,38 @@ x += 5;`,
 				},
 			},
 			{
+				id: "variavel-ja-declarada",
+				titulo: "Variável já declarada neste escopo",
+				descricao:
+					'Mensagem: "Variável \'X\' já foi declarada neste escopo." Dentro de um mesmo bloco ou função, dois var com o mesmo nome colidem. Esse erro só existe dentro de blocos/funções — no nível mais externo do programa, redeclarar uma variável apenas a substitui, sem erro.',
+				exemplo: {
+					id: "variavel-ja-declarada",
+					title: "Duas var x no mesmo bloco",
+					code: `funcao f() {
+	var x = 1;
+	var x = 2;
+	retorna x;
+}
+imprima(f());`,
+					expect: { kind: "error" },
+				},
+			},
+			{
+				id: "variavel-usada-antes-de-inicializada",
+				titulo: "Variável usada antes de ser inicializada",
+				descricao:
+					'Mensagem: "Variável \'X\' usada antes de ser inicializada." Dentro de um bloco ou função, o próprio valor inicial de uma var não pode se referir a ela mesma (a variável ainda não existe nesse instante). Assim como o erro acima, essa checagem só vale dentro de blocos/funções.',
+				exemplo: {
+					id: "variavel-usada-antes-de-inicializada",
+					title: "var x = x dentro de um bloco",
+					code: `se (verdadeiro) {
+	var x = x;
+	imprima(x);
+}`,
+					expect: { kind: "error" },
+				},
+			},
+			{
 				id: "divisao-por-zero-erro",
 				titulo: "Divisão por zero",
 				descricao: 'Mensagem: "Não é possível dividir por zero." O denominador de uma divisão era zero.',
