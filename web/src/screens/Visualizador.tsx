@@ -5,7 +5,7 @@ import { CodeEditor } from "../components/CodeEditor/CodeEditor";
 import { AstView } from "../components/AstView/AstView";
 import { BytecodeView } from "../components/BytecodeView/BytecodeView";
 import { TokensView } from "../components/TokensView/TokensView";
-import type { Phase } from "../components/PipelineStrip/PipelineStrip";
+import { isPhase, type Phase } from "../components/PipelineStrip/PipelineStrip";
 import { StackView } from "../components/StackView/StackView";
 import { VariablesView } from "../components/VariablesView/VariablesView";
 import type { ScrubberMarker } from "../components/Scrubber/Scrubber";
@@ -31,12 +31,12 @@ const EMPTY_BYTECODE: Trace["bytecode"] = [];
 const EMPTY_COMPILE_STEPS: Trace["compileSteps"] = [];
 
 export function Visualizador() {
-	const { program, setProgram } = useRoute();
+	const { program, setProgram, route, navigate } = useRoute();
 	const { theme, toggleTheme } = useTheme();
 	const [trace, setTrace] = useState<Trace | null>(null);
 	const [running, setRunning] = useState(false);
 	const [runtimeError, setRuntimeError] = useState<string | null>(null);
-	const [phase, setPhase] = useState<Phase>("bytecode");
+	const phase: Phase = isPhase(route.param) ? route.param : "bytecode";
 	const [compileMode, setCompileMode] = useState(false);
 	const [hoveredNodeId, setHoveredNodeId] = useState<number | null>(null);
 	const [hoveredTokenLine, setHoveredTokenLine] = useState<number | null>(null);
@@ -124,20 +124,23 @@ export function Visualizador() {
 			? compileCurrentStep.line
 			: null;
 
-	const selectPhase = useCallback((next: Phase) => {
-		if (next === "codigo" || next === "tokens") {
-			setCompileMode(false);
-		}
-		setPhase(next);
-	}, []);
+	const selectPhase = useCallback(
+		(next: Phase) => {
+			if (next === "codigo" || next === "tokens") {
+				setCompileMode(false);
+			}
+			navigate("visualizador", next);
+		},
+		[navigate],
+	);
 
 	const toggleCompileMode = useCallback(() => {
 		const next = !compileMode;
 		setCompileMode(next);
 		if (next && (phase === "codigo" || phase === "tokens")) {
-			setPhase("execucao");
+			navigate("visualizador", "execucao");
 		}
-	}, [compileMode, phase]);
+	}, [compileMode, phase, navigate]);
 
 	const activeHasTrace = compileMode ? hasCompileTrace : hasTrace;
 	const activeCurrentLine = compileMode ? compileCurrentLine : gatedCurrentLine;

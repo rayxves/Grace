@@ -16,6 +16,12 @@ const PHASES: { id: Phase; label: string }[] = [
 	{ id: "execucao", label: "execução" },
 ];
 
+const PHASE_IDS: Set<string> = new Set(PHASES.map((entry) => entry.id));
+
+export function isPhase(value: string | null | undefined): value is Phase {
+	return value !== null && value !== undefined && PHASE_IDS.has(value);
+}
+
 export function PipelineStrip({
 	phase,
 	compiling,

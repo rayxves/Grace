@@ -1,12 +1,12 @@
-import { BookOpen, Dumbbell, Library, MonitorPlay } from "lucide-react";
+import { Library, MonitorPlay } from "lucide-react";
 import { useRoute, type Screen } from "../../hooks/useRoute";
 import styles from "./TopNav.module.css";
 
 const ICON_SIZE = "1rem";
 
-const DESTINATIONS: { screen: Screen; label: string; icon: typeof BookOpen }[] = [
-	{ screen: "aprender", label: "Aprender", icon: BookOpen },
-	{ screen: "praticar", label: "Praticar", icon: Dumbbell },
+// Aprender e Praticar continuam implementados e acessíveis por rota direta
+// (#/aprender, #/praticar) — só saíram da navegação principal.
+const DESTINATIONS: { screen: Screen; label: string; icon: typeof Library }[] = [
 	{ screen: "referencia", label: "Referência", icon: Library },
 ];
 
