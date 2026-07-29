@@ -16,6 +16,14 @@ export interface Topic {
 	examples: VerifiedExample[];
 }
 
+export interface Exercicio {
+	id: string;
+	titulo: string;
+	enunciado: string;
+	codigoInicial: string;
+	saidaEsperada: string[];
+}
+
 export interface Licao {
 	id: string;
 	numero: number;

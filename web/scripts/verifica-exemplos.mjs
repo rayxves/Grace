@@ -25,6 +25,18 @@ const CONTENT_MODULES = [
 			return entries;
 		},
 	},
+	{
+		// The starter code is meant to be broken — this confirms it genuinely fails,
+		// so the exercise isn't accidentally already solved.
+		file: "src/content/conserte.ts",
+		exportName: "conserte",
+		extract: (item) => [
+			{
+				id: item.id,
+				example: { id: item.id, title: item.titulo, code: item.codigoInicial, expect: { kind: "error" } },
+			},
+		],
+	},
 ];
 
 async function loadContentModule(relPath) {
