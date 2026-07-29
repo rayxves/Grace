@@ -37,6 +37,14 @@ const CONTENT_MODULES = [
 			},
 		],
 	},
+	{
+		file: "src/content/referencia.ts",
+		exportName: "referencia",
+		extract: (secao) =>
+			secao.itens
+				.filter((item) => item.exemplo)
+				.map((item) => ({ id: `${secao.id}/${item.id}`, example: item.exemplo })),
+	},
 ];
 
 async function loadContentModule(relPath) {

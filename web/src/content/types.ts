@@ -24,6 +24,21 @@ export interface Exercicio {
 	saidaEsperada: string[];
 }
 
+export interface ReferenciaItem {
+	id: string;
+	titulo: string;
+	sintaxe?: string;
+	descricao: string;
+	exemplo?: VerifiedExample;
+}
+
+export interface ReferenciaSecao {
+	id: string;
+	titulo: string;
+	intro?: string;
+	itens: ReferenciaItem[];
+}
+
 export interface Licao {
 	id: string;
 	numero: number;
