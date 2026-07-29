@@ -10,7 +10,8 @@ export const referencia: ReferenciaSecao[] = [
 				id: "ponto-e-virgula",
 				titulo: "Ponto e vírgula",
 				sintaxe: "comando;",
-				descricao: "Todo comando termina com ponto e vírgula.",
+				descricao:
+					"Todo comando termina com ponto e vírgula.\n\nA única exceção é um bloco entre chaves — usado em se, enquanto, para, funcao e classe — que não leva ponto e vírgula depois do } que o fecha.",
 				exemplo: {
 					id: "pv",
 					title: "Ponto e vírgula",
@@ -23,7 +24,7 @@ export const referencia: ReferenciaSecao[] = [
 				titulo: "Blocos",
 				sintaxe: "{ comando; comando; }",
 				descricao:
-					"Um bloco é uma sequência de comandos entre chaves. É usado dentro de se, enquanto, para, funcao e classe, mas também pode aparecer sozinho.",
+					"Um bloco é uma sequência de comandos entre chaves. É usado dentro de se, enquanto, para, funcao e classe, mas também pode aparecer sozinho.\n\nCada bloco cria um novo escopo: uma variável declarada dentro dele deixa de existir assim que o bloco termina, mesmo que exista uma variável de mesmo nome fora dele.",
 				exemplo: {
 					id: "bloco",
 					title: "Bloco de comandos",
@@ -38,7 +39,8 @@ export const referencia: ReferenciaSecao[] = [
 				id: "comentarios",
 				titulo: "Comentários",
 				sintaxe: "// texto até o fim da linha",
-				descricao: "Tudo depois de // na mesma linha é ignorado pelo Grace.",
+				descricao:
+					"Tudo depois de // na mesma linha é ignorado pelo Grace.\n\nNão existe comentário de bloco (várias linhas com /* */) — cada linha precisa começar com o próprio //.",
 				exemplo: {
 					id: "comentario",
 					title: "Um comentário",
@@ -116,7 +118,8 @@ imprima(cinco());`,
 				id: "enquanto",
 				titulo: "enquanto",
 				sintaxe: "enquanto (condição) { ... }",
-				descricao: "Repete um bloco enquanto a condição for verdadeira.",
+				descricao:
+					"Repete um bloco enquanto a condição for verdadeira.\n\nA condição é testada antes de cada repetição, inclusive a primeira: se ela já começar falsa, o bloco nunca chega a rodar.",
 				exemplo: {
 					id: "enquanto",
 					title: "enquanto",
@@ -132,7 +135,8 @@ enquanto (i < 2) {
 				id: "para",
 				titulo: "para",
 				sintaxe: "para (início; condição; atualização) { ... }",
-				descricao: "Repete um bloco um número contado de vezes.",
+				descricao:
+					"Repete um bloco um número contado de vezes.\n\nA variável criada na primeira parte (como var i = 0) só existe dentro do laço — ela deixa de existir assim que o para termina.",
 				exemplo: {
 					id: "para",
 					title: "para",
@@ -170,7 +174,8 @@ enquanto (i < 2) {
 				id: "classe",
 				titulo: "classe",
 				sintaxe: "classe Nome { ... }",
-				descricao: "Declara um molde para criar objetos.",
+				descricao:
+					"Declara um molde para criar objetos.\n\nUma classe também é um valor como outro qualquer: pode ser guardada numa variável, e essa variável passa a funcionar como a própria classe para criar novos objetos.",
 				exemplo: {
 					id: "classe",
 					title: "classe",
@@ -189,7 +194,8 @@ imprima(p.nome);`,
 				id: "funcao",
 				titulo: "funcao",
 				sintaxe: "funcao nome(parâmetros) { ... }",
-				descricao: "Declara uma função.",
+				descricao:
+					"Declara uma função.\n\nUma função é um valor como outro qualquer: pode ser guardada numa variável e chamada através dela.",
 				exemplo: {
 					id: "funcao",
 					title: "funcao",
@@ -351,7 +357,8 @@ imprima("a" + "b");`,
 			{
 				id: "divisao",
 				titulo: "/ (divisão)",
-				descricao: "Divide dois números. O resultado pode ter casas decimais.",
+				descricao:
+					"Divide dois números. O resultado pode ter casas decimais.\n\nNão existe uma divisão inteira separada: 7 / 2 sempre dá 3.5, nunca 3.",
 				exemplo: {
 					id: "divisao",
 					title: "/",
@@ -458,7 +465,7 @@ imprima("a" + "b");`,
 				id: "numero",
 				titulo: "Número",
 				descricao:
-					"Existe só um tipo de número, sempre com ponto flutuante — não há um tipo separado para números inteiros.",
+					"Existe só um tipo de número, sempre com ponto flutuante — não há um tipo separado para números inteiros.\n\nQuando o resultado é um número inteiro, o Grace imprime sem casas decimais (2, não 2.0). Quando não é, imprime as casas decimais normalmente (3.5).",
 				exemplo: {
 					id: "numero",
 					title: "Número",
@@ -577,7 +584,7 @@ imprima(soma(2, 3));`,
 			{
 				id: "aninhamento",
 				titulo: "Aninhamento",
-				descricao: "Uma função pode ser declarada dentro de outra.",
+				descricao: "Uma função pode ser declarada dentro de outra, e chamada normalmente de lá de dentro.",
 				exemplo: {
 					id: "aninhamento",
 					title: "Função dentro de função",
@@ -589,6 +596,21 @@ imprima(soma(2, 3));`,
 }
 imprima(externa());`,
 					expect: { kind: "output", lines: ["15"] },
+				},
+				aviso:
+					"O aninhamento não cria um fechamento (closure): a função interna não enxerga as variáveis locais da função externa, só os próprios parâmetros e variáveis. Tentar usar uma variável de fora dá o mesmo erro de \"variável não existe\" que usar uma variável nunca declarada.",
+				erroDemonstrado: {
+					id: "aninhamento-sem-closure",
+					title: "A função interna não vê a variável da externa",
+					code: `funcao externa() {
+	var x = 10;
+	funcao interna() {
+		retorna x;
+	}
+	retorna interna();
+}
+imprima(externa());`,
+					expect: { kind: "error" },
 				},
 			},
 			{

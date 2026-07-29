@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Play, Search } from "lucide-react";
+import { AlertTriangle, Play, Search } from "lucide-react";
 import { referencia } from "../content/referencia";
 import type { ReferenciaItem } from "../content/types";
 import { useRoute } from "../hooks/useRoute";
@@ -25,17 +25,29 @@ function search(query: string): SearchHit[] {
 	return hits;
 }
 
-function ItemCard({ item }: Readonly<{ item: ReferenciaItem }>) {
+function ItemEntry({ item }: Readonly<{ item: ReferenciaItem }>) {
 	const { navigate } = useRoute();
+	const paragrafos = item.descricao.split("\n\n");
 	return (
-		<article className={styles.card}>
-			<div className={styles.cardHeader}>
-				<h3 className={styles.cardTitle}>{item.titulo}</h3>
-				{item.sintaxe && <code className={styles.cardSintaxe}>{item.sintaxe}</code>}
+		<article className={styles.entry} id={item.id}>
+			<h3 className={styles.entryTitle}>{item.titulo}</h3>
+
+			{item.sintaxe && (
+				<div className={styles.sintaxeBlock}>
+					<span className={styles.blockLabel}>Sintaxe</span>
+					<code className={styles.sintaxeCode}>{item.sintaxe}</code>
+				</div>
+			)}
+
+			<div className={styles.descricao}>
+				{paragrafos.map((paragrafo) => (
+					<p key={paragrafo}>{paragrafo}</p>
+				))}
 			</div>
-			<p className={styles.cardDescricao}>{item.descricao}</p>
+
 			{item.exemplo && (
-				<>
+				<div className={styles.exemploBlock}>
+					<span className={styles.blockLabel}>Exemplo</span>
 					<pre className={styles.code}>{item.exemplo.code}</pre>
 					<button
 						type="button"
@@ -45,7 +57,29 @@ function ItemCard({ item }: Readonly<{ item: ReferenciaItem }>) {
 						<Play size="1rem" />
 						{item.exemplo.expect.kind === "error" ? "ver o erro no visualizador" : "experimentar"}
 					</button>
-				</>
+				</div>
+			)}
+
+			{item.aviso && (
+				<div className={styles.aviso}>
+					<AlertTriangle size="1.125rem" className={styles.avisoIcon} />
+					<p className={styles.avisoText}>{item.aviso}</p>
+				</div>
+			)}
+
+			{item.erroDemonstrado && (
+				<div className={styles.exemploBlock}>
+					<span className={styles.blockLabel}>{item.erroDemonstrado.title}</span>
+					<pre className={styles.code}>{item.erroDemonstrado.code}</pre>
+					<button
+						type="button"
+						className={styles.experimentar}
+						onClick={() => navigate("visualizador", null, item.erroDemonstrado!.code)}
+					>
+						<Play size="1rem" />
+						ver o erro no visualizador
+					</button>
+				</div>
 			)}
 		</article>
 	);
@@ -94,12 +128,12 @@ export function Referencia() {
 				{query.trim() ? (
 					<>
 						<h1 className={styles.secaoTitulo}>Resultados para "{query}"</h1>
-						<div className={styles.grid}>
+						<div className={styles.list}>
 							{hits.length > 0 ? (
 								hits.map(({ secaoTitulo, item }) => (
-									<div key={item.id} className={styles.hitGroup}>
+									<div key={item.id}>
 										<span className={styles.hitSecao}>{secaoTitulo}</span>
-										<ItemCard item={item} />
+										<ItemEntry item={item} />
 									</div>
 								))
 							) : (
@@ -111,9 +145,9 @@ export function Referencia() {
 					<>
 						<h1 className={styles.secaoTitulo}>{secao.titulo}</h1>
 						{secao.intro && <p className={styles.secaoIntro}>{secao.intro}</p>}
-						<div className={styles.grid}>
+						<div className={styles.list}>
 							{secao.itens.map((item) => (
-								<ItemCard key={item.id} item={item} />
+								<ItemEntry key={item.id} item={item} />
 							))}
 						</div>
 					</>

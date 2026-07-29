@@ -30,6 +30,8 @@ export interface ReferenciaItem {
 	sintaxe?: string;
 	descricao: string;
 	exemplo?: VerifiedExample;
+	aviso?: string;
+	erroDemonstrado?: VerifiedExample;
 }
 
 export interface ReferenciaSecao {

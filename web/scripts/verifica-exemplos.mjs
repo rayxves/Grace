@@ -40,10 +40,19 @@ const CONTENT_MODULES = [
 	{
 		file: "src/content/referencia.ts",
 		exportName: "referencia",
-		extract: (secao) =>
-			secao.itens
-				.filter((item) => item.exemplo)
-				.map((item) => ({ id: `${secao.id}/${item.id}`, example: item.exemplo })),
+		extract: (secao) => {
+			const entries = [];
+			for (const item of secao.itens) {
+				if (item.exemplo) entries.push({ id: `${secao.id}/${item.id}`, example: item.exemplo });
+				if (item.erroDemonstrado) {
+					entries.push({
+						id: `${secao.id}/${item.id}/${item.erroDemonstrado.id}`,
+						example: item.erroDemonstrado,
+					});
+				}
+			}
+			return entries;
+		},
 	},
 ];
 
