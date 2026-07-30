@@ -56,14 +56,29 @@
 	opacity: 0.85;
 }
 
+.playerCard {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	padding: 0.25rem;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-lg);
+	background: var(--color-bg);
+}
+
 .playerGroup {
 	display: flex;
 	align-items: center;
 	gap: var(--space-xs);
 	padding: 0.1875rem;
-	border: 1px solid var(--color-border);
 	border-radius: var(--radius-md);
 	background: var(--color-surface-alt);
+}
+
+.playerDivider {
+	width: 1px;
+	height: 1.5rem;
+	background: var(--color-border);
 }
 
 .control,
@@ -113,6 +128,16 @@
 	color: var(--color-heading);
 	background: transparent;
 	border-color: var(--color-border);
+}
+
+.controlPlaying {
+	background: var(--color-accent);
+	color: var(--color-on-accent);
+}
+
+.controlPlaying:hover:not(:disabled) {
+	background: var(--color-accent);
+	opacity: 0.85;
 }
 
 .position {
@@ -173,6 +198,15 @@
 		order: 3;
 		flex-basis: 100%;
 		justify-content: center;
+	}
+
+	.playerCard {
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.playerDivider {
+		display: none;
 	}
 
 	.position {

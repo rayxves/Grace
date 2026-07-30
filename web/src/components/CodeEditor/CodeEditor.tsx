@@ -35,6 +35,7 @@ interface CodeEditorProps {
 	currentLine: number | null;
 	errorLine: number | null;
 	hoverLine: number | null;
+	hoverColor?: string;
 }
 
 interface LineHighlight {
@@ -71,7 +72,12 @@ const highlightedLineField = StateField.define<DecorationSet>({
 	provide: (field) => EditorView.decorations.from(field),
 });
 
-const setHoverLine = StateEffect.define<number | null>();
+interface HoverHighlight {
+	line: number;
+	color: string | undefined;
+}
+
+const setHoverLine = StateEffect.define<HoverHighlight | null>();
 
 const hoverLineField = StateField.define<DecorationSet>({
 	create: () => Decoration.none,
@@ -79,14 +85,21 @@ const hoverLineField = StateField.define<DecorationSet>({
 		decorations = decorations.map(transaction.changes);
 		for (const effect of transaction.effects) {
 			if (effect.is(setHoverLine)) {
-				const line = effect.value;
-				if (line === null || line < 1 || line > transaction.state.doc.lines) {
+				const highlight = effect.value;
+				if (
+					highlight === null ||
+					highlight.line < 1 ||
+					highlight.line > transaction.state.doc.lines
+				) {
 					decorations = Decoration.none;
 				} else {
-					const docLine = transaction.state.doc.line(line);
-					decorations = Decoration.set([
-						Decoration.line({ class: "cm-hoverLine" }).range(docLine.from),
-					]);
+					const docLine = transaction.state.doc.line(highlight.line);
+					const mark = highlight.color
+						? Decoration.line({
+								attributes: { style: `box-shadow: inset 0.1875rem 0 0 ${highlight.color};` },
+							})
+						: Decoration.line({ class: "cm-hoverLine" });
+					decorations = Decoration.set([mark.range(docLine.from)]);
 				}
 			}
 		}
@@ -185,6 +198,7 @@ export function CodeEditor({
 	currentLine,
 	errorLine,
 	hoverLine,
+	hoverColor,
 }: Readonly<CodeEditorProps>) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const viewRef = useRef<EditorView | null>(null);
@@ -262,8 +276,9 @@ export function CodeEditor({
 	useEffect(() => {
 		const view = viewRef.current;
 		if (!view) return;
-		view.dispatch({ effects: [setHoverLine.of(hoverLine)] });
-	}, [hoverLine]);
+		const highlight = hoverLine === null ? null : { line: hoverLine, color: hoverColor };
+		view.dispatch({ effects: [setHoverLine.of(highlight)] });
+	}, [hoverLine, hoverColor]);
 
 	return (
 		<section className={styles.panel}>

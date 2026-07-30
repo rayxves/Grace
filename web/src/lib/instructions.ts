@@ -138,6 +138,13 @@ export function explainStep(step: Step): StepExplanation {
 	return { summary, popped: step.popped, pushed: step.pushed };
 }
 
+const OPCODE_NAMES_BY_LENGTH = Object.keys(fallbackDescriptions).sort((a, b) => b.length - a.length);
+
+export function describeOpcodeText(bytecodeText: string): string | null {
+	const name = OPCODE_NAMES_BY_LENGTH.find((candidate) => bytecodeText.startsWith(candidate));
+	return name ? fallbackDescriptions[name] : null;
+}
+
 export function collectOutput(steps: Step[], upToIndex: number): string[] {
 	const lines: string[] = [];
 	for (let i = 1; i <= upToIndex && i < steps.length; i++) {

@@ -59,6 +59,7 @@ export interface TokenInfo {
 export interface Trace {
 	ast: AstNode | null;
 	bytecode: BytecodeInstruction[];
+	constants: string[];
 	steps: Step[];
 	resolveSteps: ResolveStep[];
 	compileSteps: CompileStep[];

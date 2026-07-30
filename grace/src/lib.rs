@@ -40,7 +40,7 @@ pub fn gera_trace(fonte: &str) -> String {
                 line: token_error.line,
             }));
             let ast: Option<AstNode> = None;
-            return collector.borrow().to_json(&ast, &Vec::new());
+            return collector.borrow().to_json(&ast, &Vec::new(), &Vec::new());
         }
     };
 
@@ -68,6 +68,7 @@ pub fn gera_trace(fonte: &str) -> String {
     compiler.compile(&statements);
     let chunk = compiler.into_chunk();
     let bytecode = build_bytecode_list(&chunk);
+    let constants: Vec<String> = chunk.pool.iter().map(|value| value.to_display()).collect();
     let mut vm = Vm::new(sink.clone());
     if let Err(vm_error) = vm.run(&chunk) {
         sink.borrow_mut().emit(Event::Vm(VmEvent::Error {
@@ -77,7 +78,7 @@ pub fn gera_trace(fonte: &str) -> String {
         }));
     }
 
-    let json = collector.borrow().to_json(&ast, &bytecode);
+    let json = collector.borrow().to_json(&ast, &bytecode, &constants);
     json
 }
 

@@ -106,62 +106,65 @@ export function Toolbar({
 						{running ? "executando…" : "executar"}
 					</button>
 
-					<div className={styles.playerGroup}>
-						<button
-							className={styles.control}
-							onClick={onReset}
-							disabled={!hasTrace || atStart}
-							title="reiniciar"
-						>
-							<SkipBack size={ICON_SIZE} />
-						</button>
-						<button
-							className={styles.controlBack}
-							onClick={onPrevious}
-							disabled={!hasTrace || atStart}
-							title="voltar um passo (seta esquerda)"
-						>
-							<ChevronLeft size={ICON_SIZE} />
-							voltar
-						</button>
-						<button
-							className={styles.control}
-							onClick={onTogglePlay}
-							disabled={!hasTrace || atEnd}
-							title={playing ? "pausar (espaço)" : "correr (espaço)"}
-						>
-							{playing ? (
-								<Pause size={ICON_SIZE} />
-							) : (
-								<Play size={ICON_SIZE} />
-							)}
-						</button>
-						<button
-							className={styles.control}
-							onClick={onNext}
-							disabled={!hasTrace || atEnd}
-							title="próximo passo (seta direita)"
-						>
-							<ChevronRight size={ICON_SIZE} />
-						</button>
-						{mode === "execution" && (
+					<div className={styles.playerCard} title="controles de animação do passo a passo">
+						<div className={styles.playerGroup}>
 							<button
-								className={styles.controlLabeled}
-								onClick={onNextLine}
-								disabled={!hasTrace || atEnd}
-								title="avançar até a próxima linha"
+								className={styles.control}
+								onClick={onReset}
+								disabled={!hasTrace || atStart}
+								title="reiniciar"
 							>
-								linha
-								<ChevronsRight size={ICON_SIZE} />
+								<SkipBack size={ICON_SIZE} />
 							</button>
-						)}
-					</div>
+							<button
+								className={styles.controlBack}
+								onClick={onPrevious}
+								disabled={!hasTrace || atStart}
+								title="voltar um passo (seta esquerda)"
+							>
+								<ChevronLeft size={ICON_SIZE} />
+							</button>
+							<button
+								className={playing ? `${styles.control} ${styles.controlPlaying}` : styles.control}
+								onClick={onTogglePlay}
+								disabled={!hasTrace || atEnd}
+								title={playing ? "pausar (espaço)" : "correr (espaço)"}
+							>
+								{playing ? (
+									<Pause size={ICON_SIZE} />
+								) : (
+									<Play size={ICON_SIZE} />
+								)}
+							</button>
+							<button
+								className={styles.control}
+								onClick={onNext}
+								disabled={!hasTrace || atEnd}
+								title="próximo passo (seta direita)"
+							>
+								<ChevronRight size={ICON_SIZE} />
+							</button>
+							{mode === "execution" && (
+								<button
+									className={styles.controlLabeled}
+									onClick={onNextLine}
+									disabled={!hasTrace || atEnd}
+									title="avançar até a próxima linha"
+								>
+									linha
+									<ChevronsRight size={ICON_SIZE} />
+								</button>
+							)}
+						</div>
 
-					<ViewTabs<string>
-						tabs={SPEED_TABS}
-						activeId={String(speed)}
-						onSelect={(id) => onSpeedChange(Number(id))}
-					/>
+						<span className={styles.playerDivider} aria-hidden="true" />
+
+						<ViewTabs<string>
+							tabs={SPEED_TABS}
+							activeId={String(speed)}
+							onSelect={(id) => onSpeedChange(Number(id))}
+						/>
+					</div>
 				</div>
 
 				<button

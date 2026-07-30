@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, type CSSProperties } from "react";
 import type { BytecodeInstruction, Step } from "../../types";
 import { groupBytecodeByLine } from "../../lib/bytecode";
 import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
+import { describeOpcodeText } from "../../lib/instructions";
 import styles from "./BytecodeView.module.css";
 
 interface BytecodeViewProps {
@@ -11,6 +12,7 @@ interface BytecodeViewProps {
 	errorOffset: number | null;
 	hoveredNodeId: number | null;
 	onHoverNode: (nodeId: number | null) => void;
+	onSelectNode?: (nodeId: number | null) => void;
 	currentOffset?: number | null;
 	pendingOffsets?: ReadonlySet<number> | null;
 }
@@ -22,6 +24,7 @@ export function BytecodeView({
 	errorOffset,
 	hoveredNodeId,
 	onHoverNode,
+	onSelectNode,
 	currentOffset,
 	pendingOffsets = null,
 }: Readonly<BytecodeViewProps>) {
@@ -41,7 +44,12 @@ export function BytecodeView({
 
 	const groups = useMemo(() => groupBytecodeByLine(bytecode), [bytecode]);
 
+	const skipNextScroll = useRef(true);
 	useEffect(() => {
+		if (skipNextScroll.current) {
+			skipNextScroll.current = false;
+			return;
+		}
 		currentRowRef.current?.scrollIntoView({
 			block: "nearest",
 			behavior: "smooth",
@@ -91,6 +99,9 @@ export function BytecodeView({
 
 									const accent = nodeAccentColor(instruction.nodeId);
 									const accentFill = nodeAccentFill(instruction.nodeId);
+									const isSelectable = instruction.nodeId !== null;
+									const selectThisRow = () =>
+										instruction.nodeId !== null && onSelectNode?.(instruction.nodeId);
 
 									return (
 										<div
@@ -111,6 +122,17 @@ export function BytecodeView({
 												onHoverNode(instruction.nodeId)
 											}
 											onMouseLeave={() => onHoverNode(null)}
+											onClick={isSelectable ? selectThisRow : undefined}
+											onKeyDown={(event) => {
+												if (!isSelectable) return;
+												if (event.key === "Enter" || event.key === " ") {
+													event.preventDefault();
+													selectThisRow();
+												}
+											}}
+											role={isSelectable ? "button" : undefined}
+											tabIndex={isSelectable ? 0 : undefined}
+											title={describeOpcodeText(instruction.text) ?? undefined}
 										>
 											<span className={styles.offset}>
 												{String(instruction.offset).padStart(4, "0")}

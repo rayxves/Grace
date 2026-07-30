@@ -8,6 +8,8 @@ import { TokensView } from "../components/TokensView/TokensView";
 import { isPhase, type Phase } from "../components/PipelineStrip/PipelineStrip";
 import { StackView } from "../components/StackView/StackView";
 import { VariablesView } from "../components/VariablesView/VariablesView";
+import { AstNodeInspector } from "../components/AstNodeInspector/AstNodeInspector";
+import { ConstantPoolView } from "../components/ConstantPoolView/ConstantPoolView";
 import type { ScrubberMarker } from "../components/Scrubber/Scrubber";
 import { CompileChipLayer } from "../components/CompileChipLayer/CompileChipLayer";
 import { CompileNarration } from "../components/CompileNarration/CompileNarration";
@@ -21,6 +23,7 @@ import { runGrace } from "../lib/grace";
 import { collectOutput } from "../lib/instructions";
 import { parseErrorLine } from "../lib/errors";
 import { computeCompileProgress, growBytecodeUpTo } from "../lib/compileProgress";
+import { nodeAccentColor } from "../lib/nodeColor";
 import { buildAstNodeIndex } from "../lib/astIndex";
 import { countEmitsByNode } from "../lib/compileNarration";
 import type { Trace } from "../types";
@@ -53,7 +56,18 @@ export function Visualizador() {
 	const phase: Phase = isPhase(route.param) ? route.param : "bytecode";
 	const [compileMode, setCompileMode] = useState(false);
 	const [hoveredNodeId, setHoveredNodeId] = useState<number | null>(null);
+	const [pinnedNodeId, setPinnedNodeId] = useState<number | null>(null);
 	const [hoveredTokenLine, setHoveredTokenLine] = useState<number | null>(null);
+
+	const togglePinnedNode = useCallback((nodeId: number | null) => {
+		if (nodeId === null) {
+			setPinnedNodeId(null);
+			return;
+		}
+		setPinnedNodeId((prev) => (prev === nodeId ? null : nodeId));
+	}, []);
+
+	const effectiveNodeId = pinnedNodeId ?? hoveredNodeId;
 
 	const steps = trace?.steps ?? EMPTY_STEPS;
 	const bytecode = trace?.bytecode ?? EMPTY_BYTECODE;
@@ -64,6 +78,7 @@ export function Visualizador() {
 	const run = useCallback(async () => {
 		setRunning(true);
 		setRuntimeError(null);
+		setPinnedNodeId(null);
 		try {
 			const result = await runGrace(program);
 			setTrace(result);
@@ -97,7 +112,7 @@ export function Visualizador() {
 		errorLine,
 		errorOffset: trace?.errorOffset ?? null,
 		bytecode,
-		hoveredNodeId,
+		hoveredNodeId: effectiveNodeId,
 	});
 
 	const output = useMemo(
@@ -161,6 +176,7 @@ export function Visualizador() {
 	const activeHasTrace = compileMode ? hasCompileTrace : hasTrace;
 	const activeCurrentLine = compileMode ? compileCurrentLine : gatedCurrentLine;
 	const effectiveHoverLine = hoveredTokenLine ?? hoverLine;
+	const effectiveHoverColor = hoveredTokenLine !== null ? undefined : nodeAccentColor(effectiveNodeId);
 
 	useKeyboardShortcuts({
 		enabled: activeHasTrace,
@@ -189,8 +205,9 @@ export function Visualizador() {
 		currentNodeId: gatedCurrentNodeId,
 		errorNodeId: gatedErrorNodeId,
 		errorLine: gatedErrorLine,
-		hoveredNodeId,
+		hoveredNodeId: effectiveNodeId,
 		onHoverNode: setHoveredNodeId,
+		onSelectNode: togglePinnedNode,
 	};
 
 	const bytecodeViewProps = {
@@ -198,9 +215,19 @@ export function Visualizador() {
 		steps,
 		stepIndex: player.index,
 		errorOffset: gatedErrorOffset,
-		hoveredNodeId,
+		hoveredNodeId: effectiveNodeId,
 		onHoverNode: setHoveredNodeId,
+		onSelectNode: togglePinnedNode,
 	};
+
+	const inspectedNodeId = pinnedNodeId ?? hoveredNodeId ?? gatedCurrentNodeId;
+	const inspectedNode = inspectedNodeId !== null ? (astIndex.get(inspectedNodeId) ?? null) : null;
+	let inspectedStatusLabel = "passo atual";
+	if (pinnedNodeId !== null) {
+		inspectedStatusLabel = "fixado";
+	} else if (hoveredNodeId !== null) {
+		inspectedStatusLabel = "em foco";
+	}
 
 	const compileToggleClassName = compileMode
 		? `${styles.modeToggle} ${styles.modeToggleActive}`
@@ -237,8 +264,9 @@ export function Visualizador() {
 				currentNodeId={compileProgress.currentNodeId}
 				errorNodeId={null}
 				errorLine={null}
-				hoveredNodeId={hoveredNodeId}
+				hoveredNodeId={effectiveNodeId}
 				onHoverNode={setHoveredNodeId}
+				onSelectNode={togglePinnedNode}
 				trailNodeIds={compileProgress.trailNodeIds}
 				revealedNodeIds={compileProgress.revealedNodeIds}
 			/>
@@ -252,8 +280,9 @@ export function Visualizador() {
 				steps={steps}
 				stepIndex={player.index}
 				errorOffset={null}
-				hoveredNodeId={hoveredNodeId}
+				hoveredNodeId={effectiveNodeId}
 				onHoverNode={setHoveredNodeId}
+				onSelectNode={togglePinnedNode}
 				currentOffset={compileCurrentOffset}
 				pendingOffsets={pendingOffsets}
 			/>
@@ -312,6 +341,7 @@ export function Visualizador() {
 						currentLine={activeCurrentLine}
 						errorLine={activeMode === "execution" ? gatedErrorLine : null}
 						hoverLine={effectiveHoverLine}
+						hoverColor={effectiveHoverColor}
 					/>
 				</div>
 				<div className={styles.visualColumn}>
@@ -334,7 +364,7 @@ export function Visualizador() {
 						</div>
 						{structureContent}
 					</div>
-					{compileMode ? (
+					{compileMode && (
 						<div className={styles.bottomRowCompact}>
 							<CompileNarration
 								step={compileCurrentStep}
@@ -342,7 +372,18 @@ export function Visualizador() {
 								emitCountByNode={emitCountByNode}
 							/>
 						</div>
-					) : (
+					)}
+					{!compileMode && phase === "arvore" && (
+						<div className={styles.bottomRowCompact}>
+							<AstNodeInspector node={inspectedNode} statusLabel={inspectedStatusLabel} />
+						</div>
+					)}
+					{!compileMode && phase === "bytecode" && (
+						<div className={styles.bottomRowCompact}>
+							<ConstantPoolView constants={trace?.constants ?? []} />
+						</div>
+					)}
+					{!compileMode && phase === "execucao" && (
 						<div className={styles.bottomRow}>
 							<VariablesView
 								step={hasTrace ? player.currentStep : null}

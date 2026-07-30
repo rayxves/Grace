@@ -115,8 +115,8 @@
 }
 
 .bottomRowCompact {
-	flex: 1.4;
-	min-height: 0;
+	flex: 1.8;
+	min-height: 14rem;
 	display: flex;
 	gap: var(--space-lg);
 }
@@ -146,6 +146,6 @@
 	}
 
 	.bottomRowCompact {
-		min-height: 16rem;
+		min-height: 18rem;
 	}
 }

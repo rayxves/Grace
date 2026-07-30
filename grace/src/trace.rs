@@ -87,6 +87,7 @@ pub struct TokenJson {
 struct TraceView<'a> {
     ast: &'a Option<AstNode>,
     bytecode: &'a Vec<BytecodeJson>,
+    constants: &'a Vec<String>,
     steps: &'a Vec<StepJson>,
     resolve_steps: &'a Vec<ResolveStepJson>,
     compile_steps: &'a Vec<CompileStepJson>,
@@ -132,10 +133,16 @@ impl TraceCollector {
         }
     }
 
-    pub fn to_json(&self, ast: &Option<AstNode>, bytecode: &Vec<BytecodeJson>) -> String {
+    pub fn to_json(
+        &self,
+        ast: &Option<AstNode>,
+        bytecode: &Vec<BytecodeJson>,
+        constants: &Vec<String>,
+    ) -> String {
         let trace = TraceView {
             ast,
             bytecode,
+            constants,
             steps: &self.steps,
             resolve_steps: &self.resolve_steps,
             compile_steps: &self.compile_steps,

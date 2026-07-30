@@ -20,6 +20,7 @@ interface AstViewProps {
 	errorLine: number | null;
 	hoveredNodeId: number | null;
 	onHoverNode: (nodeId: number | null) => void;
+	onSelectNode?: (nodeId: number | null) => void;
 	trailNodeIds?: ReadonlySet<number> | null;
 	revealedNodeIds?: ReadonlySet<number> | null;
 }
@@ -34,6 +35,7 @@ function AstNodeElement(
 	errorNodeId: number | null,
 	hoveredNodeId: number | null,
 	onHoverNode: (nodeId: number | null) => void,
+	onSelectNode: ((nodeId: number | null) => void) | undefined,
 	trailNodeIds: ReadonlySet<number> | null,
 ) {
 	const nodeId =
@@ -68,7 +70,10 @@ function AstNodeElement(
 
 	return (
 		<g
-			onClick={toggleNode}
+			onClick={() => {
+				toggleNode();
+				onSelectNode?.(nodeId);
+			}}
 			onMouseEnter={() => nodeId !== null && onHoverNode(nodeId)}
 			onMouseLeave={() => onHoverNode(null)}
 			className={nodeClass}
@@ -101,6 +106,7 @@ export function AstView({
 	errorLine,
 	hoveredNodeId,
 	onHoverNode,
+	onSelectNode,
 	trailNodeIds = null,
 	revealedNodeIds = null,
 }: Readonly<AstViewProps>) {
@@ -180,6 +186,7 @@ export function AstView({
 								errorNodeId,
 								hoveredNodeId,
 								onHoverNode,
+								onSelectNode,
 								trailNodeIds,
 							)
 						}
