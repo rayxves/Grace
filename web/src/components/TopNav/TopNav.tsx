@@ -1,28 +1,29 @@
-import { Library, MonitorPlay } from "lucide-react";
+import { Code, Library, Moon, MonitorPlay, Sun } from "lucide-react";
 import { useRoute, type Screen } from "../../hooks/useRoute";
+import { useTheme } from "../../hooks/useTheme";
 import styles from "./TopNav.module.css";
 
 const ICON_SIZE = "1rem";
 
 const DESTINATIONS: { screen: Screen; label: string; icon: typeof Library }[] = [
+	{ screen: "visualizador", label: "Visualizador", icon: MonitorPlay },
 	{ screen: "referencia", label: "Referência", icon: Library },
 ];
 
 export function TopNav() {
 	const { route, navigate } = useRoute();
+	const { theme, toggleTheme } = useTheme();
 
 	return (
 		<nav className={styles.nav} aria-label="navegação principal">
-			<button
-				type="button"
-				className={styles.brand}
-				onClick={() => navigate("visualizador")}
-				aria-current={route.screen === "visualizador" ? "page" : undefined}
-			>
-				<MonitorPlay size={ICON_SIZE} />
-				Grace
-			</button>
-			<div className={styles.destinations}>
+			<div className={styles.left}>
+				<span className={styles.brand}>
+					<MonitorPlay size={ICON_SIZE} />
+					Grace
+				</span>
+			</div>
+
+			<div className={styles.center}>
 				{DESTINATIONS.map(({ screen, label, icon: Icon }) => (
 					<button
 						key={screen}
@@ -35,6 +36,26 @@ export function TopNav() {
 						{label}
 					</button>
 				))}
+			</div>
+
+			<div className={styles.right}>
+				<a
+					className={styles.iconButton}
+					href="https://github.com/rayxves/Grace"
+					target="_blank"
+					rel="noopener noreferrer"
+					title="repositório no GitHub"
+				>
+					<Code size={ICON_SIZE} />
+				</a>
+				<button
+					type="button"
+					className={styles.iconButton}
+					onClick={toggleTheme}
+					title={theme === "light" ? "tema escuro" : "tema claro"}
+				>
+					{theme === "light" ? <Moon size={ICON_SIZE} /> : <Sun size={ICON_SIZE} />}
+				</button>
 			</div>
 		</nav>
 	);

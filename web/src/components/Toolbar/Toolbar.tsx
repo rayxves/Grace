@@ -2,13 +2,10 @@ import {
 	ChevronLeft,
 	ChevronRight,
 	ChevronsRight,
-	Moon,
 	Pause,
 	Play,
 	SkipBack,
-	Sun,
 } from "lucide-react";
-import type { Theme } from "../../hooks/useTheme";
 import { PLAYER_SPEEDS } from "../../hooks/usePlayer";
 import { Scrubber, type ScrubberMarker } from "../Scrubber/Scrubber";
 import { ViewTabs } from "../ViewTabs/ViewTabs";
@@ -33,8 +30,6 @@ interface ToolbarProps {
 	onReset: () => void;
 	onSeek: (index: number) => void;
 	onSpeedChange: (speed: number) => void;
-	theme: Theme;
-	onToggleTheme: () => void;
 	phase: Phase;
 	compiling: boolean;
 	onSelectPhase: (phase: Phase) => void;
@@ -71,8 +66,6 @@ export function Toolbar({
 	onReset,
 	onSeek,
 	onSpeedChange,
-	theme,
-	onToggleTheme,
 	phase,
 	compiling,
 	onSelectPhase,
@@ -166,18 +159,6 @@ export function Toolbar({
 						/>
 					</div>
 				</div>
-
-				<button
-					className={styles.themeButton}
-					onClick={onToggleTheme}
-					title={theme === "light" ? "tema escuro" : "tema claro"}
-				>
-					{theme === "light" ? (
-						<Moon size={ICON_SIZE} />
-					) : (
-						<Sun size={ICON_SIZE} />
-					)}
-				</button>
 			</div>
 
 			<div className={styles.scrubberRow}>

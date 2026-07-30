@@ -159,23 +159,6 @@
 	cursor: help;
 }
 
-.themeButton {
-	width: 2.25rem;
-	height: 2.25rem;
-	border-radius: var(--radius-md);
-	border: 1px solid var(--color-border);
-	background: var(--color-surface-alt);
-	font-size: 1rem;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	transition: background 0.15s ease;
-}
-
-.themeButton:hover {
-	background: var(--color-accent-soft);
-}
-
 .scrubberRow {
 	display: flex;
 	align-items: center;

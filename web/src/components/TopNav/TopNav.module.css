@@ -1,11 +1,19 @@
 .nav {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	gap: var(--space-lg);
-	padding: 0.5rem var(--space-lg);
+	padding: 0.875rem var(--space-lg);
 	background: var(--color-bg);
 	border-bottom: 1px solid var(--color-border);
 	flex-wrap: wrap;
+}
+
+.left {
+	display: flex;
+	align-items: center;
+	flex: 1;
+	min-width: 0;
 }
 
 .brand {
@@ -18,18 +26,31 @@
 	letter-spacing: -0.01em;
 }
 
-.destinations {
+.center {
 	display: flex;
 	align-items: center;
+	justify-content: center;
 	gap: 0.25rem;
 	flex-wrap: wrap;
+	padding: 0.25rem;
+	border-radius: var(--radius-lg);
+	background: var(--color-surface-alt);
+}
+
+.right {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var(--space-sm);
+	flex: 1;
+	min-width: 0;
 }
 
 .link {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.375rem;
-	padding: 0.3125rem 0.75rem;
+	padding: 0.4375rem 0.875rem;
 	border-radius: var(--radius-md);
 	color: var(--color-text-muted);
 	font-size: 0.8125rem;
@@ -41,10 +62,48 @@
 
 .link:hover {
 	color: var(--color-heading);
-	background: var(--color-surface-alt);
 }
 
 .linkActive {
 	color: var(--color-accent);
+	background: var(--color-surface);
+	box-shadow: var(--shadow-soft);
+}
+
+.iconButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--color-border);
+	background: var(--color-surface-alt);
+	color: var(--color-text);
+	transition: background-color 0.15s ease;
+}
+
+.iconButton:hover {
 	background: var(--color-accent-soft);
+	color: var(--color-accent);
+}
+
+@media (max-width: 40rem) {
+	.nav {
+		justify-content: center;
+	}
+
+	.left {
+		flex: 0 0 auto;
+	}
+
+	.center {
+		order: 3;
+		flex-basis: 100%;
+		justify-content: center;
+	}
+
+	.right {
+		flex: 0 0 auto;
+	}
 }

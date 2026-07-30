@@ -15,7 +15,6 @@ import type { ScrubberMarker } from "../components/Scrubber/Scrubber";
 import { CompileChipLayer } from "../components/CompileChipLayer/CompileChipLayer";
 import { CompileNarration } from "../components/CompileNarration/CompileNarration";
 import { usePlayer } from "../hooks/usePlayer";
-import { useTheme } from "../hooks/useTheme";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { useHighlightState } from "../hooks/useHighlightState";
 import { useCompileFlight } from "../hooks/useCompileFlight";
@@ -52,7 +51,6 @@ interface PlayerControls {
 
 export function Visualizador() {
 	const { program, setProgram, route, navigate } = useRoute();
-	const { theme, toggleTheme } = useTheme();
 	const [trace, setTrace] = useState<Trace | null>(null);
 	const [running, setRunning] = useState(false);
 	const [runtimeError, setRuntimeError] = useState<string | null>(null);
@@ -339,8 +337,6 @@ export function Visualizador() {
 				onReset={activePlayer.reset}
 				onSeek={activePlayer.goTo}
 				onSpeedChange={activePlayer.setSpeed}
-				theme={theme}
-				onToggleTheme={toggleTheme}
 				phase={phase}
 				compiling={compileMode}
 				onSelectPhase={selectPhase}
