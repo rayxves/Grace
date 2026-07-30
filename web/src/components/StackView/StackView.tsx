@@ -8,6 +8,7 @@ interface StackViewProps {
 	output: string[];
 	error: string | null;
 	hasBytecode: boolean;
+	maxStackDepth?: number;
 }
 
 export function StackView({
@@ -15,13 +16,19 @@ export function StackView({
 	output,
 	error,
 	hasBytecode,
+	maxStackDepth = 0,
 }: Readonly<StackViewProps>) {
 	const stack = step?.stack ?? [];
 	const explanation = step ? explainStep(step) : null;
 
 	return (
 		<section className={styles.panel}>
-			<h2 className={styles.title}>pilha de execução</h2>
+			<h2 className={styles.title}>
+				pilha de execução
+				{maxStackDepth > 0 && (
+					<span className={styles.titleHint}> — profundidade máxima: {maxStackDepth}</span>
+				)}
+			</h2>
 			<div className={styles.content}>
 				<div className={styles.stackArea}>
 					<div className={styles.stack}>

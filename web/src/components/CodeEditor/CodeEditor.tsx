@@ -204,6 +204,7 @@ export function CodeEditor({
 	const viewRef = useRef<EditorView | null>(null);
 	const initialValueRef = useRef(value);
 	const onChangeRef = useRef(onChange);
+	const previousLine = useRef<number | null>(null);
 
 	useEffect(() => {
 		onChangeRef.current = onChange;
@@ -260,10 +261,12 @@ export function CodeEditor({
 		const view = viewRef.current;
 		if (!view) return;
 		const line = errorLine ?? currentLine;
+		const previous = previousLine.current;
+		previousLine.current = line;
 		const highlight =
 			line === null ? null : { line, error: errorLine !== null };
 		const effects: StateEffect<unknown>[] = [setHighlightedLine.of(highlight)];
-		if (line !== null && line >= 1 && line <= view.state.doc.lines) {
+		if (previous !== null && line !== null && line >= 1 && line <= view.state.doc.lines) {
 			effects.push(
 				EditorView.scrollIntoView(view.state.doc.line(line).from, {
 					y: "center",

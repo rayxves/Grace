@@ -138,11 +138,77 @@ export function explainStep(step: Step): StepExplanation {
 	return { summary, popped: step.popped, pushed: step.pushed };
 }
 
+export interface StackEffect {
+	pops: number | "variável";
+	pushes: number | "variável";
+	note?: string;
+}
+
+const stackEffects: Record<string, StackEffect> = {
+	retorna: {
+		pops: 1,
+		pushes: 0,
+		note: "encerra o quadro da função atual; o valor retornado reaparece no topo de quem chamou",
+	},
+	constante: { pops: 0, pushes: 1 },
+	"nega número": { pops: 1, pushes: 1 },
+	soma: { pops: 2, pushes: 1 },
+	subtrai: { pops: 2, pushes: 1 },
+	multiplica: { pops: 2, pushes: 1 },
+	divide: { pops: 2, pushes: 1 },
+	imprime: { pops: 1, pushes: 0 },
+	"descarta topo": { pops: 1, pushes: 0 },
+	"define global": { pops: 1, pushes: 0 },
+	"lê global": { pops: 0, pushes: 1 },
+	"atribui global": {
+		pops: 0,
+		pushes: 0,
+		note: "só olha o valor do topo, não desempilha — por isso ele continua lá depois",
+	},
+	verdadeiro: { pops: 0, pushes: 1 },
+	falso: { pops: 0, pushes: 1 },
+	nulo: { pops: 0, pushes: 1 },
+	"nega lógico": { pops: 1, pushes: 1 },
+	igual: { pops: 2, pushes: 1 },
+	maior: { pops: 2, pushes: 1 },
+	menor: { pops: 2, pushes: 1 },
+	salta: { pops: 0, pushes: 0 },
+	"salta se falso": {
+		pops: 0,
+		pushes: 0,
+		note: "só olha o topo pra decidir se pula, não desempilha a condição",
+	},
+	"volta (laço)": { pops: 0, pushes: 0 },
+	"lê local": { pops: 0, pushes: 1 },
+	"atribui local": {
+		pops: 0,
+		pushes: 0,
+		note: "só olha o valor do topo, não desempilha — por isso ele continua lá depois",
+	},
+	chama: {
+		pops: "variável",
+		pushes: "variável",
+		note: "consome a função e os argumentos; o resultado só aparece quando a função retornar",
+	},
+	"lê atributo": { pops: 1, pushes: 1 },
+	"atribui atributo": { pops: 2, pushes: 1 },
+	"lê método da superclasse": { pops: 1, pushes: 1 },
+};
+
 const OPCODE_NAMES_BY_LENGTH = Object.keys(fallbackDescriptions).sort((a, b) => b.length - a.length);
 
+function matchOpcodeName(bytecodeText: string): string | null {
+	return OPCODE_NAMES_BY_LENGTH.find((candidate) => bytecodeText.startsWith(candidate)) ?? null;
+}
+
 export function describeOpcodeText(bytecodeText: string): string | null {
-	const name = OPCODE_NAMES_BY_LENGTH.find((candidate) => bytecodeText.startsWith(candidate));
+	const name = matchOpcodeName(bytecodeText);
 	return name ? fallbackDescriptions[name] : null;
+}
+
+export function stackEffectForOpcodeText(bytecodeText: string): StackEffect | null {
+	const name = matchOpcodeName(bytecodeText);
+	return name ? (stackEffects[name] ?? null) : null;
 }
 
 export function collectOutput(steps: Step[], upToIndex: number): string[] {

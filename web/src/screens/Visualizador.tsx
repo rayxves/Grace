@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Binary } from "lucide-react";
 import { Toolbar } from "../components/Toolbar/Toolbar";
 import { CodeEditor } from "../components/CodeEditor/CodeEditor";
@@ -9,6 +9,7 @@ import { isPhase, type Phase } from "../components/PipelineStrip/PipelineStrip";
 import { StackView } from "../components/StackView/StackView";
 import { VariablesView } from "../components/VariablesView/VariablesView";
 import { AstNodeInspector } from "../components/AstNodeInspector/AstNodeInspector";
+import { AstNodeInsights } from "../components/AstNodeInsights/AstNodeInsights";
 import { ConstantPoolView } from "../components/ConstantPoolView/ConstantPoolView";
 import type { ScrubberMarker } from "../components/Scrubber/Scrubber";
 import { CompileChipLayer } from "../components/CompileChipLayer/CompileChipLayer";
@@ -25,6 +26,8 @@ import { parseErrorLine } from "../lib/errors";
 import { computeCompileProgress, growBytecodeUpTo } from "../lib/compileProgress";
 import { nodeAccentColor } from "../lib/nodeColor";
 import { buildAstNodeIndex } from "../lib/astIndex";
+import { buildScopeResolutionMap } from "../lib/scopeLookup";
+import { countAstNodesByLine, countBytecodeByLine, maxStackDepth } from "../lib/expansionStats";
 import { countEmitsByNode } from "../lib/compileNarration";
 import type { Trace } from "../types";
 import styles from "./Visualizador.module.css";
@@ -54,6 +57,10 @@ export function Visualizador() {
 	const [running, setRunning] = useState(false);
 	const [runtimeError, setRuntimeError] = useState<string | null>(null);
 	const phase: Phase = isPhase(route.param) ? route.param : "bytecode";
+	const workspaceRef = useRef<HTMLElement>(null);
+	useEffect(() => {
+		if (workspaceRef.current) workspaceRef.current.scrollTop = 0;
+	}, [phase]);
 	const [compileMode, setCompileMode] = useState(false);
 	const [hoveredNodeId, setHoveredNodeId] = useState<number | null>(null);
 	const [pinnedNodeId, setPinnedNodeId] = useState<number | null>(null);
@@ -142,6 +149,13 @@ export function Visualizador() {
 
 	const astIndex = useMemo(() => buildAstNodeIndex(trace?.ast ?? null), [trace]);
 	const emitCountByNode = useMemo(() => countEmitsByNode(compileSteps), [compileSteps]);
+	const resolveMap = useMemo(
+		() => buildScopeResolutionMap(trace?.resolveSteps ?? []),
+		[trace],
+	);
+	const astCountsByLine = useMemo(() => countAstNodesByLine(trace?.ast ?? null), [trace]);
+	const bytecodeCountsByLine = useMemo(() => countBytecodeByLine(bytecode), [bytecode]);
+	const maxStackUsage = useMemo(() => maxStackDepth(steps), [steps]);
 
 	const compileCurrentStep = compilePlayer.currentStep;
 	const compileCurrentOffset =
@@ -333,7 +347,7 @@ export function Visualizador() {
 				truncated={trace?.truncated ?? false}
 			/>
 
-			<main className={styles.workspace}>
+			<main ref={workspaceRef} className={styles.workspace}>
 				<div className={styles.editorColumn}>
 					<CodeEditor
 						value={program}
@@ -374,8 +388,14 @@ export function Visualizador() {
 						</div>
 					)}
 					{!compileMode && phase === "arvore" && (
-						<div className={styles.bottomRowCompact}>
+						<div className={styles.bottomRow}>
 							<AstNodeInspector node={inspectedNode} statusLabel={inspectedStatusLabel} />
+							<AstNodeInsights
+								node={inspectedNode}
+								resolveMap={resolveMap}
+								astCountsByLine={astCountsByLine}
+								bytecodeCountsByLine={bytecodeCountsByLine}
+							/>
 						</div>
 					)}
 					{!compileMode && phase === "bytecode" && (
@@ -394,6 +414,7 @@ export function Visualizador() {
 								output={output}
 								error={errorReached ? errorMessage : null}
 								hasBytecode={(trace?.bytecode.length ?? 0) > 0}
+								maxStackDepth={maxStackUsage}
 							/>
 						</div>
 					)}

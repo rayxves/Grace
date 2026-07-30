@@ -9,6 +9,7 @@ import type { AstNode, Step } from "../../types";
 import { buildRevealedTree, revealedNodeIdsUpTo } from "../../lib/astReveal";
 import { findNodeById, locateNode } from "../../lib/astFocus";
 import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
+import { astMaxDepth } from "../../lib/expansionStats";
 import styles from "./AstView.module.css";
 
 interface AstViewProps {
@@ -127,6 +128,8 @@ export function AstView({
 		return () => observer.disconnect();
 	}, []);
 
+	const maxDepth = useMemo(() => astMaxDepth(ast), [ast]);
+
 	const computedRevealedIds = useMemo(
 		() => revealedNodeIdsUpTo(steps, stepIndex),
 		[steps, stepIndex],
@@ -142,8 +145,12 @@ export function AstView({
 	);
 
 	const focusNodeId = errorNodeId ?? currentNodeId;
+	const previousFocusNodeId = useRef<number | null>(null);
 
 	useEffect(() => {
+		const previous = previousFocusNodeId.current;
+		previousFocusNodeId.current = focusNodeId;
+		if (previous === null) return;
 		if (!treeData || focusNodeId === null) return;
 		if (!dimensions.width || !dimensions.height) return;
 		const target = findNodeById(treeData, focusNodeId);
@@ -161,6 +168,7 @@ export function AstView({
 			{treeData && (
 				<p className={styles.caption}>
 					Cada nó tem uma cor própria, a mesma cor aparece nas linhas de bytecode que ele gerou
+					— profundidade máxima da árvore: {maxDepth}
 				</p>
 			)}
 			<div ref={containerRef} className={styles.treeContainer}>

@@ -1,9 +1,22 @@
-import { useEffect, useMemo, useRef, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { BytecodeInstruction, Step } from "../../types";
 import { groupBytecodeByLine } from "../../lib/bytecode";
 import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
-import { describeOpcodeText } from "../../lib/instructions";
+import { describeOpcodeText, stackEffectForOpcodeText } from "../../lib/instructions";
 import styles from "./BytecodeView.module.css";
+
+function parseJumpTarget(text: string): number | null {
+	const match = /para o byte (\d+)/.exec(text);
+	return match ? Number(match[1]) : null;
+}
+
+function formatStackDelta(pops: number | "variável", pushes: number | "variável"): string {
+	if (pops === "variável" || pushes === "variável") return "var";
+	const delta = pushes - pops;
+	if (delta > 0) return `+${delta}`;
+	if (delta < 0) return `${delta}`;
+	return "±0";
+}
 
 interface BytecodeViewProps {
 	bytecode: BytecodeInstruction[];
@@ -29,6 +42,7 @@ export function BytecodeView({
 	pendingOffsets = null,
 }: Readonly<BytecodeViewProps>) {
 	const currentRowRef = useRef<HTMLDivElement>(null);
+	const [hoveredJumpTarget, setHoveredJumpTarget] = useState<number | null>(null);
 
 	const resolvedCurrentOffset =
 		currentOffset !== undefined ? currentOffset : (steps[stepIndex]?.offset ?? null);
@@ -44,12 +58,11 @@ export function BytecodeView({
 
 	const groups = useMemo(() => groupBytecodeByLine(bytecode), [bytecode]);
 
-	const skipNextScroll = useRef(true);
+	const previousHighlightOffset = useRef<number | null>(null);
 	useEffect(() => {
-		if (skipNextScroll.current) {
-			skipNextScroll.current = false;
-			return;
-		}
+		const previous = previousHighlightOffset.current;
+		previousHighlightOffset.current = highlightOffset;
+		if (previous === null) return;
 		currentRowRef.current?.scrollIntoView({
 			block: "nearest",
 			behavior: "smooth",
@@ -83,6 +96,8 @@ export function BytecodeView({
 										instruction.nodeId !== null &&
 										instruction.nodeId === hoveredNodeId;
 									const isPending = pendingOffsets?.has(instruction.offset) ?? false;
+									const isJumpTarget =
+										!isCurrent && !isHovered && instruction.offset === hoveredJumpTarget;
 									let highlightClass = "";
 									if (isError) {
 										highlightClass = styles.rowError;
@@ -95,6 +110,7 @@ export function BytecodeView({
 										isExecuted ? styles.rowExecuted : "",
 										isHovered ? styles.rowHovered : "",
 										isPending ? styles.rowPending : "",
+										isJumpTarget ? styles.rowJumpTarget : "",
 									].join(" ");
 
 									const accent = nodeAccentColor(instruction.nodeId);
@@ -102,6 +118,12 @@ export function BytecodeView({
 									const isSelectable = instruction.nodeId !== null;
 									const selectThisRow = () =>
 										instruction.nodeId !== null && onSelectNode?.(instruction.nodeId);
+									const jumpTarget = parseJumpTarget(instruction.text);
+									const effect = stackEffectForOpcodeText(instruction.text);
+									const description = describeOpcodeText(instruction.text);
+									const tooltipLines = [description, effect?.note].filter(
+										(line): line is string => Boolean(line),
+									);
 
 									return (
 										<div
@@ -117,11 +139,14 @@ export function BytecodeView({
 														} as CSSProperties)
 													: undefined
 											}
-											onMouseEnter={() =>
-												instruction.nodeId !== null &&
-												onHoverNode(instruction.nodeId)
-											}
-											onMouseLeave={() => onHoverNode(null)}
+											onMouseEnter={() => {
+												if (instruction.nodeId !== null) onHoverNode(instruction.nodeId);
+												setHoveredJumpTarget(jumpTarget);
+											}}
+											onMouseLeave={() => {
+												onHoverNode(null);
+												setHoveredJumpTarget(null);
+											}}
 											onClick={isSelectable ? selectThisRow : undefined}
 											onKeyDown={(event) => {
 												if (!isSelectable) return;
@@ -132,12 +157,17 @@ export function BytecodeView({
 											}}
 											role={isSelectable ? "button" : undefined}
 											tabIndex={isSelectable ? 0 : undefined}
-											title={describeOpcodeText(instruction.text) ?? undefined}
+											title={tooltipLines.length ? tooltipLines.join("\n") : undefined}
 										>
 											<span className={styles.offset}>
 												{String(instruction.offset).padStart(4, "0")}
 											</span>
 											<span className={styles.text}>{instruction.text}</span>
+											{effect && (
+												<span className={styles.stackDelta}>
+													{formatStackDelta(effect.pops, effect.pushes)}
+												</span>
+											)}
 										</div>
 									);
 								})}

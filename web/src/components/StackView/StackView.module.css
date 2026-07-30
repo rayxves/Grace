@@ -19,6 +19,12 @@
 	padding: var(--space-md) var(--space-md) var(--space-sm);
 }
 
+.titleHint {
+	text-transform: none;
+	letter-spacing: normal;
+	font-weight: 500;
+}
+
 .content {
 	flex: 1;
 	min-height: 0;
