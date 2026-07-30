@@ -1,6 +1,6 @@
 import styles from "./PipelineStrip.module.css";
 
-export type Phase = "codigo" | "tokens" | "arvore" | "semantica" | "bytecode" | "execucao";
+export type Phase = "codigo" | "tokens" | "arvore" | "bytecode" | "execucao";
 
 interface PipelineStripProps {
 	phase: Phase;
@@ -12,7 +12,6 @@ const PHASES: { id: Phase; label: string }[] = [
 	{ id: "codigo", label: "código" },
 	{ id: "tokens", label: "tokens" },
 	{ id: "arvore", label: "árvore" },
-	{ id: "semantica", label: "semântica" },
 	{ id: "bytecode", label: "bytecode" },
 	{ id: "execucao", label: "execução" },
 ];

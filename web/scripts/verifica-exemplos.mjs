@@ -10,34 +10,6 @@ const repoRoot = path.resolve(webRoot, "..");
 
 const CONTENT_MODULES = [
 	{
-		file: "src/content/galeria.ts",
-		exportName: "galeria",
-		extract: (topic) => topic.examples.map((example) => ({ id: `${topic.id}/${example.id}`, example })),
-	},
-	{
-		file: "src/content/licoes.ts",
-		exportName: "licoes",
-		extract: (licao) => {
-			const entries = [{ id: `${licao.id}/${licao.exemplo.id}`, example: licao.exemplo }];
-			if (licao.erroDemonstrado) {
-				entries.push({ id: `${licao.id}/${licao.erroDemonstrado.id}`, example: licao.erroDemonstrado });
-			}
-			return entries;
-		},
-	},
-	{
-		// The starter code is meant to be broken — this confirms it genuinely fails,
-		// so the exercise isn't accidentally already solved.
-		file: "src/content/conserte.ts",
-		exportName: "conserte",
-		extract: (item) => [
-			{
-				id: item.id,
-				example: { id: item.id, title: item.titulo, code: item.codigoInicial, expect: { kind: "error" } },
-			},
-		],
-	},
-	{
 		file: "src/content/referencia.ts",
 		exportName: "referencia",
 		extract: (secao) => {

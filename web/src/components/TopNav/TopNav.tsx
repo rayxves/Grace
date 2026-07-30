@@ -4,8 +4,6 @@ import styles from "./TopNav.module.css";
 
 const ICON_SIZE = "1rem";
 
-// Aprender e Praticar continuam implementados e acessíveis por rota direta
-// (#/aprender, #/praticar) — só saíram da navegação principal.
 const DESTINATIONS: { screen: Screen; label: string; icon: typeof Library }[] = [
 	{ screen: "referencia", label: "Referência", icon: Library },
 ];

@@ -8,8 +8,6 @@ import { TokensView } from "../components/TokensView/TokensView";
 import { isPhase, type Phase } from "../components/PipelineStrip/PipelineStrip";
 import { StackView } from "../components/StackView/StackView";
 import { VariablesView } from "../components/VariablesView/VariablesView";
-import { ScopeView } from "../components/ScopeView/ScopeView";
-import { ResolveNarration } from "../components/ResolveNarration/ResolveNarration";
 import type { ScrubberMarker } from "../components/Scrubber/Scrubber";
 import { CompileChipLayer } from "../components/CompileChipLayer/CompileChipLayer";
 import { CompileNarration } from "../components/CompileNarration/CompileNarration";
@@ -23,7 +21,6 @@ import { runGrace } from "../lib/grace";
 import { collectOutput } from "../lib/instructions";
 import { parseErrorLine } from "../lib/errors";
 import { computeCompileProgress, growBytecodeUpTo } from "../lib/compileProgress";
-import { computeResolveProgress } from "../lib/resolveProgress";
 import { buildAstNodeIndex } from "../lib/astIndex";
 import { countEmitsByNode } from "../lib/compileNarration";
 import type { Trace } from "../types";
@@ -32,7 +29,6 @@ import styles from "./Visualizador.module.css";
 const EMPTY_STEPS: Trace["steps"] = [];
 const EMPTY_BYTECODE: Trace["bytecode"] = [];
 const EMPTY_COMPILE_STEPS: Trace["compileSteps"] = [];
-const EMPTY_RESOLVE_STEPS: Trace["resolveSteps"] = [];
 
 interface PlayerControls {
 	index: number;
@@ -62,10 +58,8 @@ export function Visualizador() {
 	const steps = trace?.steps ?? EMPTY_STEPS;
 	const bytecode = trace?.bytecode ?? EMPTY_BYTECODE;
 	const compileSteps = trace?.compileSteps ?? EMPTY_COMPILE_STEPS;
-	const resolveSteps = trace?.resolveSteps ?? EMPTY_RESOLVE_STEPS;
 	const player = usePlayer(steps, (step) => step.line);
 	const compilePlayer = usePlayer(compileSteps, () => null);
-	const resolvePlayer = usePlayer(resolveSteps, () => null);
 
 	const run = useCallback(async () => {
 		setRunning(true);
@@ -83,7 +77,6 @@ export function Visualizador() {
 
 	const hasTrace = trace !== null && steps.length > 0;
 	const hasCompileTrace = trace !== null && compileSteps.length > 0;
-	const hasResolveTrace = trace !== null && resolveSteps.length > 0;
 	const errorMessage = runtimeError ?? trace?.error ?? null;
 	const errorLine = useMemo(() => parseErrorLine(errorMessage), [errorMessage]);
 
@@ -145,15 +138,6 @@ export function Visualizador() {
 			? compileCurrentStep.line
 			: null;
 
-	const resolveProgress = useMemo(
-		() => computeResolveProgress(resolveSteps, resolvePlayer.index),
-		[resolveSteps, resolvePlayer.index],
-	);
-	const resolveCurrentStep = resolvePlayer.currentStep;
-	const resolveCurrentLine = resolveCurrentStep?.kind === "declare" ? resolveCurrentStep.line : null;
-
-	const isSemantica = phase === "semantica";
-
 	const selectPhase = useCallback(
 		(next: Phase) => {
 			if (next === "codigo" || next === "tokens") {
@@ -167,39 +151,15 @@ export function Visualizador() {
 	const toggleCompileMode = useCallback(() => {
 		const next = !compileMode;
 		setCompileMode(next);
-		if (next && (phase === "codigo" || phase === "tokens" || phase === "semantica")) {
+		if (next && (phase === "codigo" || phase === "tokens")) {
 			navigate("visualizador", "execucao");
 		}
 	}, [compileMode, phase, navigate]);
 
-	let activeMode: "execution" | "compilation" | "resolution" = "execution";
-	if (isSemantica) {
-		activeMode = "resolution";
-	} else if (compileMode) {
-		activeMode = "compilation";
-	}
-
-	let activePlayer: PlayerControls = player;
-	if (isSemantica) {
-		activePlayer = resolvePlayer;
-	} else if (compileMode) {
-		activePlayer = compilePlayer;
-	}
-
-	let activeHasTrace = hasTrace;
-	if (isSemantica) {
-		activeHasTrace = hasResolveTrace;
-	} else if (compileMode) {
-		activeHasTrace = hasCompileTrace;
-	}
-
-	let activeCurrentLine = gatedCurrentLine;
-	if (isSemantica) {
-		activeCurrentLine = resolveCurrentLine;
-	} else if (compileMode) {
-		activeCurrentLine = compileCurrentLine;
-	}
-
+	const activeMode: "execution" | "compilation" = compileMode ? "compilation" : "execution";
+	const activePlayer: PlayerControls = compileMode ? compilePlayer : player;
+	const activeHasTrace = compileMode ? hasCompileTrace : hasTrace;
+	const activeCurrentLine = compileMode ? compileCurrentLine : gatedCurrentLine;
 	const effectiveHoverLine = hoveredTokenLine ?? hoverLine;
 
 	useKeyboardShortcuts({
@@ -262,15 +222,6 @@ export function Visualizador() {
 				tokens={trace?.tokens ?? []}
 				hoveredLine={effectiveHoverLine}
 				onHoverLine={setHoveredTokenLine}
-			/>
-		);
-	} else if (phase === "semantica") {
-		structureContent = (
-			<ScopeView
-				frames={resolveProgress.frames}
-				log={resolveProgress.log}
-				currentStepIndex={resolveProgress.currentStepIndex}
-				currentTargetSymbolId={resolveProgress.currentTargetSymbolId}
 			/>
 		);
 	} else {
@@ -383,12 +334,7 @@ export function Visualizador() {
 						</div>
 						{structureContent}
 					</div>
-					{isSemantica && (
-						<div className={styles.bottomRowCompact}>
-							<ResolveNarration step={resolveCurrentStep} />
-						</div>
-					)}
-					{!isSemantica && compileMode && (
+					{compileMode ? (
 						<div className={styles.bottomRowCompact}>
 							<CompileNarration
 								step={compileCurrentStep}
@@ -396,8 +342,7 @@ export function Visualizador() {
 								emitCountByNode={emitCountByNode}
 							/>
 						</div>
-					)}
-					{!isSemantica && !compileMode && (
+					) : (
 						<div className={styles.bottomRow}>
 							<VariablesView
 								step={hasTrace ? player.currentStep : null}

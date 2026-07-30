@@ -20,7 +20,7 @@ interface ToolbarProps {
 	running: boolean;
 	hasTrace: boolean;
 	markers: ScrubberMarker[];
-	mode: "execution" | "compilation" | "resolution";
+	mode: "execution" | "compilation";
 	playing: boolean;
 	speed: number;
 	stepIndex: number;
@@ -51,7 +51,6 @@ const SPEED_TABS = PLAYER_SPEEDS.map((speed) => ({
 const SUBTITLE_BY_MODE: Record<ToolbarProps["mode"], string> = {
 	execution: "visualizador de execução",
 	compilation: "visualizador de compilação",
-	resolution: "visualizador de resolução de escopos",
 };
 
 export function Toolbar({

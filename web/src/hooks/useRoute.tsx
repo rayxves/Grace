@@ -9,14 +9,14 @@ import {
 } from "react";
 import { decodeProgram, encodeProgram } from "../lib/urlProgram";
 
-export type Screen = "visualizador" | "aprender" | "praticar" | "referencia";
+export type Screen = "visualizador" | "referencia";
 
 export interface Route {
 	screen: Screen;
 	param: string | null;
 }
 
-const VALID_SCREENS: Screen[] = ["visualizador", "aprender", "praticar", "referencia"];
+const VALID_SCREENS: Screen[] = ["visualizador", "referencia"];
 
 const DEFAULT_SOURCE = `var x = 10;
 imprima(x + 5);
