@@ -3,6 +3,7 @@ import { displayLabel } from "../../lib/astLabels";
 import { explainPrecedence } from "../../lib/precedence";
 import { describeScopeResolution, type ScopeResolution } from "../../lib/scopeLookup";
 import { describeLineExpansion } from "../../lib/expansionStats";
+import { Panel } from "../Panel/Panel";
 import styles from "./AstNodeInsights.module.css";
 
 interface AstNodeInsightsProps {
@@ -38,27 +39,24 @@ export function AstNodeInsights({
 		expansionHint && { label: "expansão", text: expansionHint },
 	].filter((entry): entry is { label: string; text: string } => Boolean(entry));
 
+	const placeholder = node
+		? "Este nó não tem uma explicação extra — tente uma variável, um operador ou uma comparação."
+		: "Passe o mouse ou clique num nó da árvore para ver explicações de escopo, precedência e expansão.";
+
 	return (
-		<section className={styles.panel}>
-			<h2 className={styles.title}>análise do nó</h2>
-			<div className={styles.content}>
-				{insights.length > 0 ? (
-					insights.map((insight) => (
-						<div key={insight.label} className={styles.insight}>
-							<span className={styles.insightLabel}>{insight.label}</span>
-							<p className={styles.insightText}>{insight.text}</p>
-						</div>
-					))
-				) : (
-					<div className={styles.empty}>
-						<p className={styles.placeholder}>
-							{node
-								? "Este nó não tem uma explicação extra — tente uma variável, um operador ou uma comparação."
-								: "Passe o mouse ou clique num nó da árvore para ver explicações de escopo, precedência e expansão."}
-						</p>
-					</div>
-				)}
-			</div>
-		</section>
+		<Panel
+			title="análise do nó"
+			panelClassName={styles.panel}
+			contentClassName={styles.content}
+			isEmpty={insights.length === 0}
+			placeholder={placeholder}
+		>
+			{insights.map((insight) => (
+				<div key={insight.label} className={styles.insight}>
+					<span className={styles.insightLabel}>{insight.label}</span>
+					<p className={styles.insightText}>{insight.text}</p>
+				</div>
+			))}
+		</Panel>
 	);
 }

@@ -1,30 +1,6 @@
-.panel {
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-	min-height: 0;
-	background: var(--color-surface);
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-soft);
-	overflow: hidden;
-}
-
 .title {
-	font-size: 0.8125rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	color: var(--color-text-muted);
-	padding: var(--space-md) var(--space-md);
-}
-
-.caption {
-	margin: 0;
-	padding: 0.125rem var(--space-md) var(--space-sm);
-	font-size: 0.875rem;
-	font-weight: 500;
-	color: var(--color-text);
+	composes: title from "../Panel/Panel.module.css";
+	padding: var(--space-md) var(--space-md) 0;
 }
 
 .treeContainer {
@@ -35,13 +11,11 @@
 }
 
 .placeholder {
+	composes: placeholder from "../Panel/Panel.module.css";
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	height: 100%;
-	margin: 0;
-	color: var(--color-text-muted);
-	font-size: 0.875rem;
 }
 
 .node {
@@ -96,7 +70,6 @@
 	font-weight: 600;
 	stroke: none;
 }
-
 
 .nodeKind {
 	fill: var(--color-node-kind);

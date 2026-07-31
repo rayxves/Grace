@@ -1,33 +1,6 @@
-.panel {
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-	min-height: 0;
-	background: var(--color-surface);
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-soft);
-	overflow: hidden;
-}
-
-.title {
-	font-size: 0.8125rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	color: var(--color-text-muted);
-	padding: var(--space-md) var(--space-md) var(--space-sm);
-}
-
 .content {
-	flex: 1;
-	min-height: 0;
-	display: flex;
-	flex-direction: column;
+	composes: content from "../Panel/Panel.module.css";
 	gap: var(--space-md);
-	padding: var(--space-md);
-	border-top: 1px solid var(--color-border);
-	overflow-y: auto;
 }
 
 .loopBadge {
@@ -142,16 +115,8 @@
 }
 
 .empty {
+	composes: empty from "../Panel/Panel.module.css";
 	padding: 1rem;
-	display: flex;
 	min-height: 100%;
 	min-width: 100%;
-	align-items: center;
-	justify-content: center;
-}
-
-.placeholder {
-	margin: 0;
-	color: var(--color-text-muted);
-	font-size: 0.875rem;
 }

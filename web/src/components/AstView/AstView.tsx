@@ -10,6 +10,7 @@ import { buildRevealedTree, revealedNodeIdsUpTo } from "../../lib/astReveal";
 import { findNodeById, locateNode } from "../../lib/astFocus";
 import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
 import { astMaxDepth } from "../../lib/expansionStats";
+import { Panel } from "../Panel/Panel";
 import styles from "./AstView.module.css";
 
 interface AstViewProps {
@@ -163,48 +164,49 @@ export function AstView({
 	}, [treeData, focusNodeId, dimensions]);
 
 	return (
-		<section className={styles.panel} data-role="ast-panel">
-			<h2 className={styles.title}>Árvore do programa</h2>
+		<Panel
+			title="Árvore do programa"
+			titleClassName={styles.title}
+			dataRole="ast-panel"
+			caption={
+				treeData
+					? `Cada nó tem uma cor própria, a mesma cor aparece nas linhas de bytecode que ele gerou. Profundidade máxima da árvore: ${maxDepth}`
+					: undefined
+			}
+			contentClassName={styles.treeContainer}
+			contentRef={containerRef}
+			isEmpty={!treeData}
+			placeholder="Execute um programa para ver sua árvore sintática"
+			placeholderClassName={styles.placeholder}
+		>
 			{treeData && (
-				<p className={styles.caption}>
-					Cada nó tem uma cor própria, a mesma cor aparece nas linhas de bytecode que ele gerou
-					— profundidade máxima da árvore: {maxDepth}
-				</p>
+				<Tree
+					ref={treeRef}
+					data={treeData}
+					orientation="vertical"
+					translate={translate}
+					dimensions={dimensions}
+					collapsible
+					zoomable
+					zoom={0.9}
+					scaleExtent={SCALE_EXTENT}
+					separation={SEPARATION}
+					nodeSize={NODE_SIZE}
+					pathFunc="diagonal"
+					transitionDuration={200}
+					renderCustomNodeElement={(props) =>
+						AstNodeElement(
+							props,
+							currentNodeId,
+							errorNodeId,
+							hoveredNodeId,
+							onHoverNode,
+							onSelectNode,
+							trailNodeIds,
+						)
+					}
+				/>
 			)}
-			<div ref={containerRef} className={styles.treeContainer}>
-				{treeData ? (
-					<Tree
-						ref={treeRef}
-						data={treeData}
-						orientation="vertical"
-						translate={translate}
-						dimensions={dimensions}
-						collapsible
-						zoomable
-						zoom={0.9}
-						scaleExtent={SCALE_EXTENT}
-						separation={SEPARATION}
-						nodeSize={NODE_SIZE}
-						pathFunc="diagonal"
-						transitionDuration={200}
-						renderCustomNodeElement={(props) =>
-							AstNodeElement(
-								props,
-								currentNodeId,
-								errorNodeId,
-								hoveredNodeId,
-								onHoverNode,
-								onSelectNode,
-								trailNodeIds,
-							)
-						}
-					/>
-				) : (
-					<p className={styles.placeholder}>
-						Execute um programa para ver sua árvore sintática
-					</p>
-				)}
-			</div>
-		</section>
+		</Panel>
 	);
 }

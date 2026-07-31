@@ -1,6 +1,7 @@
 import type { AstNode, CompileStep } from "../../types";
 import { explainCompileStep } from "../../lib/compileNarration";
 import { nodeAccentColor } from "../../lib/nodeColor";
+import { Panel } from "../Panel/Panel";
 import styles from "./CompileNarration.module.css";
 
 interface CompileNarrationProps {
@@ -32,25 +33,19 @@ export function CompileNarration({
 	const accent = nodeAccentColor(nodeId);
 
 	return (
-		<section className={styles.panel}>
-			<h2 className={styles.title}>o que o compilador está fazendo</h2>
-			<div className={styles.content}>
-				{step && explanation ? (
-					<>
-						<span
-							className={styles.badge}
-							style={accent ? { borderColor: accent, color: accent } : undefined}
-						>
-							{KIND_LABELS[step.kind]}
-						</span>
-						<p className={styles.summary}>{explanation.summary}</p>
-					</>
-				) : (
-					<p className={styles.placeholder}>
-						Avance um passo para acompanhar a compilação, nó por nó
-					</p>
-				)}
-			</div>
-		</section>
+		<Panel
+			title="o que o compilador está fazendo"
+			titleClassName={styles.title}
+			panelClassName={styles.panel}
+			contentClassName={styles.content}
+			isEmpty={!(step && explanation)}
+			placeholder="Avance um passo para acompanhar a compilação, nó por nó"
+			placeholderClassName={styles.placeholder}
+			badge={step ? KIND_LABELS[step.kind] : undefined}
+			badgeClassName={styles.badge}
+			badgeStyle={accent ? { borderColor: accent, color: accent } : undefined}
+		>
+			{explanation && <p className={styles.summary}>{explanation.summary}</p>}
+		</Panel>
 	);
 }

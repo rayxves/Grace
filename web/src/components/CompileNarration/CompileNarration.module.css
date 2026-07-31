@@ -1,46 +1,26 @@
 .panel {
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-	min-height: 0;
-	background: var(--color-surface);
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-soft);
-	overflow: hidden;
+	composes: panel from "../Panel/Panel.module.css";
 }
 
 .title {
+	composes: title from "../Panel/Panel.module.css";
 	font-size: 0.875rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	color: var(--color-text-muted);
 	padding: var(--space-lg) var(--space-lg) var(--space-sm);
 }
 
 .content {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
+	composes: content from "../Panel/Panel.module.css";
 	align-items: flex-start;
 	justify-content: center;
 	gap: var(--space-md);
 	padding: var(--space-sm) var(--space-lg) var(--space-lg);
-	border-top: 1px solid var(--color-border);
 	min-height: 8rem;
 }
 
 .badge {
-	display: inline-flex;
+	composes: badge from "../Panel/Panel.module.css";
 	padding: 0.25rem 0.75rem;
-	border-radius: 999rem;
-	border: 1.5px solid var(--color-border-strong);
-	font-family: var(--font-mono);
 	font-size: 0.8125rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
 }
 
 .summary {
@@ -53,7 +33,7 @@
 }
 
 .placeholder {
+	composes: placeholder from "../Panel/Panel.module.css";
 	margin: auto;
-	color: var(--color-text-muted);
 	font-size: 1rem;
 }
