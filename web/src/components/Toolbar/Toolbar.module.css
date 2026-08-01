@@ -17,7 +17,7 @@
 	display: flex;
 	align-items: baseline;
 	gap: var(--space-sm);
-	min-width: 0;
+	flex-shrink: 0;
 }
 
 .logo {
@@ -167,6 +167,17 @@
 	flex-wrap: wrap;
 }
 
+@media (max-width: 56rem) {
+	.playerCard {
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.playerDivider {
+		display: none;
+	}
+}
+
 @media (max-width: 40rem) {
 	.topRow {
 		flex-wrap: wrap;
@@ -181,15 +192,6 @@
 		order: 3;
 		flex-basis: 100%;
 		justify-content: center;
-	}
-
-	.playerCard {
-		flex-wrap: wrap;
-		justify-content: center;
-	}
-
-	.playerDivider {
-		display: none;
 	}
 
 	.position {

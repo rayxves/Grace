@@ -128,11 +128,16 @@
 	}
 
 	.editorColumn {
+		flex: none;
 		min-height: 20rem;
 	}
 
 	.visualColumn {
-		min-height: 60rem;
+		flex: none;
+	}
+
+	.structurePanel {
+		flex: none;
 	}
 
 	.compareRow {
@@ -146,6 +151,7 @@
 	}
 
 	.bottomRowCompact {
+		flex: none;
 		min-height: 18rem;
 	}
 }
