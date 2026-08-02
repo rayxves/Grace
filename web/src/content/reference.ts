@@ -1,18 +1,18 @@
-import type { ReferenciaSecao } from "./types";
+import type { ReferenceSection } from "./types";
 
-export const referencia: ReferenciaSecao[] = [
+export const reference: ReferenceSection[] = [
 	{
 		id: "sintaxe",
-		titulo: "Sintaxe básica",
+		title: "Sintaxe básica",
 		intro: "As regras de escrita que valem para todo programa em Grace.",
-		itens: [
+		items: [
 			{
 				id: "ponto-e-virgula",
-				titulo: "Ponto e vírgula",
-				sintaxe: "comando;",
-				descricao:
+				title: "Ponto e vírgula",
+				syntax: "comando;",
+				description:
 					"Todo comando termina com ponto e vírgula.\n\nA única exceção é um bloco entre chaves — usado em se, enquanto, para, funcao e classe — que não leva ponto e vírgula depois do } que o fecha.",
-				exemplo: {
+				example: {
 					id: "pv",
 					title: "Ponto e vírgula",
 					code: `imprima(1);`,
@@ -21,11 +21,11 @@ export const referencia: ReferenciaSecao[] = [
 			},
 			{
 				id: "blocos",
-				titulo: "Blocos",
-				sintaxe: "{ comando; comando; }",
-				descricao:
+				title: "Blocos",
+				syntax: "{ comando; comando; }",
+				description:
 					"Um bloco é uma sequência de comandos entre chaves. É usado dentro de se, enquanto, para, funcao e classe, mas também pode aparecer sozinho.\n\nCada bloco cria um novo escopo: uma variável declarada dentro dele deixa de existir assim que o bloco termina, mesmo que exista uma variável de mesmo nome fora dele.",
-				exemplo: {
+				example: {
 					id: "bloco",
 					title: "Bloco de comandos",
 					code: `{
@@ -37,11 +37,11 @@ export const referencia: ReferenciaSecao[] = [
 			},
 			{
 				id: "comentarios",
-				titulo: "Comentários",
-				sintaxe: "// texto até o fim da linha",
-				descricao:
+				title: "Comentários",
+				syntax: "// texto até o fim da linha",
+				description:
 					"Tudo depois de // na mesma linha é ignorado pelo Grace.\n\nNão existe comentário de bloco (várias linhas com /* */) — cada linha precisa começar com o próprio //.",
-				exemplo: {
+				example: {
 					id: "comentario",
 					title: "Um comentário",
 					code: `// isso é um comentário
@@ -53,15 +53,15 @@ imprima(1); // isso também é`,
 	},
 	{
 		id: "palavras-chave",
-		titulo: "Palavras-chave",
+		title: "Palavras-chave",
 		intro: "As 17 palavras reservadas da linguagem — a lista é exaustiva, não existe nenhuma outra.",
-		itens: [
+		items: [
 			{
 				id: "var",
-				titulo: "var",
-				sintaxe: "var nome = valor;",
-				descricao: "Declara uma variável nova.",
-				exemplo: {
+				title: "var",
+				syntax: "var nome = valor;",
+				description: "Declara uma variável nova.",
+				example: {
 					id: "var",
 					title: "var",
 					code: `var x = 1;
@@ -71,10 +71,10 @@ imprima(x);`,
 			},
 			{
 				id: "se",
-				titulo: "se",
-				sintaxe: "se (condição) { ... }",
-				descricao: "Executa um bloco só se a condição for verdadeira.",
-				exemplo: {
+				title: "se",
+				syntax: "se (condição) { ... }",
+				description: "Executa um bloco só se a condição for verdadeira.",
+				example: {
 					id: "se",
 					title: "se",
 					code: `se (verdadeiro) {
@@ -85,10 +85,10 @@ imprima(x);`,
 			},
 			{
 				id: "senao",
-				titulo: "senao",
-				sintaxe: "se (condição) { ... } senao { ... }",
-				descricao: "O caminho alternativo de um se, quando a condição é falsa.",
-				exemplo: {
+				title: "senao",
+				syntax: "se (condição) { ... } senao { ... }",
+				description: "O caminho alternativo de um se, quando a condição é falsa.",
+				example: {
 					id: "senao",
 					title: "senao",
 					code: `se (falso) {
@@ -101,10 +101,10 @@ imprima(x);`,
 			},
 			{
 				id: "retorna",
-				titulo: "retorna",
-				sintaxe: "retorna valor;",
-				descricao: "Devolve um valor de dentro de uma função, encerrando a chamada.",
-				exemplo: {
+				title: "retorna",
+				syntax: "retorna valor;",
+				description: "Devolve um valor de dentro de uma função, encerrando a chamada.",
+				example: {
 					id: "retorna",
 					title: "retorna",
 					code: `funcao cinco() {
@@ -116,11 +116,11 @@ imprima(cinco());`,
 			},
 			{
 				id: "enquanto",
-				titulo: "enquanto",
-				sintaxe: "enquanto (condição) { ... }",
-				descricao:
+				title: "enquanto",
+				syntax: "enquanto (condição) { ... }",
+				description:
 					"Repete um bloco enquanto a condição for verdadeira.\n\nA condição é testada antes de cada repetição, inclusive a primeira: se ela já começar falsa, o bloco nunca chega a rodar.",
-				exemplo: {
+				example: {
 					id: "enquanto",
 					title: "enquanto",
 					code: `var i = 0;
@@ -133,11 +133,11 @@ enquanto (i < 2) {
 			},
 			{
 				id: "para",
-				titulo: "para",
-				sintaxe: "para (início; condição; atualização) { ... }",
-				descricao:
+				title: "para",
+				syntax: "para (início; condição; atualização) { ... }",
+				description:
 					"Repete um bloco um número contado de vezes.\n\nA variável criada na primeira parte (como var i = 0) só existe dentro do laço — ela deixa de existir assim que o para termina.",
-				exemplo: {
+				example: {
 					id: "para",
 					title: "para",
 					code: `para (var i = 0; i < 2; i = i + 1) {
@@ -148,10 +148,10 @@ enquanto (i < 2) {
 			},
 			{
 				id: "imprima",
-				titulo: "imprima",
-				sintaxe: "imprima(valor);",
-				descricao: "Mostra um valor na saída do programa.",
-				exemplo: {
+				title: "imprima",
+				syntax: "imprima(valor);",
+				description: "Mostra um valor na saída do programa.",
+				example: {
 					id: "imprima",
 					title: "imprima",
 					code: `imprima("oi");`,
@@ -160,10 +160,10 @@ enquanto (i < 2) {
 			},
 			{
 				id: "nulo",
-				titulo: "nulo",
-				sintaxe: "nulo",
-				descricao: "O valor que representa \"nenhum valor\". É impresso como Nulo, com maiúscula.",
-				exemplo: {
+				title: "nulo",
+				syntax: "nulo",
+				description: "O valor que representa \"nenhum valor\". É impresso como Nulo, com maiúscula.",
+				example: {
 					id: "nulo",
 					title: "nulo",
 					code: `imprima(nulo);`,
@@ -172,11 +172,11 @@ enquanto (i < 2) {
 			},
 			{
 				id: "classe",
-				titulo: "classe",
-				sintaxe: "classe Nome { ... }",
-				descricao:
+				title: "classe",
+				syntax: "classe Nome { ... }",
+				description:
 					"Declara um molde para criar objetos.\n\nUma classe também é um valor como outro qualquer: pode ser guardada numa variável, e essa variável passa a funcionar como a própria classe para criar novos objetos.",
-				exemplo: {
+				example: {
 					id: "classe",
 					title: "classe",
 					code: `classe Pessoa {
@@ -192,11 +192,11 @@ imprima(p.nome);`,
 			},
 			{
 				id: "funcao",
-				titulo: "funcao",
-				sintaxe: "funcao nome(parâmetros) { ... }",
-				descricao:
+				title: "funcao",
+				syntax: "funcao nome(parâmetros) { ... }",
+				description:
 					"Declara uma função.\n\nUma função é um valor como outro qualquer: pode ser guardada numa variável e chamada através dela.",
-				exemplo: {
+				example: {
 					id: "funcao",
 					title: "funcao",
 					code: `funcao dobro(n) {
@@ -208,10 +208,10 @@ imprima(dobro(4));`,
 			},
 			{
 				id: "ou",
-				titulo: "ou",
-				sintaxe: "condição ou condição",
-				descricao: "Operador lógico \"ou\": verdadeiro se pelo menos um dos dois lados for verdadeiro.",
-				exemplo: {
+				title: "ou",
+				syntax: "condição ou condição",
+				description: "Operador lógico \"ou\": verdadeiro se pelo menos um dos dois lados for verdadeiro.",
+				example: {
 					id: "ou",
 					title: "ou",
 					code: `imprima(verdadeiro ou falso);`,
@@ -220,10 +220,10 @@ imprima(dobro(4));`,
 			},
 			{
 				id: "e",
-				titulo: "e",
-				sintaxe: "condição e condição",
-				descricao: "Operador lógico \"e\": verdadeiro só se os dois lados forem verdadeiros.",
-				exemplo: {
+				title: "e",
+				syntax: "condição e condição",
+				description: "Operador lógico \"e\": verdadeiro só se os dois lados forem verdadeiros.",
+				example: {
 					id: "e",
 					title: "e",
 					code: `imprima(verdadeiro e falso);`,
@@ -232,10 +232,10 @@ imprima(dobro(4));`,
 			},
 			{
 				id: "super",
-				titulo: "super",
-				sintaxe: "super.metodo()",
-				descricao: "Dentro de um método, chama a versão do método definida na superclasse.",
-				exemplo: {
+				title: "super",
+				syntax: "super.metodo()",
+				description: "Dentro de um método, chama a versão do método definida na superclasse.",
+				example: {
 					id: "super",
 					title: "super",
 					code: `classe Animal {
@@ -255,10 +255,10 @@ imprima(c.falar());`,
 			},
 			{
 				id: "este",
-				titulo: "este",
-				sintaxe: "este.atributo",
-				descricao: "Dentro de um método, se refere ao próprio objeto que está sendo usado.",
-				exemplo: {
+				title: "este",
+				syntax: "este.atributo",
+				description: "Dentro de um método, se refere ao próprio objeto que está sendo usado.",
+				example: {
 					id: "este",
 					title: "este",
 					code: `classe Contador {
@@ -274,10 +274,10 @@ imprima(c.valor);`,
 			},
 			{
 				id: "verdadeiro",
-				titulo: "verdadeiro",
-				sintaxe: "verdadeiro",
-				descricao: "O valor lógico verdadeiro.",
-				exemplo: {
+				title: "verdadeiro",
+				syntax: "verdadeiro",
+				description: "O valor lógico verdadeiro.",
+				example: {
 					id: "verdadeiro",
 					title: "verdadeiro",
 					code: `imprima(verdadeiro);`,
@@ -286,10 +286,10 @@ imprima(c.valor);`,
 			},
 			{
 				id: "falso",
-				titulo: "falso",
-				sintaxe: "falso",
-				descricao: "O valor lógico falso.",
-				exemplo: {
+				title: "falso",
+				syntax: "falso",
+				description: "O valor lógico falso.",
+				example: {
 					id: "falso",
 					title: "falso",
 					code: `imprima(falso);`,
@@ -298,10 +298,10 @@ imprima(c.valor);`,
 			},
 			{
 				id: "construtor",
-				titulo: "construtor",
-				sintaxe: "construtor(parâmetros) { ... }",
-				descricao: "O método especial que roda quando um objeto novo é criado a partir de uma classe.",
-				exemplo: {
+				title: "construtor",
+				syntax: "construtor(parâmetros) { ... }",
+				description: "O método especial que roda quando um objeto novo é criado a partir de uma classe.",
+				example: {
 					id: "construtor",
 					title: "construtor",
 					code: `classe Evento {
@@ -317,14 +317,14 @@ Evento();`,
 	},
 	{
 		id: "operadores",
-		titulo: "Operadores",
+		title: "Operadores",
 		intro: "Só os operadores que o Grace realmente reconhece.",
-		itens: [
+		items: [
 			{
 				id: "soma",
-				titulo: "+ (soma / concatenação)",
-				descricao: "Soma dois números, ou junta dois textos. Não mistura os dois tipos.",
-				exemplo: {
+				title: "+ (soma / concatenação)",
+				description: "Soma dois números, ou junta dois textos. Não mistura os dois tipos.",
+				example: {
 					id: "soma",
 					title: "+",
 					code: `imprima(2 + 3);
@@ -334,9 +334,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "subtracao",
-				titulo: "- (subtração)",
-				descricao: "Subtrai o segundo número do primeiro.",
-				exemplo: {
+				title: "- (subtração)",
+				description: "Subtrai o segundo número do primeiro.",
+				example: {
 					id: "subtracao",
 					title: "-",
 					code: `imprima(5 - 2);`,
@@ -345,9 +345,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "multiplicacao",
-				titulo: "* (multiplicação)",
-				descricao: "Multiplica dois números.",
-				exemplo: {
+				title: "* (multiplicação)",
+				description: "Multiplica dois números.",
+				example: {
 					id: "multiplicacao",
 					title: "*",
 					code: `imprima(4 * 3);`,
@@ -356,10 +356,10 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "divisao",
-				titulo: "/ (divisão)",
-				descricao:
+				title: "/ (divisão)",
+				description:
 					"Divide dois números. O resultado pode ter casas decimais.\n\nNão existe uma divisão inteira separada: 7 / 2 sempre dá 3.5, nunca 3.",
-				exemplo: {
+				example: {
 					id: "divisao",
 					title: "/",
 					code: `imprima(7 / 2);`,
@@ -368,9 +368,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "negativo",
-				titulo: "- (negativo)",
-				descricao: "Troca o sinal de um número, quando usado antes de um único valor.",
-				exemplo: {
+				title: "- (negativo)",
+				description: "Troca o sinal de um número, quando usado antes de um único valor.",
+				example: {
 					id: "negativo",
 					title: "- unário",
 					code: `imprima(-5);`,
@@ -379,9 +379,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "igual",
-				titulo: "==",
-				descricao: "Verdadeiro se os dois valores forem iguais.",
-				exemplo: {
+				title: "==",
+				description: "Verdadeiro se os dois valores forem iguais.",
+				example: {
 					id: "igual",
 					title: "==",
 					code: `imprima(5 == 5);`,
@@ -390,9 +390,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "diferente",
-				titulo: "!=",
-				descricao: "Verdadeiro se os dois valores forem diferentes.",
-				exemplo: {
+				title: "!=",
+				description: "Verdadeiro se os dois valores forem diferentes.",
+				example: {
 					id: "diferente",
 					title: "!=",
 					code: `imprima(1 != 2);`,
@@ -401,9 +401,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "maior",
-				titulo: ">",
-				descricao: "Verdadeiro se o primeiro número for maior que o segundo.",
-				exemplo: {
+				title: ">",
+				description: "Verdadeiro se o primeiro número for maior que o segundo.",
+				example: {
 					id: "maior",
 					title: ">",
 					code: `imprima(5 > 3);`,
@@ -412,9 +412,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "maior-igual",
-				titulo: ">=",
-				descricao: "Verdadeiro se o primeiro número for maior ou igual ao segundo.",
-				exemplo: {
+				title: ">=",
+				description: "Verdadeiro se o primeiro número for maior ou igual ao segundo.",
+				example: {
 					id: "maior-igual",
 					title: ">=",
 					code: `imprima(5 >= 5);`,
@@ -423,9 +423,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "menor",
-				titulo: "<",
-				descricao: "Verdadeiro se o primeiro número for menor que o segundo.",
-				exemplo: {
+				title: "<",
+				description: "Verdadeiro se o primeiro número for menor que o segundo.",
+				example: {
 					id: "menor",
 					title: "<",
 					code: `imprima(3 < 5);`,
@@ -434,9 +434,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "menor-igual",
-				titulo: "<=",
-				descricao: "Verdadeiro se o primeiro número for menor ou igual ao segundo.",
-				exemplo: {
+				title: "<=",
+				description: "Verdadeiro se o primeiro número for menor ou igual ao segundo.",
+				example: {
 					id: "menor-igual",
 					title: "<=",
 					code: `imprima(5 <= 4);`,
@@ -445,9 +445,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "nao",
-				titulo: "!",
-				descricao: "Inverte um valor lógico.",
-				exemplo: {
+				title: "!",
+				description: "Inverte um valor lógico.",
+				example: {
 					id: "nao",
 					title: "!",
 					code: `imprima(!verdadeiro);`,
@@ -458,15 +458,15 @@ imprima("a" + "b");`,
 	},
 	{
 		id: "tipos",
-		titulo: "Tipos e valores",
+		title: "Tipos e valores",
 		intro: "O Grace tem quatro tipos de valor.",
-		itens: [
+		items: [
 			{
 				id: "numero",
-				titulo: "Número",
-				descricao:
+				title: "Número",
+				description:
 					"Existe só um tipo de número, sempre com ponto flutuante — não há um tipo separado para números inteiros.\n\nQuando o resultado é um número inteiro, o Grace imprime sem casas decimais (2, não 2.0). Quando não é, imprime as casas decimais normalmente (3.5).",
-				exemplo: {
+				example: {
 					id: "numero",
 					title: "Número",
 					code: `imprima(7 / 2);`,
@@ -475,9 +475,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "texto",
-				titulo: "Texto",
-				descricao: "Uma sequência de caracteres entre aspas.",
-				exemplo: {
+				title: "Texto",
+				description: "Uma sequência de caracteres entre aspas.",
+				example: {
 					id: "texto",
 					title: "Texto",
 					code: `imprima("Grace");`,
@@ -486,9 +486,9 @@ imprima("a" + "b");`,
 			},
 			{
 				id: "logico",
-				titulo: "Lógico",
-				descricao: "verdadeiro ou falso. Impressos como Verdadeiro e Falso, com maiúscula.",
-				exemplo: {
+				title: "Lógico",
+				description: "verdadeiro ou falso. Impressos como Verdadeiro e Falso, com maiúscula.",
+				example: {
 					id: "logico",
 					title: "Lógico",
 					code: `imprima(verdadeiro);
@@ -498,9 +498,9 @@ imprima(falso);`,
 			},
 			{
 				id: "nulo-tipo",
-				titulo: "Nulo",
-				descricao: "Representa a ausência de valor. Impresso como Nulo, com maiúscula.",
-				exemplo: {
+				title: "Nulo",
+				description: "Representa a ausência de valor. Impresso como Nulo, com maiúscula.",
+				example: {
 					id: "nulo-tipo",
 					title: "Nulo",
 					code: `imprima(nulo);`,
@@ -511,14 +511,14 @@ imprima(falso);`,
 	},
 	{
 		id: "controle-de-fluxo",
-		titulo: "Controle de fluxo",
-		itens: [
+		title: "Controle de fluxo",
+		items: [
 			{
 				id: "se-senao-fluxo",
-				titulo: "se / senao",
-				sintaxe: "se (condição) { ... } senao { ... }",
-				descricao: "Escolhe um entre dois caminhos, dependendo de uma condição.",
-				exemplo: {
+				title: "se / senao",
+				syntax: "se (condição) { ... } senao { ... }",
+				description: "Escolhe um entre dois caminhos, dependendo de uma condição.",
+				example: {
 					id: "se-senao-fluxo",
 					title: "se / senao",
 					code: `var idade = 20;
@@ -532,10 +532,10 @@ se (idade >= 18) {
 			},
 			{
 				id: "enquanto-fluxo",
-				titulo: "enquanto",
-				sintaxe: "enquanto (condição) { ... }",
-				descricao: "Repete enquanto a condição continuar verdadeira.",
-				exemplo: {
+				title: "enquanto",
+				syntax: "enquanto (condição) { ... }",
+				description: "Repete enquanto a condição continuar verdadeira.",
+				example: {
 					id: "enquanto-fluxo",
 					title: "enquanto",
 					code: `var i = 0;
@@ -548,10 +548,10 @@ enquanto (i < 3) {
 			},
 			{
 				id: "para-fluxo",
-				titulo: "para",
-				sintaxe: "para (início; condição; atualização) { ... }",
-				descricao: "Uma forma compacta de enquanto, para quando o número de repetições é conhecido.",
-				exemplo: {
+				title: "para",
+				syntax: "para (início; condição; atualização) { ... }",
+				description: "Uma forma compacta de enquanto, para quando o número de repetições é conhecido.",
+				example: {
 					id: "para-fluxo",
 					title: "para",
 					code: `para (var i = 0; i < 3; i = i + 1) {
@@ -564,14 +564,14 @@ enquanto (i < 3) {
 	},
 	{
 		id: "funcoes",
-		titulo: "Funções",
-		itens: [
+		title: "Funções",
+		items: [
 			{
 				id: "declaracao",
-				titulo: "Declaração e parâmetros",
-				sintaxe: "funcao nome(a, b) { retorna a + b; }",
-				descricao: "Uma função tem nome, zero ou mais parâmetros, e um corpo entre chaves.",
-				exemplo: {
+				title: "Declaração e parâmetros",
+				syntax: "funcao nome(a, b) { retorna a + b; }",
+				description: "Uma função tem nome, zero ou mais parâmetros, e um corpo entre chaves.",
+				example: {
 					id: "declaracao",
 					title: "Declaração",
 					code: `funcao soma(a, b) {
@@ -583,9 +583,9 @@ imprima(soma(2, 3));`,
 			},
 			{
 				id: "aninhamento",
-				titulo: "Aninhamento",
-				descricao: "Uma função pode ser declarada dentro de outra, e chamada normalmente de lá de dentro.",
-				exemplo: {
+				title: "Aninhamento",
+				description: "Uma função pode ser declarada dentro de outra, e chamada normalmente de lá de dentro.",
+				example: {
 					id: "aninhamento",
 					title: "Função dentro de função",
 					code: `funcao externa() {
@@ -597,9 +597,9 @@ imprima(soma(2, 3));`,
 imprima(externa());`,
 					expect: { kind: "output", lines: ["15"] },
 				},
-				aviso:
+				warning:
 					"O aninhamento não cria um fechamento (closure): a função interna não enxerga as variáveis locais da função externa, só os próprios parâmetros e variáveis. Tentar usar uma variável de fora dá o mesmo erro de \"variável não existe\" que usar uma variável nunca declarada.",
-				erroDemonstrado: {
+				demonstratedError: {
 					id: "aninhamento-sem-closure",
 					title: "A função interna não vê a variável da externa",
 					code: `funcao externa() {
@@ -615,9 +615,9 @@ imprima(externa());`,
 			},
 			{
 				id: "recursao-funcoes",
-				titulo: "Recursão",
-				descricao: "Uma função pode chamar a si mesma.",
-				exemplo: {
+				title: "Recursão",
+				description: "Uma função pode chamar a si mesma.",
+				example: {
 					id: "recursao-funcoes",
 					title: "Fatorial",
 					code: `funcao fatorial(n) {
@@ -632,9 +632,9 @@ imprima(fatorial(5));`,
 			},
 			{
 				id: "retorno-implicito",
-				titulo: "Retorno implícito",
-				descricao: "Uma função que não usa retorna devolve Nulo automaticamente.",
-				exemplo: {
+				title: "Retorno implícito",
+				description: "Uma função que não usa retorna devolve Nulo automaticamente.",
+				example: {
 					id: "retorno-implicito",
 					title: "Sem retorna",
 					code: `funcao vazia() {}
@@ -646,15 +646,15 @@ imprima(vazia());`,
 	},
 	{
 		id: "classes",
-		titulo: "Classes",
-		itens: [
+		title: "Classes",
+		items: [
 			{
 				id: "declaracao-classe",
-				titulo: "classe, var e construtor",
-				sintaxe: "classe Nome { var atributo; construtor(...) { ... } }",
-				descricao:
+				title: "classe, var e construtor",
+				syntax: "classe Nome { var atributo; construtor(...) { ... } }",
+				description:
 					"Toda classe que vai guardar dados precisa declarar cada atributo com var antes de poder usá-lo com este.",
-				exemplo: {
+				example: {
 					id: "declaracao-classe",
 					title: "Uma classe simples",
 					code: `classe Cachorro {
@@ -673,11 +673,11 @@ rex.latir();`,
 			},
 			{
 				id: "heranca-classe",
-				titulo: "Herança com <",
-				sintaxe: "classe B < A { ... }",
-				descricao:
+				title: "Herança com <",
+				syntax: "classe B < A { ... }",
+				description:
 					"Uma classe herda atributos e métodos de outra com <. A subclasse precisa declarar o próprio construtor — mesmo que só repasse os valores com super.construtor(...).",
-				exemplo: {
+				example: {
 					id: "heranca-classe",
 					title: "Cachorro herda de Animal",
 					code: `classe Animal {
@@ -703,15 +703,15 @@ rex.latir();`,
 	},
 	{
 		id: "limitacoes",
-		titulo: "Limitações conhecidas",
+		title: "Limitações conhecidas",
 		intro: "O que o Grace ainda não tem — melhor saber de antemão do que descobrir no meio de um programa.",
-		itens: [
+		items: [
 			{
 				id: "sem-atribuicao-composta",
-				titulo: "+= -= *= /= não existem",
-				descricao:
+				title: "+= -= *= /= não existem",
+				description:
 					"O scanner reconhece esses símbolos, mas o parser não os aceita em nenhum comando. Escreva x = x + 1; por extenso.",
-				exemplo: {
+				example: {
 					id: "sem-atribuicao-composta",
 					title: "+= não é aceito",
 					code: `var x = 1;
@@ -721,9 +721,9 @@ x += 5;`,
 			},
 			{
 				id: "sem-escolha-caso",
-				titulo: "escolha / caso não existem",
-				descricao: "Não há um comando de múltipla escolha. Use se / senao encadeados.",
-				exemplo: {
+				title: "escolha / caso não existem",
+				description: "Não há um comando de múltipla escolha. Use se / senao encadeados.",
+				example: {
 					id: "sem-escolha-caso",
 					title: "escolha não é reconhecido",
 					code: `escolha (1) {
@@ -734,10 +734,10 @@ x += 5;`,
 			},
 			{
 				id: "sem-conversao-texto",
-				titulo: '"texto" + número não funciona',
-				descricao:
+				title: '"texto" + número não funciona',
+				description:
 					"O + só soma dois números ou junta dois textos — nunca mistura os dois, e o Grace não converte um número em texto automaticamente. Imprima os dois valores separadamente.",
-				exemplo: {
+				example: {
 					id: "sem-conversao-texto",
 					title: "Misturando tipos",
 					code: `imprima("nota: " + 10);`,
@@ -746,9 +746,9 @@ x += 5;`,
 			},
 			{
 				id: "sem-escapes",
-				titulo: "Escapes como \\n não são interpretados",
-				descricao: 'O texto entre aspas é copiado ao pé da letra. "linha1\\nlinha2" imprime o \\n literal, não quebra linha.',
-				exemplo: {
+				title: "Escapes como \\n não são interpretados",
+				description: 'O texto entre aspas é copiado ao pé da letra. "linha1\\nlinha2" imprime o \\n literal, não quebra linha.',
+				example: {
 					id: "sem-escapes",
 					title: "\\n literal",
 					code: `imprima("linha1\\nlinha2");`,
@@ -759,16 +759,16 @@ x += 5;`,
 	},
 	{
 		id: "erros",
-		titulo: "Catálogo de erros",
+		title: "Catálogo de erros",
 		intro:
 			"A maioria dos erros de sintaxe segue o padrão \"Esperava X, mas encontrei Y\" — o texto já diz o que falta. Esta lista cobre os erros mais específicos, os que valem uma explicação à parte.",
-		itens: [
+		items: [
 			{
 				id: "texto-nao-fechado",
-				titulo: "Texto não fechado",
-				descricao:
+				title: "Texto não fechado",
+				description:
 					'Mensagem: "O texto iniciado com \'"\' nunca foi fechado." Significa que uma aspa de abertura não tem par. Feche o texto com outra aspa.',
-				exemplo: {
+				example: {
 					id: "texto-nao-fechado",
 					title: "Aspa sem fechar",
 					code: `imprima("abc);`,
@@ -777,10 +777,10 @@ x += 5;`,
 			},
 			{
 				id: "caractere-nao-reconhecido",
-				titulo: "Caractere não reconhecido",
-				descricao:
+				title: "Caractere não reconhecido",
+				description:
 					'Mensagem: "O caractere \'X\' não é reconhecido pela linguagem Grace." Algum símbolo digitado (como @ ou #) não existe na linguagem.',
-				exemplo: {
+				example: {
 					id: "caractere-nao-reconhecido",
 					title: "Símbolo inválido",
 					code: `imprima(1 @ 2);`,
@@ -789,10 +789,10 @@ x += 5;`,
 			},
 			{
 				id: "numero-seguido-de-letra",
-				titulo: "Número seguido de letra",
-				descricao:
+				title: "Número seguido de letra",
+				description:
 					'Mensagem: "O número \'X\' não pode ser seguido de letras." Nomes de variáveis não podem começar com um número.',
-				exemplo: {
+				example: {
 					id: "numero-seguido-de-letra",
 					title: "Nome inválido",
 					code: `var 5x = 1;`,
@@ -801,10 +801,10 @@ x += 5;`,
 			},
 			{
 				id: "variavel-nao-existe",
-				titulo: "Variável não existe",
-				descricao:
+				title: "Variável não existe",
+				description:
 					'Mensagem: "A variável \'X\' não existe." Você tentou ler uma variável que nunca foi declarada com var.',
-				exemplo: {
+				example: {
 					id: "variavel-nao-existe",
 					title: "Ler sem declarar",
 					code: `imprima(naoexiste);`,
@@ -813,10 +813,10 @@ x += 5;`,
 			},
 			{
 				id: "variavel-ja-declarada",
-				titulo: "Variável já declarada neste escopo",
-				descricao:
+				title: "Variável já declarada neste escopo",
+				description:
 					'Mensagem: "Variável \'X\' já foi declarada neste escopo." Dentro de um mesmo bloco ou função, dois var com o mesmo nome colidem. Esse erro só existe dentro de blocos/funções — no nível mais externo do programa, redeclarar uma variável apenas a substitui, sem erro.',
-				exemplo: {
+				example: {
 					id: "variavel-ja-declarada",
 					title: "Duas var x no mesmo bloco",
 					code: `funcao f() {
@@ -830,10 +830,10 @@ imprima(f());`,
 			},
 			{
 				id: "variavel-usada-antes-de-inicializada",
-				titulo: "Variável usada antes de ser inicializada",
-				descricao:
+				title: "Variável usada antes de ser inicializada",
+				description:
 					'Mensagem: "Variável \'X\' usada antes de ser inicializada." Dentro de um bloco ou função, o próprio valor inicial de uma var não pode se referir a ela mesma (a variável ainda não existe nesse instante). Assim como o erro acima, essa checagem só vale dentro de blocos/funções.',
-				exemplo: {
+				example: {
 					id: "variavel-usada-antes-de-inicializada",
 					title: "var x = x dentro de um bloco",
 					code: `se (verdadeiro) {
@@ -845,9 +845,9 @@ imprima(f());`,
 			},
 			{
 				id: "divisao-por-zero-erro",
-				titulo: "Divisão por zero",
-				descricao: 'Mensagem: "Não é possível dividir por zero." O denominador de uma divisão era zero.',
-				exemplo: {
+				title: "Divisão por zero",
+				description: 'Mensagem: "Não é possível dividir por zero." O denominador de uma divisão era zero.',
+				example: {
 					id: "divisao-por-zero-erro",
 					title: "Dividir por zero",
 					code: `imprima(10 / 0);`,
@@ -856,10 +856,10 @@ imprima(f());`,
 			},
 			{
 				id: "operador-mais-incompativel",
-				titulo: "Operador + com tipos incompatíveis",
-				descricao:
+				title: "Operador + com tipos incompatíveis",
+				description:
 					'Mensagem: "O operador \'+\' funciona com dois números... ou duas strings..." Você tentou somar um texto com um número.',
-				exemplo: {
+				example: {
 					id: "operador-mais-incompativel",
 					title: "Texto + número",
 					code: `imprima("a" + 1);`,
@@ -868,10 +868,10 @@ imprima(f());`,
 			},
 			{
 				id: "atributo-nao-declarado-erro",
-				titulo: "Atributo não declarado",
-				descricao:
+				title: "Atributo não declarado",
+				description:
 					'Mensagem: "O atributo \'X\' não foi declarado na classe \'Y\'." Você usou este.algo sem antes declarar var algo; na classe.',
-				exemplo: {
+				example: {
 					id: "atributo-nao-declarado-erro",
 					title: "Atributo sem var",
 					code: `classe C {
@@ -885,10 +885,10 @@ C();`,
 			},
 			{
 				id: "classe-sem-construtor",
-				titulo: "Classe sem construtor não aceita argumentos",
-				descricao:
+				title: "Classe sem construtor não aceita argumentos",
+				description:
 					'Mensagem: "A classe \'X\' não tem construtor, então \'X()\' não aceita argumentos." Você passou valores para uma classe que não declarou construtor(...).',
-				exemplo: {
+				example: {
 					id: "classe-sem-construtor",
 					title: "Argumentos sem construtor",
 					code: `classe C {}
@@ -898,10 +898,10 @@ C(1, 2);`,
 			},
 			{
 				id: "numero-de-argumentos",
-				titulo: "Número errado de argumentos",
-				descricao:
+				title: "Número errado de argumentos",
+				description:
 					'Mensagem: "A função/O método/O construtor da classe \'X\' espera N argumento(s), mas recebeu M." A chamada não bate com os parâmetros declarados.',
-				exemplo: {
+				example: {
 					id: "numero-de-argumentos",
 					title: "Argumentos a menos",
 					code: `funcao f(a, b) {
@@ -913,10 +913,10 @@ imprima(f(1));`,
 			},
 			{
 				id: "superclasse-nao-declarada",
-				titulo: "Superclasse não declarada",
-				descricao:
+				title: "Superclasse não declarada",
+				description:
 					'Mensagem: "A superclasse \'X\' não foi declarada." A classe usada depois do < em classe B < A ainda não existe.',
-				exemplo: {
+				example: {
 					id: "superclasse-nao-declarada",
 					title: "Herdar de classe inexistente",
 					code: `classe B < A {}`,
@@ -925,10 +925,10 @@ imprima(f(1));`,
 			},
 			{
 				id: "atributo-duplicado-superclasse",
-				titulo: "Atributo já declarado na superclasse",
-				descricao:
+				title: "Atributo já declarado na superclasse",
+				description:
 					'Mensagem: "O atributo \'X\' já foi declarado na superclasse \'Y\'." A subclasse repetiu var de um atributo que já vem por herança.',
-				exemplo: {
+				example: {
 					id: "atributo-duplicado-superclasse",
 					title: "Atributo repetido",
 					code: `classe A {
@@ -948,10 +948,10 @@ classe B < A {
 			},
 			{
 				id: "super-fora-de-metodo",
-				titulo: "'super' fora de um método",
-				descricao:
+				title: "'super' fora de um método",
+				description:
 					'Mensagem: "\'super\' só pode ser usado dentro de um método de uma classe." super só existe dentro do corpo de um método.',
-				exemplo: {
+				example: {
 					id: "super-fora-de-metodo",
 					title: "super no topo do programa",
 					code: `imprima(super.foo);`,
@@ -960,10 +960,10 @@ classe B < A {
 			},
 			{
 				id: "classe-sem-superclasse",
-				titulo: "Classe não herda de ninguém",
-				descricao:
+				title: "Classe não herda de ninguém",
+				description:
 					'Mensagem: "A classe \'X\' não herda de ninguém, então não é possível usar \'super\' aqui." super foi usado numa classe que não tem <.',
-				exemplo: {
+				example: {
 					id: "classe-sem-superclasse",
 					title: "super sem herança",
 					code: `classe A {
@@ -978,10 +978,10 @@ a.metodo();`,
 			},
 			{
 				id: "metodo-nao-existe-superclasse",
-				titulo: "Método não existe na superclasse",
-				descricao:
+				title: "Método não existe na superclasse",
+				description:
 					'Mensagem: "O método \'X\' não existe na superclasse \'Y\'." O nome depois de super. não é um método da classe de cima.',
-				exemplo: {
+				example: {
 					id: "metodo-nao-existe-superclasse",
 					title: "Método inexistente",
 					code: `classe A {}
@@ -997,10 +997,10 @@ b.metodo();`,
 			},
 			{
 				id: "limite-de-passos",
-				titulo: "Limite de passos (laço infinito)",
-				descricao:
+				title: "Limite de passos (laço infinito)",
+				description:
 					'Mensagem: "O programa passou de 1.000.000 de passos e foi interrompido." Normalmente significa que a condição de um enquanto nunca fica falsa.',
-				exemplo: {
+				example: {
 					id: "limite-de-passos",
 					title: "Laço sem fim",
 					code: `enquanto (verdadeiro) {}`,

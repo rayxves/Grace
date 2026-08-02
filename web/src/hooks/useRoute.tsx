@@ -9,14 +9,14 @@ import {
 } from "react";
 import { decodeProgram, encodeProgram } from "../lib/urlProgram";
 
-export type Screen = "visualizador" | "referencia";
+export type Screen = "visualizer" | "reference";
 
 export interface Route {
 	screen: Screen;
 	param: string | null;
 }
 
-const VALID_SCREENS: Screen[] = ["visualizador", "referencia"];
+const VALID_SCREENS: Screen[] = ["visualizer", "reference"];
 
 const DEFAULT_SOURCE = `var x = 10;
 imprima(x + 5);
@@ -37,7 +37,7 @@ function parseHash(hash: string): { route: Route; program: string | null } {
 	const candidate = segments[0];
 	const screen = (VALID_SCREENS as string[]).includes(candidate)
 		? (candidate as Screen)
-		: "visualizador";
+		: "visualizer";
 	const param = segments[1] ?? null;
 
 	let program: string | null = null;
@@ -51,7 +51,7 @@ function parseHash(hash: string): { route: Route; program: string | null } {
 function buildHash(screen: Screen, param: string | null, program: string | null): string {
 	let hash = `#/${screen}`;
 	if (param) hash += `/${param}`;
-	if (screen === "visualizador" && program !== null) {
+	if (screen === "visualizer" && program !== null) {
 		hash += `?p=${encodeProgram(program)}`;
 	}
 	return hash;
@@ -95,7 +95,7 @@ export function RouteProvider({ children }: Readonly<{ children: ReactNode }>) {
 		window.clearTimeout(replaceTimeout.current);
 		replaceTimeout.current = window.setTimeout(() => {
 			const current = parseHash(window.location.hash).route;
-			if (current.screen !== "visualizador") return;
+			if (current.screen !== "visualizer") return;
 			window.history.replaceState(null, "", buildHash(current.screen, current.param, next));
 		}, REPLACE_DEBOUNCE_MS);
 	}, []);

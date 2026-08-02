@@ -1,22 +1,16 @@
 import { useCallback, useState } from "react";
-import { ModoCompleto } from "./modes/ModoCompleto";
-import { Palco } from "./modes/Palco";
-import { ViewTabs } from "../components/ViewTabs/ViewTabs";
+import { FullMode } from "./modes/FullMode";
+import { Stage } from "./modes/Stage";
 import { useRoute } from "../hooks/useRoute";
 import { runGrace } from "../lib/grace";
 import type { Trace } from "../types";
-import styles from "./Visualizador.module.css";
+import styles from "./Visualizer.module.css";
 
-type Modo = "completo" | "palco";
+export type Mode = "full" | "stage";
 
-const MODO_TABS = [
-	{ id: "completo" as const, label: "modo completo" },
-	{ id: "palco" as const, label: "modo palco" },
-];
-
-export function Visualizador() {
+export function Visualizer() {
 	const { program } = useRoute();
-	const [modo, setModo] = useState<Modo>("completo");
+	const [mode, setMode] = useState<Mode>("full");
 	const [trace, setTrace] = useState<Trace | null>(null);
 	const [running, setRunning] = useState(false);
 	const [runtimeError, setRuntimeError] = useState<string | null>(null);
@@ -37,22 +31,23 @@ export function Visualizador() {
 
 	return (
 		<div className={styles.shell}>
-			<div className={styles.modoSwitch}>
-				<ViewTabs tabs={MODO_TABS} activeId={modo} onSelect={setModo} />
-			</div>
-			{modo === "completo" ? (
-				<ModoCompleto
+			{mode === "full" ? (
+				<FullMode
 					trace={trace}
 					running={running}
 					runtimeError={runtimeError}
 					run={run}
+					appMode={mode}
+					onSelectAppMode={setMode}
 				/>
 			) : (
-				<Palco
+				<Stage
 					trace={trace}
 					running={running}
 					runtimeError={runtimeError}
 					run={run}
+					appMode={mode}
+					onSelectAppMode={setMode}
 				/>
 			)}
 		</div>

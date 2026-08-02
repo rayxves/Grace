@@ -7,33 +7,32 @@ import {
 	SkipBack,
 } from "lucide-react";
 import { PLAYER_SPEEDS } from "../../hooks/usePlayer";
-import { Scrubber, type ScrubberMarker } from "../Scrubber/Scrubber";
 import { ViewTabs } from "../ViewTabs/ViewTabs";
 import { PipelineStrip, type Phase } from "../PipelineStrip/PipelineStrip";
+import type { Mode as AppMode } from "../../screens/Visualizer";
 import styles from "./Toolbar.module.css";
 
 interface ToolbarProps {
 	onRun: () => void;
 	running: boolean;
 	hasTrace: boolean;
-	markers: ScrubberMarker[];
 	mode: "execution" | "compilation";
 	playing: boolean;
 	speed: number;
 	stepIndex: number;
 	totalSteps: number;
-	currentLine: number | null;
 	onTogglePlay: () => void;
 	onPrevious: () => void;
 	onNext: () => void;
 	onNextLine: () => void;
 	onReset: () => void;
-	onSeek: (index: number) => void;
 	onSpeedChange: (speed: number) => void;
+	onSelectMode: (mode: "execution" | "compilation") => void;
 	phase: Phase;
 	compiling: boolean;
 	onSelectPhase: (phase: Phase) => void;
-	truncated: boolean;
+	appMode: AppMode;
+	onSelectAppMode: (mode: AppMode) => void;
 }
 
 const ICON_SIZE = "1.125rem";
@@ -48,39 +47,40 @@ const SUBTITLE_BY_MODE: Record<ToolbarProps["mode"], string> = {
 	compilation: "visualizador de compilação",
 };
 
+const MODE_TABS: { id: ToolbarProps["mode"]; label: string }[] = [
+	{ id: "execution", label: "execução" },
+	{ id: "compilation", label: "compilação" },
+];
+
+const APP_MODE_TABS: { id: AppMode; label: string }[] = [
+	{ id: "full", label: "modo completo" },
+	{ id: "stage", label: "modo palco" },
+];
+
 export function Toolbar({
 	onRun,
 	running,
 	hasTrace,
-	markers,
 	mode,
 	playing,
 	speed,
 	stepIndex,
 	totalSteps,
-	currentLine,
 	onTogglePlay,
 	onPrevious,
 	onNext,
 	onNextLine,
 	onReset,
-	onSeek,
 	onSpeedChange,
+	onSelectMode,
 	phase,
 	compiling,
 	onSelectPhase,
-	truncated,
+	appMode,
+	onSelectAppMode,
 }: Readonly<ToolbarProps>) {
 	const atStart = stepIndex === 0;
 	const atEnd = totalSteps === 0 || stepIndex >= totalSteps - 1;
-
-	let positionText = "pronto para executar";
-	if (hasTrace && totalSteps > 0) {
-		positionText = `passo ${stepIndex + 1} de ${totalSteps}`;
-		if (currentLine !== null) {
-			positionText += ` — linha ${currentLine}`;
-		}
-	}
 
 	return (
 		<header className={styles.toolbar}>
@@ -98,6 +98,10 @@ export function Toolbar({
 					>
 						{running ? "executando…" : "executar"}
 					</button>
+
+					<div className={styles.modeSwitch}>
+						<ViewTabs tabs={MODE_TABS} activeId={mode} onSelect={onSelectMode} />
+					</div>
 
 					<div className={styles.playerCard} title="controles de animação do passo a passo">
 						<div className={styles.playerGroup}>
@@ -161,22 +165,8 @@ export function Toolbar({
 				</div>
 			</div>
 
-			<div className={styles.scrubberRow}>
-				<Scrubber
-					length={totalSteps}
-					index={stepIndex}
-					onSeek={onSeek}
-					markers={markers}
-				/>
-				<span className={styles.position}>{positionText}</span>
-				{truncated && (
-					<span
-						className={styles.truncatedNotice}
-						title="O programa gerou mais passos do que o visualizador consegue mostrar. Os passos depois deste ponto foram omitidos, mas a execução completa foi levada em conta."
-					>
-						passos a mais foram omitidos
-					</span>
-				)}
+			<div className={styles.appModeRow}>
+				<ViewTabs tabs={APP_MODE_TABS} activeId={appMode} onSelect={onSelectAppMode} />
 			</div>
 
 			<PipelineStrip phase={phase} compiling={compiling} onSelect={onSelectPhase} />

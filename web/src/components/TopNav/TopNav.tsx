@@ -6,8 +6,8 @@ import styles from "./TopNav.module.css";
 const ICON_SIZE = "1rem";
 
 const DESTINATIONS: { screen: Screen; label: string; icon: typeof Library }[] = [
-	{ screen: "visualizador", label: "Visualizador", icon: MonitorPlay },
-	{ screen: "referencia", label: "Referência", icon: Library },
+	{ screen: "visualizer", label: "Visualizador", icon: MonitorPlay },
+	{ screen: "reference", label: "Referência", icon: Library },
 ];
 
 export function TopNav() {

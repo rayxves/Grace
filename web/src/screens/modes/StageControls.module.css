@@ -1,4 +1,4 @@
-.toolbar {
+.bar {
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-xs);
@@ -10,40 +10,8 @@
 .topRow {
 	display: flex;
 	align-items: center;
-	gap: var(--space-lg);
-}
-
-.brand {
-	display: flex;
-	align-items: baseline;
-	gap: var(--space-sm);
-	flex-shrink: 0;
-}
-
-.logo {
-	font-size: 1.25rem;
-	font-weight: 700;
-	color: var(--color-accent);
-	letter-spacing: -0.02em;
-}
-
-.subtitle {
-	font-size: 0.8125rem;
-	color: var(--color-text-muted);
-	white-space: nowrap;
-}
-
-.controls {
-	display: flex;
-	align-items: center;
 	gap: var(--space-md);
-	flex: 1;
-	justify-content: center;
 	flex-wrap: wrap;
-}
-
-.modeSwitch {
-	flex-shrink: 0;
 }
 
 .runButton {
@@ -60,6 +28,10 @@
 	opacity: 0.85;
 }
 
+.actSwitch {
+	flex-shrink: 0;
+}
+
 .playerCard {
 	display: flex;
 	align-items: center;
@@ -68,6 +40,7 @@
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius-lg);
 	background: var(--color-bg);
+	flex-wrap: wrap;
 }
 
 .playerGroup {
@@ -79,59 +52,21 @@
 	background: var(--color-surface-alt);
 }
 
-.playerDivider {
-	width: 1px;
-	height: 1.5rem;
-	background: var(--color-border);
-}
-
 .control,
-.controlLabeled,
-.controlBack {
+.controlPlaying {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 0.25rem;
 	min-width: 2rem;
 	height: 2rem;
 	padding: 0 0.5rem;
 	border-radius: var(--radius-sm);
-	font-size: 0.875rem;
 	color: var(--color-heading);
 	transition: background 0.15s ease;
 }
 
-.control svg {
-	flex-shrink: 0;
-}
-
-.controlLabeled {
-	font-size: 0.8125rem;
-	white-space: nowrap;
-}
-
-.controlBack {
-	font-size: 0.8125rem;
-	font-weight: 600;
-	white-space: nowrap;
-	color: var(--color-accent);
+.control:hover:not(:disabled) {
 	background: var(--color-accent-soft);
-	border: 1px solid var(--color-accent-border);
-}
-
-.control:hover:not(:disabled),
-.controlLabeled:hover:not(:disabled) {
-	background: var(--color-accent-soft);
-}
-
-.controlBack:hover:not(:disabled) {
-	opacity: 0.8;
-}
-
-.controlBack:disabled {
-	color: var(--color-heading);
-	background: transparent;
-	border-color: var(--color-border);
 }
 
 .controlPlaying {
@@ -150,31 +85,8 @@
 	padding: 0.125rem 0;
 }
 
-@media (max-width: 56rem) {
-	.playerCard {
-		flex-wrap: wrap;
-		justify-content: center;
-	}
-
-	.playerDivider {
-		display: none;
-	}
-}
-
 @media (max-width: 40rem) {
-	.topRow {
-		flex-wrap: wrap;
-		row-gap: var(--space-xs);
-	}
-
-	.subtitle {
-		display: none;
-	}
-
-	.controls {
-		order: 3;
-		flex-basis: 100%;
+	.playerCard {
 		justify-content: center;
 	}
 }
-

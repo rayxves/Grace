@@ -10,16 +10,16 @@ const repoRoot = path.resolve(webRoot, "..");
 
 const CONTENT_MODULES = [
 	{
-		file: "src/content/referencia.ts",
-		exportName: "referencia",
-		extract: (secao) => {
+		file: "src/content/reference.ts",
+		exportName: "reference",
+		extract: (section) => {
 			const entries = [];
-			for (const item of secao.itens) {
-				if (item.exemplo) entries.push({ id: `${secao.id}/${item.id}`, example: item.exemplo });
-				if (item.erroDemonstrado) {
+			for (const item of section.items) {
+				if (item.example) entries.push({ id: `${section.id}/${item.id}`, example: item.example });
+				if (item.demonstratedError) {
 					entries.push({
-						id: `${secao.id}/${item.id}/${item.erroDemonstrado.id}`,
-						example: item.erroDemonstrado,
+						id: `${section.id}/${item.id}/${item.demonstratedError.id}`,
+						example: item.demonstratedError,
 					});
 				}
 			}

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Binary } from "lucide-react";
 import { Toolbar } from "../../components/Toolbar/Toolbar";
 import { CodeEditor } from "../../components/CodeEditor/CodeEditor";
 import { AstView } from "../../components/AstView/AstView";
@@ -11,7 +10,6 @@ import { VariablesView } from "../../components/VariablesView/VariablesView";
 import { AstNodeInspector } from "../../components/AstNodeInspector/AstNodeInspector";
 import { AstNodeInsights } from "../../components/AstNodeInsights/AstNodeInsights";
 import { ConstantPoolView } from "../../components/ConstantPoolView/ConstantPoolView";
-import type { ScrubberMarker } from "../../components/Scrubber/Scrubber";
 import { CompileChipLayer } from "../../components/CompileChipLayer/CompileChipLayer";
 import { CompileNarration } from "../../components/CompileNarration/CompileNarration";
 import { usePlayer } from "../../hooks/usePlayer";
@@ -28,7 +26,8 @@ import { buildScopeResolutionMap } from "../../lib/scopeLookup";
 import { countAstNodesByLine, countBytecodeByLine, maxStackDepth } from "../../lib/expansionStats";
 import { countEmitsByNode } from "../../lib/compileNarration";
 import type { Trace } from "../../types";
-import styles from "./ModoCompleto.module.css";
+import type { Mode } from "../Visualizer";
+import styles from "./FullMode.module.css";
 
 const EMPTY_STEPS: Trace["steps"] = [];
 const EMPTY_BYTECODE: Trace["bytecode"] = [];
@@ -48,19 +47,23 @@ interface PlayerControls {
 	setSpeed: (speed: number) => void;
 }
 
-interface ModoCompletoProps {
+interface FullModeProps {
 	trace: Trace | null;
 	running: boolean;
 	runtimeError: string | null;
 	run: () => void;
+	appMode: Mode;
+	onSelectAppMode: (mode: Mode) => void;
 }
 
-export function ModoCompleto({
+export function FullMode({
 	trace,
 	running,
 	runtimeError,
 	run,
-}: Readonly<ModoCompletoProps>) {
+	appMode,
+	onSelectAppMode,
+}: Readonly<FullModeProps>) {
 	const { program, setProgram, route, navigate } = useRoute();
 	const phase: Phase = isPhase(route.param) ? route.param : "bytecode";
 	const workspaceRef = useRef<HTMLElement>(null);
@@ -168,18 +171,21 @@ export function ModoCompleto({
 			if (next === "codigo" || next === "tokens") {
 				setCompileMode(false);
 			}
-			navigate("visualizador", next);
+			navigate("visualizer", next);
 		},
 		[navigate],
 	);
 
-	const toggleCompileMode = useCallback(() => {
-		const next = !compileMode;
-		setCompileMode(next);
-		if (next && (phase === "codigo" || phase === "tokens")) {
-			navigate("visualizador", "execucao");
-		}
-	}, [compileMode, phase, navigate]);
+	const selectMode = useCallback(
+		(next: "execution" | "compilation") => {
+			const nextCompileMode = next === "compilation";
+			setCompileMode(nextCompileMode);
+			if (nextCompileMode && (phase === "codigo" || phase === "tokens")) {
+				navigate("visualizer", "execucao");
+			}
+		},
+		[phase, navigate],
+	);
 
 	const activeMode: "execution" | "compilation" = compileMode ? "compilation" : "execution";
 	const activePlayer: PlayerControls = compileMode ? compilePlayer : player;
@@ -195,18 +201,6 @@ export function ModoCompleto({
 		onTogglePlay: activePlayer.togglePlay,
 		onReset: activePlayer.reset,
 	});
-
-	const executionMarkers = useMemo<ScrubberMarker[]>(() => {
-		const found: ScrubberMarker[] = [];
-		steps.forEach((step, i) => {
-			if (step.instruction === "imprime") {
-				found.push({ index: i, kind: "print", title: `passo ${i + 1}: imprime` });
-			} else if (step.instruction === "volta (laço)") {
-				found.push({ index: i, kind: "loop", title: `passo ${i + 1}: volta do laço` });
-			}
-		});
-		return found;
-	}, [steps]);
 
 	const astViewProps = {
 		ast: trace?.ast ?? null,
@@ -238,10 +232,6 @@ export function ModoCompleto({
 	} else if (hoveredNodeId !== null) {
 		inspectedStatusLabel = "em foco";
 	}
-
-	const compileToggleClassName = compileMode
-		? `${styles.modeToggle} ${styles.modeToggleActive}`
-		: styles.modeToggle;
 
 	let structureContent: ReactNode;
 	if (phase === "codigo") {
@@ -321,24 +311,23 @@ export function ModoCompleto({
 				onRun={handleRun}
 				running={running}
 				hasTrace={activeHasTrace}
-				markers={activeMode === "execution" ? executionMarkers : []}
 				mode={activeMode}
 				playing={activePlayer.playing}
 				speed={activePlayer.speed}
 				stepIndex={activePlayer.index}
 				totalSteps={activePlayer.total}
-				currentLine={activeCurrentLine}
 				onTogglePlay={activePlayer.togglePlay}
 				onPrevious={activePlayer.previous}
 				onNext={activePlayer.next}
 				onNextLine={activePlayer.nextLine}
 				onReset={activePlayer.reset}
-				onSeek={activePlayer.goTo}
 				onSpeedChange={activePlayer.setSpeed}
+				onSelectMode={selectMode}
 				phase={phase}
 				compiling={compileMode}
 				onSelectPhase={selectPhase}
-				truncated={trace?.truncated ?? false}
+				appMode={appMode}
+				onSelectAppMode={onSelectAppMode}
 			/>
 
 			<main ref={workspaceRef} className={styles.workspace}>
@@ -354,22 +343,13 @@ export function ModoCompleto({
 				</div>
 				<div className={styles.visualColumn}>
 					<div className={styles.structurePanel}>
-						<div className={styles.structureHeader}>
-							{compileMode && (
+						{compileMode && (
+							<div className={styles.structureHeader}>
 								<span className={styles.depthIndicator}>
 									profundidade da travessia: {compileProgress.depth}
 								</span>
-							)}
-							<button
-								className={compileToggleClassName}
-								onClick={toggleCompileMode}
-								disabled={!hasCompileTrace}
-								title="ver a árvore virando bytecode, passo a passo"
-							>
-								<Binary size="1rem" />
-								{compileMode ? "voltar à execução" : "modo compilação"}
-							</button>
-						</div>
+							</div>
+						)}
 						{structureContent}
 					</div>
 					{compileMode && (

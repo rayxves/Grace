@@ -9,19 +9,19 @@ export interface VerifiedExample {
 	expect: ExpectedResult;
 }
 
-export interface ReferenciaItem {
+export interface ReferenceItem {
 	id: string;
-	titulo: string;
-	sintaxe?: string;
-	descricao: string;
-	exemplo?: VerifiedExample;
-	aviso?: string;
-	erroDemonstrado?: VerifiedExample;
+	title: string;
+	syntax?: string;
+	description: string;
+	example?: VerifiedExample;
+	warning?: string;
+	demonstratedError?: VerifiedExample;
 }
 
-export interface ReferenciaSecao {
+export interface ReferenceSection {
 	id: string;
-	titulo: string;
+	title: string;
 	intro?: string;
-	itens: ReferenciaItem[];
+	items: ReferenceItem[];
 }

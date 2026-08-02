@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "verify-examples": "node scripts/verifica-exemplos.mjs"
+    "verify-examples": "node scripts/verify-examples.mjs"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.3",
