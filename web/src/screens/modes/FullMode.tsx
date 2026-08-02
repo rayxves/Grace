@@ -7,9 +7,7 @@ import { TokensView } from "../../components/TokensView/TokensView";
 import { isPhase, type Phase } from "../../components/PipelineStrip/PipelineStrip";
 import { StackView } from "../../components/StackView/StackView";
 import { VariablesView } from "../../components/VariablesView/VariablesView";
-import { AstNodeInspector } from "../../components/AstNodeInspector/AstNodeInspector";
-import { AstNodeInsights } from "../../components/AstNodeInsights/AstNodeInsights";
-import { ConstantPoolView } from "../../components/ConstantPoolView/ConstantPoolView";
+import { NodeInsightCard } from "../../components/NodeInsightCard/NodeInsightCard";
 import { CompileNarration } from "../../components/CompileNarration/CompileNarration";
 import { usePlayer } from "../../hooks/usePlayer";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
@@ -63,7 +61,7 @@ export function FullMode({
 	onSelectAppMode,
 }: Readonly<FullModeProps>) {
 	const { program, setProgram, route, navigate } = useRoute();
-	const phase: Phase = isPhase(route.param) ? route.param : "bytecode";
+	const phase: Phase = isPhase(route.param) ? route.param : "tokens";
 	const workspaceRef = useRef<HTMLElement>(null);
 	useEffect(() => {
 		if (workspaceRef.current) workspaceRef.current.scrollTop = 0;
@@ -164,7 +162,7 @@ export function FullMode({
 
 	const selectPhase = useCallback(
 		(next: Phase) => {
-			if (next === "codigo" || next === "tokens") {
+			if (next === "tokens") {
 				setCompileMode(false);
 			}
 			navigate("visualizer", next);
@@ -176,7 +174,7 @@ export function FullMode({
 		(next: "execution" | "compilation") => {
 			const nextCompileMode = next === "compilation";
 			setCompileMode(nextCompileMode);
-			if (nextCompileMode && (phase === "codigo" || phase === "tokens")) {
+			if (nextCompileMode && phase === "tokens") {
 				navigate("visualizer", "execucao");
 			}
 		},
@@ -212,6 +210,7 @@ export function FullMode({
 
 	const bytecodeViewProps = {
 		bytecode,
+		constants: trace?.constants ?? [],
 		steps,
 		stepIndex: player.index,
 		errorOffset: gatedErrorOffset,
@@ -220,26 +219,10 @@ export function FullMode({
 		onSelectNode: togglePinnedNode,
 	};
 
-	const inspectedNodeId = pinnedNodeId ?? hoveredNodeId ?? gatedCurrentNodeId;
-	const inspectedNode = inspectedNodeId !== null ? (astIndex.get(inspectedNodeId) ?? null) : null;
-	let inspectedStatusLabel = "passo atual";
-	if (pinnedNodeId !== null) {
-		inspectedStatusLabel = "fixado";
-	} else if (hoveredNodeId !== null) {
-		inspectedStatusLabel = "em foco";
-	}
+	const pinnedNode = pinnedNodeId !== null ? (astIndex.get(pinnedNodeId) ?? null) : null;
 
 	let structureContent: ReactNode;
-	if (phase === "codigo") {
-		structureContent = (
-			<div className={styles.codePhaseNotice}>
-				<p>
-					O código-fonte é o ponto de partida de todo o resto. Passe o mouse
-					pelas outras fases para ver a correspondência com cada linha aqui.
-				</p>
-			</div>
-		);
-	} else if (phase === "tokens") {
+	if (phase === "tokens") {
 		structureContent = (
 			<TokensView
 				tokens={trace?.tokens ?? []}
@@ -273,6 +256,7 @@ export function FullMode({
 		const bytecodePanel = compileMode ? (
 			<BytecodeView
 				bytecode={grownBytecode}
+				constants={trace?.constants ?? []}
 				steps={steps}
 				stepIndex={player.index}
 				errorOffset={null}
@@ -338,13 +322,6 @@ export function FullMode({
 				</div>
 				<div className={styles.visualColumn}>
 					<div className={styles.structurePanel}>
-						{compileMode && (
-							<div className={styles.structureHeader}>
-								<span className={styles.depthIndicator}>
-									profundidade da travessia: {compileProgress.depth}
-								</span>
-							</div>
-						)}
 						{structureContent}
 					</div>
 					{compileMode && (
@@ -356,20 +333,14 @@ export function FullMode({
 							/>
 						</div>
 					)}
-					{!compileMode && phase === "arvore" && (
-						<div className={styles.bottomRow}>
-							<AstNodeInspector node={inspectedNode} statusLabel={inspectedStatusLabel} />
-							<AstNodeInsights
-								node={inspectedNode}
+					{!compileMode && phase === "arvore" && pinnedNode && (
+						<div className={styles.nodeCardRow}>
+							<NodeInsightCard
+								node={pinnedNode}
 								resolveMap={resolveMap}
 								astCountsByLine={astCountsByLine}
 								bytecodeCountsByLine={bytecodeCountsByLine}
 							/>
-						</div>
-					)}
-					{!compileMode && phase === "bytecode" && (
-						<div className={styles.bottomRowCompact}>
-							<ConstantPoolView constants={trace?.constants ?? []} />
 						</div>
 					)}
 					{!compileMode && phase === "execucao" && (

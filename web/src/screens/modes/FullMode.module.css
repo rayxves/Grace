@@ -44,28 +44,6 @@
 	gap: var(--space-sm);
 }
 
-.codePhaseNotice {
-	flex: 1;
-	min-height: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: var(--space-lg);
-	background: var(--color-surface);
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-soft);
-	text-align: center;
-}
-
-.codePhaseNotice p {
-	max-width: 28rem;
-	margin: 0;
-	color: var(--color-text-muted);
-	font-size: 0.9375rem;
-	line-height: 1.5;
-}
-
 .depthIndicator {
 	flex: 1;
 	font-size: 0.8125rem;
@@ -87,10 +65,15 @@
 }
 
 .bottomRowCompact {
-	flex: 1.8;
-	min-height: 14rem;
+	flex: none;
+	min-height: 8rem;
 	display: flex;
 	gap: var(--space-lg);
+}
+
+.nodeCardRow {
+	flex: none;
+	display: flex;
 }
 
 @media (max-width: 64rem) {
@@ -123,7 +106,6 @@
 	}
 
 	.bottomRowCompact {
-		flex: none;
-		min-height: 18rem;
+		min-height: 8rem;
 	}
 }

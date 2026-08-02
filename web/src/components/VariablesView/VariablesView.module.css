@@ -3,6 +3,12 @@
 	gap: var(--space-md);
 }
 
+.panelCompact {
+	composes: panel from "../Panel/Panel.module.css";
+	flex: 0 1 auto;
+	align-self: flex-start;
+}
+
 .loopBadge {
 	align-self: flex-start;
 	padding: 0.1875rem 0.625rem;

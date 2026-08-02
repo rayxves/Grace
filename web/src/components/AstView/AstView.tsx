@@ -9,7 +9,6 @@ import type { AstNode, Step } from "../../types";
 import { buildRevealedTree, revealedNodeIdsUpTo } from "../../lib/astReveal";
 import { findNodeById, locateNode } from "../../lib/astFocus";
 import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
-import { astMaxDepth } from "../../lib/expansionStats";
 import { Panel } from "../Panel/Panel";
 import { AstNodeShape } from "../atoms/AstNodeShape";
 import styles from "./AstView.module.css";
@@ -60,8 +59,11 @@ function AstNodeElement(
 		(nodeDatum.children?.length ?? 0) > 0;
 
 	const kind = String(nodeDatum.attributes?.kind ?? "");
+	const line = typeof nodeDatum.attributes?.line === "number" ? nodeDatum.attributes.line : null;
 	const accent = nodeAccentColor(nodeId);
 	const accentFill = nodeAccentFill(nodeId);
+	const lineSuffix = line !== null ? ` — linha ${line}` : "";
+	const tooltip = `${nodeDatum.name} — ${kind}${lineSuffix}`;
 
 	return (
 		<AstNodeShape
@@ -75,6 +77,7 @@ function AstNodeElement(
 			isTrail={isTrail}
 			isHovered={isHovered}
 			isCollapsed={isCollapsed}
+			tooltip={tooltip}
 			onClick={() => {
 				toggleNode();
 				onSelectNode?.(nodeId);
@@ -115,8 +118,6 @@ export function AstView({
 		return () => observer.disconnect();
 	}, []);
 
-	const maxDepth = useMemo(() => astMaxDepth(ast), [ast]);
-
 	const computedRevealedIds = useMemo(
 		() => revealedNodeIdsUpTo(steps, stepIndex),
 		[steps, stepIndex],
@@ -156,7 +157,7 @@ export function AstView({
 			dataRole="ast-panel"
 			caption={
 				treeData
-					? `Cada nó tem uma cor própria, a mesma cor aparece nas linhas de bytecode que ele gerou. Profundidade máxima da árvore: ${maxDepth}`
+					? "Cada nó tem uma cor própria, a mesma cor aparece nas linhas de bytecode que ele gerou."
 					: undefined
 			}
 			contentClassName={styles.treeContainer}

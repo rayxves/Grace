@@ -69,6 +69,7 @@ export function VariablesView({
 	return (
 		<Panel
 			title="variáveis e chamadas"
+			panelClassName={step ? undefined : styles.panelCompact}
 			contentClassName={styles.content}
 			isEmpty={!step}
 			emptyClassName={styles.empty}

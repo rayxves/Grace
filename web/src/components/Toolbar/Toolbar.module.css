@@ -13,26 +13,6 @@
 	gap: var(--space-lg);
 }
 
-.brand {
-	display: flex;
-	align-items: baseline;
-	gap: var(--space-sm);
-	flex-shrink: 0;
-}
-
-.logo {
-	font-size: 1.25rem;
-	font-weight: 700;
-	color: var(--color-accent);
-	letter-spacing: -0.02em;
-}
-
-.subtitle {
-	font-size: 0.8125rem;
-	color: var(--color-text-muted);
-	white-space: nowrap;
-}
-
 .controls {
 	display: flex;
 	align-items: center;
@@ -161,20 +141,4 @@
 	}
 }
 
-@media (max-width: 40rem) {
-	.topRow {
-		flex-wrap: wrap;
-		row-gap: var(--space-xs);
-	}
-
-	.subtitle {
-		display: none;
-	}
-
-	.controls {
-		order: 3;
-		flex-basis: 100%;
-		justify-content: center;
-	}
-}
 

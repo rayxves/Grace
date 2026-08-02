@@ -32,14 +32,6 @@ export function describeLineExpansion(
 	return `linha ${line} gerou ${nodeCount} ${nodeWord} de AST e ${instructionCount} ${instructionWord} de bytecode.`;
 }
 
-export function astMaxDepth(ast: AstNode | null): number {
-	function depth(node: AstNode): number {
-		if (node.children.length === 0) return 1;
-		return 1 + Math.max(...node.children.map(depth));
-	}
-	return ast ? depth(ast) : 0;
-}
-
 export function maxStackDepth(steps: Step[]): number {
 	let max = 0;
 	for (const step of steps) {

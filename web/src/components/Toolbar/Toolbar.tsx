@@ -42,11 +42,6 @@ const SPEED_TABS = PLAYER_SPEEDS.map((speed) => ({
 	label: `${speed}x`,
 }));
 
-const SUBTITLE_BY_MODE: Record<ToolbarProps["mode"], string> = {
-	execution: "visualizador de execução",
-	compilation: "visualizador de compilação",
-};
-
 const MODE_TABS: { id: ToolbarProps["mode"]; label: string }[] = [
 	{ id: "execution", label: "execução" },
 	{ id: "compilation", label: "compilação" },
@@ -85,11 +80,6 @@ export function Toolbar({
 	return (
 		<header className={styles.toolbar}>
 			<div className={styles.topRow}>
-				<div className={styles.brand}>
-					<span className={styles.logo}>Grace</span>
-					<span className={styles.subtitle}>{SUBTITLE_BY_MODE[mode]}</span>
-				</div>
-
 				<div className={styles.controls}>
 					<button
 						className={styles.runButton}

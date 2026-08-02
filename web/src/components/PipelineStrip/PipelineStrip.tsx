@@ -1,6 +1,6 @@
 import styles from "./PipelineStrip.module.css";
 
-export type Phase = "codigo" | "tokens" | "arvore" | "bytecode" | "execucao";
+export type Phase = "tokens" | "arvore" | "bytecode" | "execucao";
 
 interface PipelineStripProps {
 	phase: Phase;
@@ -9,7 +9,6 @@ interface PipelineStripProps {
 }
 
 const PHASES: { id: Phase; label: string }[] = [
-	{ id: "codigo", label: "código" },
 	{ id: "tokens", label: "tokens" },
 	{ id: "arvore", label: "árvore" },
 	{ id: "bytecode", label: "bytecode" },
@@ -30,7 +29,7 @@ export function PipelineStrip({
 	return (
 		<nav className={styles.strip} aria-label="fases do compilador">
 			{PHASES.map((entry, i) => {
-				const isCompilingHighlight =
+				const isCompiling =
 					compiling &&
 					(entry.id === "arvore" || entry.id === "bytecode") &&
 					(phase === entry.id || phase === "execucao");
@@ -38,7 +37,7 @@ export function PipelineStrip({
 				const className = [
 					styles.phase,
 					isActive ? styles.phaseActive : "",
-					isCompilingHighlight ? styles.phaseCompiling : "",
+					isCompiling ? styles.phaseCompiling : "",
 				].join(" ");
 				return (
 					<span key={entry.id} className={styles.phaseGroup}>

@@ -17,6 +17,7 @@ interface AstNodeShapeProps {
 	onMouseEnter?: () => void;
 	onMouseLeave?: () => void;
 	badge?: ReactNode;
+	tooltip?: string;
 }
 
 export function AstNodeShape({
@@ -35,6 +36,7 @@ export function AstNodeShape({
 	onMouseEnter,
 	onMouseLeave,
 	badge,
+	tooltip,
 }: Readonly<AstNodeShapeProps>) {
 	const nodeClass = [
 		styles.node,
@@ -59,6 +61,7 @@ export function AstNodeShape({
 					: undefined
 			}
 		>
+			{tooltip && <title>{tooltip}</title>}
 			<circle r={40} className={styles.nodeShape} />
 			<text dy="0.35em" textAnchor="middle" className={styles.nodeLabel}>
 				{label}

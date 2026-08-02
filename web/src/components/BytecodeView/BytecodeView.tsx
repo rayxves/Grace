@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import type { BytecodeInstruction, Step } from "../../types";
 import { groupBytecodeByLine } from "../../lib/bytecode";
 import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
 import { describeOpcodeText, stackEffectForOpcodeText } from "../../lib/instructions";
 import { Panel } from "../Panel/Panel";
 import { BytecodeRow } from "../atoms/BytecodeRow";
+import { ConstantPoolView } from "../ConstantPoolView/ConstantPoolView";
 import styles from "./BytecodeView.module.css";
 
 function parseJumpTarget(text: string): number | null {
@@ -22,6 +24,7 @@ function formatStackDelta(pops: number | "variável", pushes: number | "variáve
 
 interface BytecodeViewProps {
 	bytecode: BytecodeInstruction[];
+	constants: string[];
 	steps: Step[];
 	stepIndex: number;
 	errorOffset: number | null;
@@ -34,6 +37,7 @@ interface BytecodeViewProps {
 
 export function BytecodeView({
 	bytecode,
+	constants,
 	steps,
 	stepIndex,
 	errorOffset,
@@ -45,6 +49,7 @@ export function BytecodeView({
 }: Readonly<BytecodeViewProps>) {
 	const currentRowRef = useRef<HTMLDivElement>(null);
 	const [hoveredJumpTarget, setHoveredJumpTarget] = useState<number | null>(null);
+	const [showConstants, setShowConstants] = useState(false);
 
 	const resolvedCurrentOffset =
 		currentOffset !== undefined ? currentOffset : (steps[stepIndex]?.offset ?? null);
@@ -145,6 +150,19 @@ export function BytecodeView({
 					</div>
 				</div>
 			))}
+			{constants.length > 0 && (
+				<div className={styles.constantsSection}>
+					<button
+						type="button"
+						className={styles.constantsToggle}
+						onClick={() => setShowConstants((value) => !value)}
+					>
+						{showConstants ? <ChevronUp size="0.875rem" /> : <ChevronDown size="0.875rem" />}
+						{showConstants ? "ocultar tabela de constantes" : "ver tabela de constantes"}
+					</button>
+					{showConstants && <ConstantPoolView constants={constants} />}
+				</div>
+			)}
 		</Panel>
 	);
 }

@@ -12,9 +12,9 @@
 	composes: content from "../Panel/Panel.module.css";
 	align-items: flex-start;
 	justify-content: center;
-	gap: var(--space-md);
-	padding: var(--space-sm) var(--space-lg) var(--space-lg);
-	min-height: 8rem;
+	gap: var(--space-sm);
+	padding: var(--space-sm) var(--space-lg) var(--space-md);
+	min-height: 4rem;
 }
 
 .badge {
@@ -26,9 +26,9 @@
 .summary {
 	margin: 0;
 	max-width: 48rem;
-	font-size: 1.5rem;
+	font-size: 1.125rem;
 	font-weight: 500;
-	line-height: 1.5;
+	line-height: 1.4;
 	color: var(--color-text);
 }
 
