@@ -1,7 +1,8 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import type { Step } from "../../types";
 import { explainStep } from "../../lib/instructions";
 import { Panel } from "../Panel/Panel";
+import { StackBlock } from "../atoms/StackBlock";
 import styles from "./StackView.module.css";
 
 interface StackViewProps {
@@ -37,20 +38,11 @@ export function StackView({
 				<div className={styles.stack}>
 					<AnimatePresence initial={false}>
 						{stack.map((value, i) => (
-							<motion.div
+							<StackBlock
 								key={`${i}-${value}`}
-								className={
-									i === stack.length - 1
-										? `${styles.block} ${styles.blockTop}`
-										: styles.block
-								}
-								initial={{ opacity: 0, y: -12, scale: 0.9 }}
-								animate={{ opacity: 1, y: 0, scale: 1 }}
-								exit={{ opacity: 0, y: -12, scale: 0.9 }}
-								transition={{ duration: 0.18 }}
-								layout>
-								{value}
-							</motion.div>
+								value={value}
+								isTop={i === stack.length - 1}
+							/>
 						))}
 					</AnimatePresence>
 					{stack.length === 0 && (

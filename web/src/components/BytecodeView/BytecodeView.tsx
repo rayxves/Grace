@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { BytecodeInstruction, Step } from "../../types";
 import { groupBytecodeByLine } from "../../lib/bytecode";
 import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
 import { describeOpcodeText, stackEffectForOpcodeText } from "../../lib/instructions";
 import { Panel } from "../Panel/Panel";
+import { BytecodeRow } from "../atoms/BytecodeRow";
 import styles from "./BytecodeView.module.css";
 
 function parseJumpTarget(text: string): number | null {
@@ -94,37 +95,19 @@ export function BytecodeView({
 					<span className={styles.lineLabel}>linha {group.line}</span>
 					<div className={styles.lineInstructions}>
 						{group.instructions.map((instruction) => {
+							const { nodeId } = instruction;
 							const isCurrent = instruction.offset === highlightOffset;
 							const isError = isCurrent && errorOffset !== null;
 							const isExecuted =
 								!isCurrent && executedOffsets.has(instruction.offset);
 							const isHovered =
-								!isCurrent &&
-								instruction.nodeId !== null &&
-								instruction.nodeId === hoveredNodeId;
+								!isCurrent && nodeId !== null && nodeId === hoveredNodeId;
 							const isPending = pendingOffsets?.has(instruction.offset) ?? false;
 							const isJumpTarget =
 								!isCurrent && !isHovered && instruction.offset === hoveredJumpTarget;
-							let highlightClass = "";
-							if (isError) {
-								highlightClass = styles.rowError;
-							} else if (isCurrent) {
-								highlightClass = styles.rowCurrent;
-							}
-							const rowClass = [
-								styles.row,
-								highlightClass,
-								isExecuted ? styles.rowExecuted : "",
-								isHovered ? styles.rowHovered : "",
-								isPending ? styles.rowPending : "",
-								isJumpTarget ? styles.rowJumpTarget : "",
-							].join(" ");
 
-							const accent = nodeAccentColor(instruction.nodeId);
-							const accentFill = nodeAccentFill(instruction.nodeId);
-							const isSelectable = instruction.nodeId !== null;
-							const selectThisRow = () =>
-								instruction.nodeId !== null && onSelectNode?.(instruction.nodeId);
+							const accent = nodeAccentColor(nodeId);
+							const accentFill = nodeAccentFill(nodeId);
 							const jumpTarget = parseJumpTarget(instruction.text);
 							const effect = stackEffectForOpcodeText(instruction.text);
 							const description = describeOpcodeText(instruction.text);
@@ -133,49 +116,30 @@ export function BytecodeView({
 							);
 
 							return (
-								<div
+								<BytecodeRow
 									key={instruction.offset}
-									ref={isCurrent ? currentRowRef : undefined}
-									className={rowClass}
-									data-offset={instruction.offset}
-									style={
-										accent
-											? ({
-													"--row-accent": accent,
-													"--row-accent-fill": accentFill,
-												} as CSSProperties)
-											: undefined
-									}
+									rowRef={isCurrent ? currentRowRef : undefined}
+									instruction={instruction}
+									stackDelta={effect ? formatStackDelta(effect.pops, effect.pushes) : undefined}
+									tooltip={tooltipLines.length ? tooltipLines.join("\n") : undefined}
+									accent={accent}
+									accentFill={accentFill}
+									isCurrent={isCurrent}
+									isError={isError}
+									isExecuted={isExecuted}
+									isHovered={isHovered}
+									isPending={isPending}
+									isJumpTarget={isJumpTarget}
 									onMouseEnter={() => {
-										if (instruction.nodeId !== null) onHoverNode(instruction.nodeId);
+										if (nodeId !== null) onHoverNode(nodeId);
 										setHoveredJumpTarget(jumpTarget);
 									}}
 									onMouseLeave={() => {
 										onHoverNode(null);
 										setHoveredJumpTarget(null);
 									}}
-									onClick={isSelectable ? selectThisRow : undefined}
-									onKeyDown={(event) => {
-										if (!isSelectable) return;
-										if (event.key === "Enter" || event.key === " ") {
-											event.preventDefault();
-											selectThisRow();
-										}
-									}}
-									role={isSelectable ? "button" : undefined}
-									tabIndex={isSelectable ? 0 : undefined}
-									title={tooltipLines.length ? tooltipLines.join("\n") : undefined}
-								>
-									<span className={styles.offset}>
-										{String(instruction.offset).padStart(4, "0")}
-									</span>
-									<span className={styles.text}>{instruction.text}</span>
-									{effect && (
-										<span className={styles.stackDelta}>
-											{formatStackDelta(effect.pops, effect.pushes)}
-										</span>
-									)}
-								</div>
+									onSelect={nodeId !== null ? () => onSelectNode?.(nodeId) : undefined}
+								/>
 							);
 						})}
 					</div>

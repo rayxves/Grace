@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Tree from "react-d3-tree";
 import type {
 	CustomNodeElementProps,
@@ -11,6 +11,7 @@ import { findNodeById, locateNode } from "../../lib/astFocus";
 import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
 import { astMaxDepth } from "../../lib/expansionStats";
 import { Panel } from "../Panel/Panel";
+import { AstNodeShape } from "../atoms/AstNodeShape";
 import styles from "./AstView.module.css";
 
 interface AstViewProps {
@@ -57,45 +58,30 @@ function AstNodeElement(
 	const isCollapsed =
 		(nodeDatum.__rd3t.collapsed ?? false) &&
 		(nodeDatum.children?.length ?? 0) > 0;
-	const nodeClass = [
-		styles.node,
-		hasError ? styles.nodeError : "",
-		isActive ? styles.nodeActive : "",
-		isTrail ? styles.nodeTrail : "",
-		isHovered ? styles.nodeHovered : "",
-		isCollapsed ? styles.nodeCollapsed : "",
-	].join(" ");
 
 	const kind = String(nodeDatum.attributes?.kind ?? "");
 	const accent = nodeAccentColor(nodeId);
 	const accentFill = nodeAccentFill(nodeId);
 
 	return (
-		<g
+		<AstNodeShape
+			label={nodeDatum.name}
+			kind={kind}
+			nodeId={nodeId}
+			accent={accent}
+			accentFill={accentFill}
+			hasError={hasError}
+			isActive={isActive}
+			isTrail={isTrail}
+			isHovered={isHovered}
+			isCollapsed={isCollapsed}
 			onClick={() => {
 				toggleNode();
 				onSelectNode?.(nodeId);
 			}}
 			onMouseEnter={() => nodeId !== null && onHoverNode(nodeId)}
 			onMouseLeave={() => onHoverNode(null)}
-			className={nodeClass}
-			data-node-id={nodeId ?? undefined}
-			style={
-				accent
-					? ({ "--node-accent": accent, "--node-accent-fill": accentFill } as CSSProperties)
-					: undefined
-			}
-		>
-			<circle r={40} className={styles.nodeShape} />
-			<text dy="0.35em" textAnchor="middle" className={styles.nodeLabel}>
-				{nodeDatum.name}
-			</text>
-			{kind !== nodeDatum.name && (
-				<text dy="4em" textAnchor="middle" className={styles.nodeKind}>
-					{kind}
-				</text>
-			)}
-		</g>
+		/>
 	);
 }
 

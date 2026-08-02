@@ -1,5 +1,6 @@
 import type { TokenInfo } from "../../types";
 import { Panel } from "../Panel/Panel";
+import { TokenChip } from "../atoms/TokenChip";
 import styles from "./TokensView.module.css";
 
 interface TokensViewProps {
@@ -32,18 +33,14 @@ export function TokensView({
 			placeholderClassName={styles.placeholder}
 		>
 			{visibleTokens.map((token, i) => (
-				<span
+				<TokenChip
 					key={`${i}-${token.line}-${token.text}`}
-					className={
-						token.line === hoveredLine
-							? `${styles.token} ${styles.tokenHovered}`
-							: styles.token
-					}
+					text={token.text || token.kind}
+					title={`linha ${token.line} · ${token.kind}`}
+					active={token.line === hoveredLine}
 					onMouseEnter={() => onHoverLine(token.line)}
 					onMouseLeave={() => onHoverLine(null)}
-					title={`linha ${token.line} · ${token.kind}`}>
-					{token.text || token.kind}
-				</span>
+				/>
 			))}
 		</Panel>
 	);

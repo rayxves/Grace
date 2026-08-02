@@ -39,25 +39,6 @@
 	padding: var(--space-sm) 0;
 }
 
-.block {
-	width: 100%;
-	padding: 0.5rem 0.75rem;
-	border: 1px solid var(--color-stack-block-border);
-	border-radius: var(--radius-sm);
-	background: var(--color-stack-block-bg);
-	color: var(--color-stack-block-text);
-	font-family: var(--font-mono);
-	font-size: 0.875rem;
-	text-align: center;
-	overflow-wrap: break-word;
-}
-
-.blockTop {
-	background: var(--color-stack-top-bg);
-	border-color: var(--color-stack-top-border);
-	font-weight: 600;
-}
-
 .emptyStack {
 	margin: auto;
 	color: var(--color-text-muted);

@@ -1,6 +1,5 @@
 .title {
 	composes: title from "../Panel/Panel.module.css";
-	padding: var(--space-md) var(--space-md) 0;
 }
 
 .treeContainer {
@@ -8,6 +7,7 @@
 	min-height: 0;
 	border-top: 1px solid var(--color-border);
 	background: var(--color-bg);
+	min-height: 20rem;
 }
 
 .placeholder {
@@ -16,64 +16,4 @@
 	align-items: center;
 	justify-content: center;
 	height: 100%;
-}
-
-.node {
-	cursor: pointer;
-}
-
-.nodeShape {
-	fill: var(--color-node-fill);
-	stroke: var(--node-accent, var(--color-node-stroke));
-	stroke-width: 0.09375rem;
-	transition:
-		fill 0.2s ease,
-		stroke 0.2s ease;
-}
-
-.nodeActive .nodeShape {
-	fill: var(--node-accent-fill, var(--color-node-active-fill));
-	stroke: var(--node-accent, var(--color-node-active-stroke));
-	stroke-width: 0.1875rem;
-}
-
-.nodeTrail .nodeShape {
-	fill: var(--node-accent-fill, var(--color-node-trail-fill));
-	stroke: var(--node-accent, var(--color-node-trail-stroke));
-	stroke-width: 0.125rem;
-}
-
-.nodeError .nodeShape {
-	fill: var(--color-node-error-fill);
-	stroke: var(--color-node-error-stroke);
-	stroke-width: 0.1875rem;
-}
-
-.nodeError .nodeLabel {
-	fill: var(--color-node-error-stroke);
-}
-
-.nodeCollapsed .nodeShape {
-	fill: var(--color-node-collapsed-fill);
-	stroke-dasharray: 0.25rem;
-}
-
-.nodeHovered .nodeShape {
-	stroke: var(--color-accent);
-	stroke-width: 0.125rem;
-}
-
-.nodeLabel {
-	fill: var(--color-node-text);
-	font-family: var(--font-mono);
-	font-size: 0.9375rem;
-	font-weight: 600;
-	stroke: none;
-}
-
-.nodeKind {
-	fill: var(--color-node-kind);
-	font-size: 0.8125rem;
-	font-weight: 400;
-	stroke: none;
 }
