@@ -3,11 +3,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { Step, Trace } from "../../types";
 import { computeCompileProgress } from "../../lib/compileProgress";
 import { groupBytecodeByLine, type BytecodeLineGroup } from "../../lib/bytecode";
-import { explainStep } from "../../lib/instructions";
-import { collectOutput } from "../../lib/instructions";
+import { explainStep, collectOutput } from "../../lib/instructions";
 import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
 import { buildScopeResolutionMap } from "../../lib/scopeLookup";
-import { findFunctionNode, functionBytecodeRange } from "../../lib/callFrames";
 import { StackBlock } from "../../components/atoms/StackBlock";
 import { BytecodeRow } from "../../components/atoms/BytecodeRow";
 import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
@@ -74,20 +72,7 @@ export function ExecutionAct({ trace, step, stepIndex }: Readonly<ExecutionActPr
 
 	const topFrame = step?.callStack.at(-1) ?? null;
 	const isInFunction = (step?.callStack.length ?? 0) > 1 && topFrame !== null;
-	const frameRange = useMemo(() => {
-		if (!isInFunction || !topFrame || !trace?.ast) return null;
-		const functionNode = findFunctionNode(trace.ast, topFrame.functionName);
-		if (!functionNode) return null;
-		return functionBytecodeRange(functionNode, bytecode);
-	}, [isInFunction, topFrame, trace, bytecode]);
-
-	const beforeGroups = frameRange ? groups.filter((g) => g.instructions[0].offset < frameRange.min) : groups;
-	const frameGroups = frameRange
-		? groups.filter(
-				(g) => g.instructions[0].offset >= frameRange.min && g.instructions[0].offset <= frameRange.max,
-			)
-		: [];
-	const afterGroups = frameRange ? groups.filter((g) => g.instructions[0].offset > frameRange.max) : [];
+	const currentOffset = isInFunction ? null : (step?.offset ?? null);
 
 	const output = useMemo(() => collectOutput(steps, stepIndex), [steps, stepIndex]);
 	const explanation = step ? explainStep(step) : null;
@@ -102,30 +87,26 @@ export function ExecutionAct({ trace, step, stepIndex }: Readonly<ExecutionActPr
 						currentNodeId={step?.nodeId ?? null}
 						resolvedDepthByNode={resolvedDepthByNode}
 					/>
+					<AnimatePresence initial={false}>
+						{isInFunction && (
+							<motion.div
+								key="frame-badge"
+								className={styles.frameBadge}
+								initial={{ opacity: 0, y: reducedMotion ? 0 : -6 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: reducedMotion ? 0 : -6 }}
+								transition={{ duration: reducedMotion ? 0 : 0.18 }}
+							>
+								dentro de {topFrame?.functionName}()
+							</motion.div>
+						)}
+					</AnimatePresence>
 				</div>
 				<div className={styles.rightColumn}>
 					<div className={styles.bytecodeZone}>
 						<span className={styles.bytecodeTitle}>bytecode</span>
 						<div className={styles.bytecodeList}>
-							{beforeGroups.map((group) => renderGroup(group, step?.offset ?? null, executedOffsets))}
-							<AnimatePresence initial={false}>
-								{frameGroups.length > 0 && (
-									<motion.div
-										key="frame-band"
-										className={styles.frameBand}
-										initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.97 }}
-										animate={{ opacity: 1, scale: 1 }}
-										exit={{ opacity: 0, scale: reducedMotion ? 1 : 0.97 }}
-										transition={{ duration: reducedMotion ? 0 : 0.18 }}
-									>
-										<span className={styles.frameLabel}>
-											dentro de {topFrame?.functionName}()
-										</span>
-										{frameGroups.map((group) => renderGroup(group, step?.offset ?? null, executedOffsets))}
-									</motion.div>
-								)}
-							</AnimatePresence>
-							{afterGroups.map((group) => renderGroup(group, step?.offset ?? null, executedOffsets))}
+							{groups.map((group) => renderGroup(group, currentOffset, executedOffsets))}
 						</div>
 					</div>
 					<div className={styles.stackZone}>

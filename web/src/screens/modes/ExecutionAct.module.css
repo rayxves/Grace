@@ -14,6 +14,7 @@
 }
 
 .treeZone {
+	position: relative;
 	flex: 2;
 	min-width: 0;
 	display: flex;
@@ -86,20 +87,18 @@
 	gap: 0.125rem;
 }
 
-.frameBand {
-	border: 1px dashed var(--color-accent-border);
-	border-radius: var(--radius-md);
+.frameBadge {
+	position: absolute;
+	top: var(--space-sm);
+	left: var(--space-sm);
+	padding: 0.25rem 0.75rem;
+	border-radius: 999rem;
+	border: 1px solid var(--color-accent-border);
 	background: var(--color-accent-soft);
-	padding: var(--space-xs);
-	margin: 0.125rem 0;
-}
-
-.frameLabel {
-	display: block;
-	padding: 0 0.25rem var(--space-xs);
-	font-size: 0.6875rem;
-	font-weight: 600;
 	color: var(--color-accent);
+	font-size: 0.75rem;
+	font-weight: 600;
+	font-family: var(--font-mono);
 }
 
 .stackZone {

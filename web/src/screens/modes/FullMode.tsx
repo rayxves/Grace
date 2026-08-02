@@ -10,12 +10,10 @@ import { VariablesView } from "../../components/VariablesView/VariablesView";
 import { AstNodeInspector } from "../../components/AstNodeInspector/AstNodeInspector";
 import { AstNodeInsights } from "../../components/AstNodeInsights/AstNodeInsights";
 import { ConstantPoolView } from "../../components/ConstantPoolView/ConstantPoolView";
-import { CompileChipLayer } from "../../components/CompileChipLayer/CompileChipLayer";
 import { CompileNarration } from "../../components/CompileNarration/CompileNarration";
 import { usePlayer } from "../../hooks/usePlayer";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { useHighlightState } from "../../hooks/useHighlightState";
-import { useCompileFlight } from "../../hooks/useCompileFlight";
 import { useRoute } from "../../hooks/useRoute";
 import { collectOutput } from "../../lib/instructions";
 import { parseErrorLine } from "../../lib/errors";
@@ -143,8 +141,6 @@ export function FullMode({
 		() => new Set(grownBytecode.filter((instr) => instr.pending).map((instr) => instr.offset)),
 		[grownBytecode],
 	);
-
-	const compileFlight = useCompileFlight(compileMode, compilePlayer.index, compileSteps);
 
 	const astIndex = useMemo(() => buildAstNodeIndex(trace?.ast ?? null), [trace]);
 	const emitCountByNode = useMemo(() => countEmitsByNode(compileSteps), [compileSteps]);
@@ -294,7 +290,6 @@ export function FullMode({
 			<>
 				{showTree && tree}
 				{showBytecode && bytecodePanel}
-				{compileMode && showBoth && <CompileChipLayer flight={compileFlight} />}
 			</>
 		);
 
