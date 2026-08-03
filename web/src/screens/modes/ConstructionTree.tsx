@@ -50,8 +50,11 @@ function buildNodeRenderer(
 			(astNode?.children.some((child) => child.id !== null && !revealedNodeIds.has(child.id)) ?? false);
 		const depth = nodeId !== null ? resolvedDepthByNode.get(nodeId) : undefined;
 		const kind = String(nodeDatum.attributes?.kind ?? "");
+		const line = typeof nodeDatum.attributes?.line === "number" ? nodeDatum.attributes.line : null;
 		const accent = nodeAccentColor(nodeId);
 		const accentFill = nodeAccentFill(nodeId);
+		const lineSuffix = line !== null ? ` — linha ${line}` : "";
+		const tooltip = `${nodeDatum.name} — ${kind}${lineSuffix}`;
 
 		return (
 			<AstNodeShape
@@ -62,6 +65,7 @@ function buildNodeRenderer(
 				accentFill={accentFill}
 				isActive={isActive}
 				isIncomplete={isIncomplete}
+				tooltip={tooltip}
 				badge={depth !== undefined ? <ScopeBadge depth={depth} /> : undefined}
 			/>
 		);

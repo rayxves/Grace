@@ -1,5 +1,6 @@
 import { Code, Library, Moon, MonitorPlay, Sun } from "lucide-react";
-import { useRoute, type Screen } from "../../hooks/useRoute";
+import { useRoute } from "../../hooks/useRoute";
+import type { Screen } from "../../hooks/routeContext";
 import { useTheme } from "../../hooks/useTheme";
 import styles from "./TopNav.module.css";
 

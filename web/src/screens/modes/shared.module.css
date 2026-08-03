@@ -1,0 +1,22 @@
+.appShell {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
+.workspaceRow {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	gap: var(--space-lg);
+	padding: var(--space-lg);
+}
+
+.editorColumn {
+	flex: 1;
+	min-width: 0;
+	max-width: 29rem;
+	display: flex;
+	flex-direction: column;
+}

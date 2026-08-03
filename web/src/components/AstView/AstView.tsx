@@ -9,8 +9,10 @@ import type { AstNode, Step } from "../../types";
 import { buildRevealedTree, revealedNodeIdsUpTo } from "../../lib/astReveal";
 import { findNodeById, locateNode } from "../../lib/astFocus";
 import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
+import type { ScopeResolution } from "../../lib/scopeLookup";
 import { Panel } from "../Panel/Panel";
 import { AstNodeShape } from "../atoms/AstNodeShape";
+import { NodeInsightCard } from "../NodeInsightCard/NodeInsightCard";
 import styles from "./AstView.module.css";
 
 interface AstViewProps {
@@ -25,7 +27,14 @@ interface AstViewProps {
 	onSelectNode?: (nodeId: number | null) => void;
 	trailNodeIds?: ReadonlySet<number> | null;
 	revealedNodeIds?: ReadonlySet<number> | null;
+	pinnedNode?: AstNode | null;
+	resolveMap?: Map<number, ScopeResolution>;
+	astCountsByLine?: Map<number, number>;
+	bytecodeCountsByLine?: Map<number, number>;
 }
+
+const EMPTY_RESOLVE_MAP = new Map<number, ScopeResolution>();
+const EMPTY_COUNTS_MAP = new Map<number, number>();
 
 const NODE_SIZE = { x: 130, y: 110 };
 const SEPARATION = { siblings: 1.1, nonSiblings: 1.4 };
@@ -100,11 +109,37 @@ export function AstView({
 	onSelectNode,
 	trailNodeIds = null,
 	revealedNodeIds = null,
+	pinnedNode = null,
+	resolveMap = EMPTY_RESOLVE_MAP,
+	astCountsByLine = EMPTY_COUNTS_MAP,
+	bytecodeCountsByLine = EMPTY_COUNTS_MAP,
 }: Readonly<AstViewProps>) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const treeRef = useRef<Tree>(null);
 	const [translate, setTranslate] = useState({ x: 0, y: 0 });
 	const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+	const [annotationPosition, setAnnotationPosition] = useState<{ x: number; y: number } | null>(null);
+
+	useEffect(() => {
+		const pinnedNodeId = pinnedNode?.id ?? null;
+		if (pinnedNodeId === null) return;
+		let frame: number;
+		const update = () => {
+			const container = containerRef.current;
+			const nodeEl = container?.querySelector(`[data-node-id="${pinnedNodeId}"]`);
+			if (container && nodeEl) {
+				const containerRect = container.getBoundingClientRect();
+				const nodeRect = nodeEl.getBoundingClientRect();
+				setAnnotationPosition({
+					x: nodeRect.left + nodeRect.width / 2 - containerRect.left,
+					y: nodeRect.top - containerRect.top,
+				});
+			}
+			frame = requestAnimationFrame(update);
+		};
+		frame = requestAnimationFrame(update);
+		return () => cancelAnimationFrame(frame);
+	}, [pinnedNode]);
 
 	useLayoutEffect(() => {
 		const container = containerRef.current;
@@ -155,11 +190,6 @@ export function AstView({
 			title="Árvore do programa"
 			titleClassName={styles.title}
 			dataRole="ast-panel"
-			caption={
-				treeData
-					? "Cada nó tem uma cor própria, a mesma cor aparece nas linhas de bytecode que ele gerou."
-					: undefined
-			}
 			contentClassName={styles.treeContainer}
 			contentRef={containerRef}
 			isEmpty={!treeData}
@@ -193,6 +223,19 @@ export function AstView({
 						)
 					}
 				/>
+			)}
+			{pinnedNode && annotationPosition && (
+				<div
+					className={styles.annotation}
+					style={{ left: annotationPosition.x, top: annotationPosition.y }}
+				>
+					<NodeInsightCard
+						node={pinnedNode}
+						resolveMap={resolveMap}
+						astCountsByLine={astCountsByLine}
+						bytecodeCountsByLine={bytecodeCountsByLine}
+					/>
+				</div>
 			)}
 		</Panel>
 	);

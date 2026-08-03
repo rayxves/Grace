@@ -28,7 +28,7 @@
 	opacity: 0.85;
 }
 
-.actSwitch {
+.modeSlot {
 	flex-shrink: 0;
 }
 
@@ -52,20 +52,38 @@
 	background: var(--color-surface-alt);
 }
 
+.playerDivider {
+	width: 1px;
+	height: 1.5rem;
+	background: var(--color-border);
+}
+
 .control,
-.controlPlaying {
+.controlLabeled {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	gap: 0.25rem;
 	min-width: 2rem;
 	height: 2rem;
 	padding: 0 0.5rem;
 	border-radius: var(--radius-sm);
+	font-size: 0.875rem;
 	color: var(--color-heading);
 	transition: background 0.15s ease;
 }
 
-.control:hover:not(:disabled) {
+.control svg {
+	flex-shrink: 0;
+}
+
+.controlLabeled {
+	font-size: 0.8125rem;
+	white-space: nowrap;
+}
+
+.control:hover:not(:disabled),
+.controlLabeled:hover:not(:disabled) {
 	background: var(--color-accent-soft);
 }
 
@@ -79,14 +97,13 @@
 	opacity: 0.85;
 }
 
-.appModeRow {
-	display: flex;
-	justify-content: center;
-	padding: 0.125rem 0;
-}
-
-@media (max-width: 40rem) {
+@media (max-width: 56rem) {
 	.playerCard {
+		flex-wrap: wrap;
 		justify-content: center;
+	}
+
+	.playerDivider {
+		display: none;
 	}
 }

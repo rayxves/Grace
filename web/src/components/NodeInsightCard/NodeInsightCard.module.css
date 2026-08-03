@@ -1,12 +1,15 @@
 .card {
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-sm);
-	padding: var(--space-sm) var(--space-md);
+	gap: 0.375rem;
+	width: max-content;
+	max-width: 16rem;
+	padding: 0.5rem 0.625rem;
 	background: var(--color-surface);
 	border: 1px solid var(--color-border);
-	border-radius: var(--radius-lg);
+	border-radius: var(--radius-md);
 	box-shadow: var(--shadow-soft);
+	pointer-events: none;
 }
 
 .title {

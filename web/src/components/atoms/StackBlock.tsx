@@ -12,6 +12,7 @@ export function StackBlock({ value, isTop = false, layoutId }: Readonly<StackBlo
 		<motion.div
 			layoutId={layoutId}
 			className={isTop ? `${styles.block} ${styles.blockTop}` : styles.block}
+			data-stack-top={isTop || undefined}
 			initial={{ opacity: 0, y: -12, scale: 0.9 }}
 			animate={{ opacity: 1, y: 0, scale: 1 }}
 			exit={{ opacity: 0, y: -12, scale: 0.9 }}

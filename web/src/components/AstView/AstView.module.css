@@ -3,11 +3,18 @@
 }
 
 .treeContainer {
+	position: relative;
 	flex: 1;
-	min-height: 0;
 	border-top: 1px solid var(--color-border);
 	background: var(--color-bg);
 	min-height: 20rem;
+}
+
+.annotation {
+	position: absolute;
+	transform: translate(-50%, -100%) translateY(-0.75rem);
+	z-index: 5;
+	pointer-events: none;
 }
 
 .placeholder {

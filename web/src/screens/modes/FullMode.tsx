@@ -4,44 +4,24 @@ import { CodeEditor } from "../../components/CodeEditor/CodeEditor";
 import { AstView } from "../../components/AstView/AstView";
 import { BytecodeView } from "../../components/BytecodeView/BytecodeView";
 import { TokensView } from "../../components/TokensView/TokensView";
-import { isPhase, type Phase } from "../../components/PipelineStrip/PipelineStrip";
-import { StackView } from "../../components/StackView/StackView";
-import { VariablesView } from "../../components/VariablesView/VariablesView";
-import { NodeInsightCard } from "../../components/NodeInsightCard/NodeInsightCard";
-import { CompileNarration } from "../../components/CompileNarration/CompileNarration";
+import { isPhase, type Phase } from "../../lib/phase";
+import { ExecutionStatePanel } from "../../components/ExecutionStatePanel/ExecutionStatePanel";
 import { usePlayer } from "../../hooks/usePlayer";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { useHighlightState } from "../../hooks/useHighlightState";
 import { useRoute } from "../../hooks/useRoute";
 import { collectOutput } from "../../lib/instructions";
 import { parseErrorLine } from "../../lib/errors";
-import { computeCompileProgress, growBytecodeUpTo } from "../../lib/compileProgress";
 import { nodeAccentColor } from "../../lib/nodeColor";
 import { buildAstNodeIndex } from "../../lib/astIndex";
 import { buildScopeResolutionMap } from "../../lib/scopeLookup";
-import { countAstNodesByLine, countBytecodeByLine, maxStackDepth } from "../../lib/expansionStats";
-import { countEmitsByNode } from "../../lib/compileNarration";
+import { countAstNodesByLine, countBytecodeByLine } from "../../lib/expansionStats";
 import type { Trace } from "../../types";
 import type { Mode } from "../Visualizer";
 import styles from "./FullMode.module.css";
 
 const EMPTY_STEPS: Trace["steps"] = [];
 const EMPTY_BYTECODE: Trace["bytecode"] = [];
-const EMPTY_COMPILE_STEPS: Trace["compileSteps"] = [];
-
-interface PlayerControls {
-	index: number;
-	total: number;
-	playing: boolean;
-	speed: number;
-	next: () => void;
-	previous: () => void;
-	togglePlay: () => void;
-	nextLine: () => void;
-	reset: () => void;
-	goTo: (index: number) => void;
-	setSpeed: (speed: number) => void;
-}
 
 interface FullModeProps {
 	trace: Trace | null;
@@ -66,7 +46,6 @@ export function FullMode({
 	useEffect(() => {
 		if (workspaceRef.current) workspaceRef.current.scrollTop = 0;
 	}, [phase]);
-	const [compileMode, setCompileMode] = useState(false);
 	const [hoveredNodeId, setHoveredNodeId] = useState<number | null>(null);
 	const [pinnedNodeId, setPinnedNodeId] = useState<number | null>(null);
 	const [hoveredTokenLine, setHoveredTokenLine] = useState<number | null>(null);
@@ -83,9 +62,7 @@ export function FullMode({
 
 	const steps = trace?.steps ?? EMPTY_STEPS;
 	const bytecode = trace?.bytecode ?? EMPTY_BYTECODE;
-	const compileSteps = trace?.compileSteps ?? EMPTY_COMPILE_STEPS;
 	const player = usePlayer(steps, (step) => step.line);
-	const compilePlayer = usePlayer(compileSteps, () => null);
 
 	const handleRun = useCallback(() => {
 		setPinnedNodeId(null);
@@ -93,7 +70,6 @@ export function FullMode({
 	}, [run]);
 
 	const hasTrace = trace !== null && steps.length > 0;
-	const hasCompileTrace = trace !== null && compileSteps.length > 0;
 	const errorMessage = runtimeError ?? trace?.error ?? null;
 	const errorLine = useMemo(() => parseErrorLine(errorMessage), [errorMessage]);
 
@@ -125,99 +101,31 @@ export function FullMode({
 	const previousStep =
 		hasTrace && player.index > 0 ? steps[player.index - 1] : null;
 
-	const compileProgress = useMemo(
-		() => computeCompileProgress(compileSteps, compilePlayer.index),
-		[compileSteps, compilePlayer.index],
-	);
-
-	const grownBytecode = useMemo(
-		() => growBytecodeUpTo(bytecode, compileSteps, compilePlayer.index),
-		[bytecode, compileSteps, compilePlayer.index],
-	);
-
-	const pendingOffsets = useMemo(
-		() => new Set(grownBytecode.filter((instr) => instr.pending).map((instr) => instr.offset)),
-		[grownBytecode],
-	);
-
 	const astIndex = useMemo(() => buildAstNodeIndex(trace?.ast ?? null), [trace]);
-	const emitCountByNode = useMemo(() => countEmitsByNode(compileSteps), [compileSteps]);
 	const resolveMap = useMemo(
 		() => buildScopeResolutionMap(trace?.resolveSteps ?? []),
 		[trace],
 	);
 	const astCountsByLine = useMemo(() => countAstNodesByLine(trace?.ast ?? null), [trace]);
 	const bytecodeCountsByLine = useMemo(() => countBytecodeByLine(bytecode), [bytecode]);
-	const maxStackUsage = useMemo(() => maxStackDepth(steps), [steps]);
-
-	const compileCurrentStep = compilePlayer.currentStep;
-	const compileCurrentOffset =
-		compileCurrentStep?.kind === "emit"
-			? compileCurrentStep.offset
-			: (grownBytecode.at(-1)?.offset ?? null);
-	const compileCurrentLine =
-		compileCurrentStep?.kind === "enter" || compileCurrentStep?.kind === "emit"
-			? compileCurrentStep.line
-			: null;
 
 	const selectPhase = useCallback(
 		(next: Phase) => {
-			if (next === "tokens") {
-				setCompileMode(false);
-			}
 			navigate("visualizer", next);
 		},
 		[navigate],
 	);
 
-	const selectMode = useCallback(
-		(next: "execution" | "compilation") => {
-			const nextCompileMode = next === "compilation";
-			setCompileMode(nextCompileMode);
-			if (nextCompileMode && phase === "tokens") {
-				navigate("visualizer", "execucao");
-			}
-		},
-		[phase, navigate],
-	);
-
-	const activeMode: "execution" | "compilation" = compileMode ? "compilation" : "execution";
-	const activePlayer: PlayerControls = compileMode ? compilePlayer : player;
-	const activeHasTrace = compileMode ? hasCompileTrace : hasTrace;
-	const activeCurrentLine = compileMode ? compileCurrentLine : gatedCurrentLine;
 	const effectiveHoverLine = hoveredTokenLine ?? hoverLine;
 	const effectiveHoverColor = hoveredTokenLine !== null ? undefined : nodeAccentColor(effectiveNodeId);
 
 	useKeyboardShortcuts({
-		enabled: activeHasTrace,
-		onNext: activePlayer.next,
-		onPrevious: activePlayer.previous,
-		onTogglePlay: activePlayer.togglePlay,
-		onReset: activePlayer.reset,
+		enabled: hasTrace,
+		onNext: player.next,
+		onPrevious: player.previous,
+		onTogglePlay: player.togglePlay,
+		onReset: player.reset,
 	});
-
-	const astViewProps = {
-		ast: trace?.ast ?? null,
-		steps,
-		stepIndex: player.index,
-		currentNodeId: gatedCurrentNodeId,
-		errorNodeId: gatedErrorNodeId,
-		errorLine: gatedErrorLine,
-		hoveredNodeId: effectiveNodeId,
-		onHoverNode: setHoveredNodeId,
-		onSelectNode: togglePinnedNode,
-	};
-
-	const bytecodeViewProps = {
-		bytecode,
-		constants: trace?.constants ?? [],
-		steps,
-		stepIndex: player.index,
-		errorOffset: gatedErrorOffset,
-		hoveredNodeId: effectiveNodeId,
-		onHoverNode: setHoveredNodeId,
-		onSelectNode: togglePinnedNode,
-	};
 
 	const pinnedNode = pinnedNodeId !== null ? (astIndex.get(pinnedNodeId) ?? null) : null;
 
@@ -230,57 +138,36 @@ export function FullMode({
 				onHoverLine={setHoveredTokenLine}
 			/>
 		);
-	} else {
-		const showTree = phase === "arvore" || phase === "execucao";
-		const showBytecode = phase === "bytecode" || phase === "execucao";
-		const showBoth = showTree && showBytecode;
-
-		const tree = compileMode ? (
+	} else if (phase === "arvore") {
+		structureContent = (
 			<AstView
 				ast={trace?.ast ?? null}
 				steps={steps}
 				stepIndex={player.index}
-				currentNodeId={compileProgress.currentNodeId}
-				errorNodeId={null}
-				errorLine={null}
+				currentNodeId={gatedCurrentNodeId}
+				errorNodeId={gatedErrorNodeId}
+				errorLine={gatedErrorLine}
 				hoveredNodeId={effectiveNodeId}
 				onHoverNode={setHoveredNodeId}
 				onSelectNode={togglePinnedNode}
-				trailNodeIds={compileProgress.trailNodeIds}
-				revealedNodeIds={compileProgress.revealedNodeIds}
+				pinnedNode={pinnedNode}
+				resolveMap={resolveMap}
+				astCountsByLine={astCountsByLine}
+				bytecodeCountsByLine={bytecodeCountsByLine}
 			/>
-		) : (
-			<AstView {...astViewProps} />
 		);
-
-		const bytecodePanel = compileMode ? (
+	} else {
+		structureContent = (
 			<BytecodeView
-				bytecode={grownBytecode}
+				bytecode={bytecode}
 				constants={trace?.constants ?? []}
 				steps={steps}
 				stepIndex={player.index}
-				errorOffset={null}
+				errorOffset={gatedErrorOffset}
 				hoveredNodeId={effectiveNodeId}
 				onHoverNode={setHoveredNodeId}
 				onSelectNode={togglePinnedNode}
-				currentOffset={compileCurrentOffset}
-				pendingOffsets={pendingOffsets}
 			/>
-		) : (
-			<BytecodeView {...bytecodeViewProps} />
-		);
-
-		const inner = (
-			<>
-				{showTree && tree}
-				{showBytecode && bytecodePanel}
-			</>
-		);
-
-		structureContent = showBoth ? (
-			<div className={styles.compareRow}>{inner}</div>
-		) : (
-			inner
 		);
 	}
 
@@ -289,21 +176,18 @@ export function FullMode({
 			<Toolbar
 				onRun={handleRun}
 				running={running}
-				hasTrace={activeHasTrace}
-				mode={activeMode}
-				playing={activePlayer.playing}
-				speed={activePlayer.speed}
-				stepIndex={activePlayer.index}
-				totalSteps={activePlayer.total}
-				onTogglePlay={activePlayer.togglePlay}
-				onPrevious={activePlayer.previous}
-				onNext={activePlayer.next}
-				onNextLine={activePlayer.nextLine}
-				onReset={activePlayer.reset}
-				onSpeedChange={activePlayer.setSpeed}
-				onSelectMode={selectMode}
+				hasTrace={hasTrace}
+				playing={player.playing}
+				speed={player.speed}
+				stepIndex={player.index}
+				totalSteps={player.total}
+				onTogglePlay={player.togglePlay}
+				onPrevious={player.previous}
+				onNext={player.next}
+				onNextLine={player.nextLine}
+				onReset={player.reset}
+				onSpeedChange={player.setSpeed}
 				phase={phase}
-				compiling={compileMode}
 				onSelectPhase={selectPhase}
 				appMode={appMode}
 				onSelectAppMode={onSelectAppMode}
@@ -314,8 +198,8 @@ export function FullMode({
 					<CodeEditor
 						value={program}
 						onChange={setProgram}
-						currentLine={activeCurrentLine}
-						errorLine={activeMode === "execution" ? gatedErrorLine : null}
+						currentLine={gatedCurrentLine}
+						errorLine={gatedErrorLine}
 						hoverLine={effectiveHoverLine}
 						hoverColor={effectiveHoverColor}
 					/>
@@ -324,37 +208,14 @@ export function FullMode({
 					<div className={styles.structurePanel}>
 						{structureContent}
 					</div>
-					{compileMode && (
-						<div className={styles.bottomRowCompact}>
-							<CompileNarration
-								step={compileCurrentStep}
-								astIndex={astIndex}
-								emitCountByNode={emitCountByNode}
-							/>
-						</div>
-					)}
-					{!compileMode && phase === "arvore" && pinnedNode && (
-						<div className={styles.nodeCardRow}>
-							<NodeInsightCard
-								node={pinnedNode}
-								resolveMap={resolveMap}
-								astCountsByLine={astCountsByLine}
-								bytecodeCountsByLine={bytecodeCountsByLine}
-							/>
-						</div>
-					)}
-					{!compileMode && phase === "execucao" && (
+					{phase !== "tokens" && (
 						<div className={styles.bottomRow}>
-							<VariablesView
+							<ExecutionStatePanel
 								step={hasTrace ? player.currentStep : null}
 								previousStep={previousStep}
-							/>
-							<StackView
-								step={hasTrace ? player.currentStep : null}
 								output={output}
 								error={errorReached ? errorMessage : null}
 								hasBytecode={(trace?.bytecode.length ?? 0) > 0}
-								maxStackDepth={maxStackUsage}
 							/>
 						</div>
 					)}

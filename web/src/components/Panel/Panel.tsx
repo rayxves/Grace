@@ -5,8 +5,6 @@ interface PanelProps {
 	title: ReactNode;
 	titleClassName?: string;
 	dataRole?: string;
-	caption?: ReactNode;
-	captionClassName?: string;
 	panelClassName?: string;
 	contentClassName?: string;
 	contentRef?: Ref<HTMLDivElement>;
@@ -24,8 +22,6 @@ export function Panel({
 	title,
 	titleClassName,
 	dataRole,
-	caption,
-	captionClassName,
 	panelClassName,
 	contentClassName,
 	contentRef,
@@ -41,7 +37,6 @@ export function Panel({
 	return (
 		<section className={panelClassName ?? styles.panel} data-role={dataRole}>
 			<h2 className={titleClassName ?? styles.title}>{title}</h2>
-			{caption && <p className={captionClassName ?? styles.caption}>{caption}</p>}
 			<div ref={contentRef} className={contentClassName ?? styles.content}>
 				{isEmpty ? (
 					<div className={emptyClassName ?? styles.empty}>

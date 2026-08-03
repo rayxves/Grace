@@ -19,14 +19,6 @@
 	padding: var(--space-md) var(--space-md) var(--space-sm);
 }
 
-.caption {
-	margin: 0;
-	padding: 0.125rem var(--space-md) var(--space-sm);
-	font-size: 0.875rem;
-	font-weight: 500;
-	color: var(--color-text);
-}
-
 .content {
 	flex: 1;
 	min-height: 0;

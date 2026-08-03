@@ -1,5 +1,6 @@
 import { TopNav } from "./components/TopNav/TopNav";
-import { RouteProvider, useRoute } from "./hooks/useRoute";
+import { RouteProvider } from "./hooks/RouteProvider";
+import { useRoute } from "./hooks/useRoute";
 import { Visualizer } from "./screens/Visualizer";
 import { Reference } from "./screens/Reference";
 import styles from "./App.module.css";

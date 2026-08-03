@@ -1,30 +1,20 @@
 .app {
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-	min-height: 0;
+	composes: appShell from "./shared.module.css";
 }
 
 .workspace {
-	flex: 1;
-	min-height: 0;
-	display: flex;
-	gap: var(--space-lg);
-	padding: var(--space-lg);
+	composes: workspaceRow from "./shared.module.css";
 }
 
 .editorColumn {
-	flex: 2;
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
+	composes: editorColumn from "./shared.module.css";
 }
 
 .visualColumn {
-	flex: 3;
+	flex: 1;
 	min-width: 0;
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
 	gap: var(--space-lg);
 }
 
@@ -37,42 +27,10 @@
 	gap: var(--space-sm);
 }
 
-.structureHeader {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	gap: var(--space-sm);
-}
-
-.depthIndicator {
-	flex: 1;
-	font-size: 0.8125rem;
-	color: var(--color-text-muted);
-}
-
-.compareRow {
-	flex: 1;
-	min-height: 0;
-	display: flex;
-	gap: var(--space-lg);
-}
-
 .bottomRow {
 	flex: 2;
+	min-width: 0;
 	min-height: 0;
-	display: flex;
-	gap: var(--space-lg);
-}
-
-.bottomRowCompact {
-	flex: none;
-	min-height: 8rem;
-	display: flex;
-	gap: var(--space-lg);
-}
-
-.nodeCardRow {
-	flex: none;
 	display: flex;
 }
 
@@ -84,28 +42,22 @@
 
 	.editorColumn {
 		flex: none;
+		max-width: none;
 		min-height: 20rem;
 	}
 
 	.visualColumn {
 		flex: none;
+		flex-direction: column;
 	}
 
 	.structurePanel {
 		flex: none;
-	}
-
-	.compareRow {
-		flex-direction: column;
-		min-height: 40rem;
-	}
-
-	.bottomRow {
-		flex-direction: column;
 		min-height: 30rem;
 	}
 
-	.bottomRowCompact {
-		min-height: 8rem;
+	.bottomRow {
+		flex: none;
+		min-height: 22rem;
 	}
 }

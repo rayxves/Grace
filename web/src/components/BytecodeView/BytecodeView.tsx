@@ -81,11 +81,6 @@ export function BytecodeView({
 			title="bytecode"
 			dataRole="bytecode-panel"
 			titleClassName={styles.title}
-			caption={
-				bytecode.length > 0
-					? "A cor à esquerda de cada linha é a cor do nó da árvore que a gerou"
-					: undefined
-			}
 			contentClassName={styles.list}
 			isEmpty={bytecode.length === 0}
 			emptyClassName={styles.emptyState}

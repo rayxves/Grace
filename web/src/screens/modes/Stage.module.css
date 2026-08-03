@@ -1,25 +1,14 @@
 .app {
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-	min-height: 0;
+	composes: appShell from "./shared.module.css";
 }
 
 .workspace {
-	flex: 1;
-	min-height: 0;
-	display: flex;
-	gap: var(--space-lg);
-	padding: var(--space-lg);
+	composes: workspaceRow from "./shared.module.css";
 	overflow-y: auto;
 }
 
 .editorColumn {
-	flex: 1;
-	min-width: 0;
-	max-width: 26rem;
-	display: flex;
-	flex-direction: column;
+	composes: editorColumn from "./shared.module.css";
 }
 
 .sceneColumn {
@@ -27,17 +16,6 @@
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
-}
-
-.errorBanner {
-	flex-shrink: 0;
-	margin-bottom: var(--space-md);
-	padding: var(--space-sm) var(--space-md);
-	border: 1px solid var(--color-danger-border);
-	border-radius: var(--radius-md);
-	background: var(--color-danger-soft);
-	color: var(--color-danger);
-	font-size: 0.8125rem;
 }
 
 @media (max-width: 64rem) {

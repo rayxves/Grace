@@ -21,11 +21,6 @@ export function TokensView({
 			title="tokens"
 			dataRole="tokens-panel"
 			titleClassName={styles.title}
-			caption={
-				tokens.length > 0
-					? 'O primeiro passo do compilador é "separar" o texto em pedaços, cada peça é um token'
-					: undefined
-			}
 			contentClassName={styles.list}
 			isEmpty={tokens.length === 0}
 			emptyClassName={styles.empty}

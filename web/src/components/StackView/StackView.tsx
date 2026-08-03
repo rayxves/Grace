@@ -105,9 +105,9 @@ export function StackView({
 						role="alert">
 						<strong>
 							{(() => {
-								if (step) return "a execução parou aqui";
+								if (step) return "A execução parou aqui";
 								if (hasBytecode)
-									return "a execução falhou logo na primeira instrução";
+									return "A execução falhou logo na primeira instrução";
 								return "o programa não chegou a ser compilado";
 							})()}
 						</strong>
