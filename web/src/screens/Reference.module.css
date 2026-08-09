@@ -71,29 +71,27 @@
 .content {
 	flex: 1;
 	min-width: 0;
+	max-width: 64rem;
 	overflow-y: auto;
-	padding: var(--space-xl) var(--space-lg);
+	padding: var(--space-xl) clamp(1.5rem, 4vw, 3.5rem);
 }
 
 .sectionTitle {
-	max-width: 42rem;
-	margin: 0 auto var(--space-xs);
-	font-size: 1.5rem;
+	margin: 0 0 var(--space-xs);
+	font-size: var(--text-2xl);
 }
 
 .sectionIntro {
-	max-width: 42rem;
-	margin: 0 auto var(--space-lg);
+	margin: 0 0 var(--space-lg);
 	color: var(--color-text-muted);
-	font-size: 0.9375rem;
-	line-height: 1.6;
+	font-size: var(--text-base);
+	line-height: var(--leading-body);
 }
 
 .list {
 	display: flex;
 	flex-direction: column;
-	max-width: 42rem;
-	margin: var(--space-lg) auto 0;
+	margin-top: var(--space-lg);
 }
 
 .hitSection {

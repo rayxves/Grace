@@ -6,23 +6,23 @@
 }
 
 .content {
-	max-width: 42rem;
+	max-width: 52rem;
 	margin: 0 auto;
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-lg);
+	gap: var(--space-xl);
 }
 
 .title {
 	margin: 0;
-	font-size: 1.75rem;
+	font-size: var(--text-3xl);
 }
 
 .lead {
 	margin: 0;
-	color: var(--color-text-muted);
-	font-size: 1rem;
-	line-height: 1.7;
+	color: var(--color-text);
+	font-size: var(--text-lg);
+	line-height: var(--leading-body);
 }
 
 .section {
@@ -33,15 +33,15 @@
 
 .sectionTitle {
 	margin: 0;
-	font-size: 1.0625rem;
+	font-size: var(--text-xl);
 	color: var(--color-heading);
 }
 
 .section p {
 	margin: 0;
 	color: var(--color-text);
-	font-size: 0.9375rem;
-	line-height: 1.7;
+	font-size: var(--text-base);
+	line-height: var(--leading-body);
 }
 
 .section p + p {
@@ -67,8 +67,8 @@
 .note p {
 	margin: 0;
 	color: var(--color-text);
-	font-size: 0.875rem;
-	line-height: 1.7;
+	font-size: var(--text-sm);
+	line-height: var(--leading-body);
 }
 
 .note p + p {
