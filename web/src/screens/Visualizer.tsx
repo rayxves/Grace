@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { FullMode } from "./modes/FullMode";
 import { Stage } from "./modes/Stage";
 import { useRoute } from "../hooks/useRoute";
@@ -31,6 +32,15 @@ export function Visualizer() {
 
 	return (
 		<div className={styles.shell}>
+			{trace?.truncated && (
+				<div className={styles.truncatedWarning} role="alert">
+					<AlertTriangle size="1rem" className={styles.truncatedIcon} />
+					<span>
+						A visualização foi cortada em 5.000 passos. O programa continuou executando além
+						desse ponto, mas os passos seguintes não aparecem aqui.
+					</span>
+				</div>
+			)}
 			{mode === "full" ? (
 				<FullMode
 					trace={trace}
