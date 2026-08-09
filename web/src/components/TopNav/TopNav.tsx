@@ -1,4 +1,4 @@
-import { Code, Library, Moon, MonitorPlay, Sun } from "lucide-react";
+import { Code, Info, Library, Moon, MonitorPlay, Sun } from "lucide-react";
 import { useRoute } from "../../hooks/useRoute";
 import type { Screen } from "../../hooks/routeContext";
 import { useTheme } from "../../hooks/useTheme";
@@ -9,6 +9,7 @@ const ICON_SIZE = "1rem";
 const DESTINATIONS: { screen: Screen; label: string; icon: typeof Library }[] = [
 	{ screen: "visualizer", label: "Visualizador", icon: MonitorPlay },
 	{ screen: "reference", label: "Referência", icon: Library },
+	{ screen: "about", label: "Sobre", icon: Info },
 ];
 
 export function TopNav() {

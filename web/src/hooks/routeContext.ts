@@ -1,7 +1,7 @@
 import { createContext } from "react";
 import { decodeProgram, encodeProgram } from "../lib/urlProgram";
 
-export type Screen = "visualizer" | "reference";
+export type Screen = "visualizer" | "reference" | "about";
 
 export interface Route {
 	screen: Screen;
@@ -15,7 +15,7 @@ export interface RouteContextValue {
 	navigate: (screen: Screen, param?: string | null, program?: string) => void;
 }
 
-export const VALID_SCREENS: Screen[] = ["visualizer", "reference"];
+export const VALID_SCREENS: Screen[] = ["visualizer", "reference", "about"];
 
 export const DEFAULT_SOURCE = `var x = 10;
 imprima(x + 5);
