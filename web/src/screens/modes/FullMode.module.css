@@ -42,7 +42,7 @@
 
 	.editorColumn {
 		flex: none;
-		max-width: none;
+		max-width: none !important;
 		min-height: 20rem;
 	}
 

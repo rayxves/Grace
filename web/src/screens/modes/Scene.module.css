@@ -126,7 +126,7 @@
 
 .stackZone {
 	flex: 2;
-	min-height: 0;
+	min-height: min-content;
 	display: flex;
 	flex-direction: column;
 	background: var(--color-surface);
@@ -204,7 +204,7 @@
 
 	.rightColumn {
 		max-width: none;
-		flex-direction: row;
+		min-height: max-content;
 	}
 
 	.treeZone {
