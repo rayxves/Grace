@@ -5,14 +5,15 @@ export interface AboutSection {
 }
 
 export const ABOUT_LEAD =
-	"GHopper é uma linguagem de programação didática e um visualizador do próprio compilador e da própria máquina virtual: o mesmo código que interpreta um programa GHopper serve, passo a passo, para mostrar como ele foi interpretado.";
+	"Ver um programa rodar normalmente mostra só a saída. Aqui, mostra o compilador e a VM trabalhando — token por token, instrução por instrução.";
 
 export const ABOUT_SECTIONS: AboutSection[] = [
 	{
 		id: "o-que-e",
 		title: "O que é",
 		paragraphs: [
-			"GHopper, a linguagem, tem um scanner, um parser, um resolver de escopos, um compilador de bytecode e uma VM de pilha, todos escritos em Rust e compilados para WebAssembly. Cada uma dessas cinco fases emite eventos tipados enquanto trabalha — não um log de texto, mas uma estrutura de dados fiel ao que o compilador e a VM de fato fizeram — e esta plataforma web consome esses eventos para reconstruir tokens, árvore sintática, bytecode e execução, um passo de cada vez.",
+			"GHopper é uma linguagem de programação com sintaxe em português e, ao mesmo tempo, o visualizador da própria implementação dela: um scanner, um parser, um resolver de escopos, um compilador de bytecode e uma VM de pilha, todos escritos em Rust e compilados para WebAssembly.",
+			"Cada uma dessas cinco fases emite eventos tipados enquanto trabalha — não um log de texto, mas uma estrutura de dados fiel ao que o compilador e a VM de fato fizeram — e esta plataforma web consome esses eventos para reconstruir tokens, árvore sintática, bytecode e execução, um passo de cada vez.",
 		],
 	},
 	{

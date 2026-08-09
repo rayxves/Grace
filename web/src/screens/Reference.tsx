@@ -62,15 +62,17 @@ function ItemEntry({ item }: Readonly<{ item: ReferenceItem }>) {
 			{item.example && (
 				<div className={styles.exampleBlock}>
 					<span className={styles.blockLabel}>Exemplo</span>
-					<pre className={styles.code}>{item.example.code}</pre>
-					<button
-						type="button"
-						className={styles.tryButton}
-						onClick={() => navigate("visualizer", null, item.example!.code)}
-					>
-						<Play size="1rem" />
-						{item.example.expect.kind === "error" ? "ver o erro no visualizador" : "experimentar"}
-					</button>
+					<div className={styles.exampleContent}>
+						<pre className={styles.code}>{item.example.code}</pre>
+						<button
+							type="button"
+							className={styles.tryButton}
+							onClick={() => navigate("visualizer", null, item.example!.code)}
+						>
+							<Play size="1rem" />
+							{item.example.expect.kind === "error" ? "ver o erro no visualizador" : "experimentar"}
+						</button>
+					</div>
 				</div>
 			)}
 
@@ -84,15 +86,17 @@ function ItemEntry({ item }: Readonly<{ item: ReferenceItem }>) {
 			{item.demonstratedError && (
 				<div className={styles.exampleBlock}>
 					<span className={styles.blockLabel}>{item.demonstratedError.title}</span>
-					<pre className={styles.code}>{item.demonstratedError.code}</pre>
-					<button
-						type="button"
-						className={styles.tryButton}
-						onClick={() => navigate("visualizer", null, item.demonstratedError!.code)}
-					>
-						<Play size="1rem" />
-						ver o erro no visualizador
-					</button>
+					<div className={styles.exampleContent}>
+						<pre className={styles.code}>{item.demonstratedError.code}</pre>
+						<button
+							type="button"
+							className={styles.tryButton}
+							onClick={() => navigate("visualizer", null, item.demonstratedError!.code)}
+						>
+							<Play size="1rem" />
+							ver o erro no visualizador
+						</button>
+					</div>
 				</div>
 			)}
 		</article>
