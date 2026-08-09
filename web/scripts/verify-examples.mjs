@@ -26,6 +26,11 @@ const CONTENT_MODULES = [
 			return entries;
 		},
 	},
+	{
+		file: "src/content/gallery.ts",
+		exportName: "GALLERY_EXAMPLES",
+		extract: (example) => [{ id: example.id, example }],
+	},
 ];
 
 async function loadContentModule(relPath) {

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { PLAYER_SPEEDS } from "../../hooks/usePlayer";
 import { ViewTabs } from "../ViewTabs/ViewTabs";
+import { ExampleGallery } from "../ExampleGallery/ExampleGallery";
 import styles from "./PlayerBar.module.css";
 
 const ICON_SIZE = "1.125rem";
@@ -64,6 +65,8 @@ export function PlayerBar({
 				</button>
 
 				<div className={styles.modeSlot}>{appModeSlot}</div>
+
+				<ExampleGallery />
 
 				<div className={styles.playerCard} title="controles de animação do passo a passo">
 					<div className={styles.playerGroup}>
