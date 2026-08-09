@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { PHASES, type Phase } from "../../lib/phase";
 import { PHASE_NARRATION } from "../../content/phaseNarration";
 import { useRoute } from "../../hooks/useRoute";
+import { useDismiss } from "../../hooks/useDismiss";
 import styles from "./PipelineStrip.module.css";
 
 interface PipelineStripProps {
@@ -11,52 +12,70 @@ interface PipelineStripProps {
 }
 
 export function PipelineStrip({ phase, onSelect }: Readonly<PipelineStripProps>) {
-	const [expanded, setExpanded] = useState(false);
+	const [open, setOpen] = useState(false);
 	const { navigate } = useRoute();
 	const narration = PHASE_NARRATION[phase];
+	const anchorRef = useRef<HTMLDivElement>(null);
+
+	useDismiss(anchorRef, open, () => setOpen(false));
 
 	return (
 		<div className={styles.wrapper}>
-			<nav className={styles.strip} aria-label="fases do compilador">
-				{PHASES.map((entry, i) => (
-					<span key={entry.id} className={styles.phaseGroup}>
-						<button
-							type="button"
-							className={entry.id === phase ? `${styles.phase} ${styles.phaseActive}` : styles.phase}
-							onClick={() => onSelect(entry.id)}
-						>
-							{entry.label}
-						</button>
-						{i < PHASES.length - 1 && (
-							<span className={styles.arrow} aria-hidden="true">
-								→
-							</span>
-						)}
-					</span>
-				))}
-			</nav>
+			<div className={styles.topRow}>
+				<nav className={styles.strip} aria-label="fases do compilador">
+					{PHASES.map((entry, i) => (
+						<span key={entry.id} className={styles.phaseGroup}>
+							<button
+								type="button"
+								className={
+									entry.id === phase ? `${styles.phase} ${styles.phaseActive}` : styles.phase
+								}
+								onClick={() => onSelect(entry.id)}
+							>
+								{entry.label}
+							</button>
+							{i < PHASES.length - 1 && (
+								<span className={styles.arrow} aria-hidden="true">
+									→
+								</span>
+							)}
+						</span>
+					))}
+				</nav>
 
-			<div className={styles.narration}>
+				<div className={styles.flow}>
+					<span>{narration.entra}</span>
+					<span className={styles.flowArrow} aria-hidden="true">
+						→
+					</span>
+					<span>{narration.sai}</span>
+				</div>
+			</div>
+
+			<div className={styles.popoverAnchor} ref={anchorRef}>
 				<button
 					type="button"
 					className={styles.toggle}
-					aria-expanded={expanded}
-					onClick={() => setExpanded((value) => !value)}
+					aria-expanded={open}
+					onClick={() => setOpen((value) => !value)}
 				>
-					{expanded ? "ocultar" : "entenda esta fase"}
-					{expanded ? <ChevronUp size="0.875rem" /> : <ChevronDown size="0.875rem" />}
+					decisão de projeto
+					{open ? <ChevronUp size="0.875rem" /> : <ChevronDown size="0.875rem" />}
 				</button>
 
-				{expanded && (
-					<div className={styles.narrationBody}>
-						<p>{narration.text}</p>
+				{open && (
+					<div className={styles.popover}>
+						<p>{narration.decisao}</p>
 						<div className={styles.narrationLinks}>
 							{narration.links.map((link) => (
 								<button
 									key={link.itemId}
 									type="button"
 									className={styles.narrationLink}
-									onClick={() => navigate("reference", `maquina.${link.itemId}`)}
+									onClick={() => {
+										setOpen(false);
+										navigate("reference", `maquina.${link.itemId}`);
+									}}
 								>
 									{link.label} na Referência →
 								</button>

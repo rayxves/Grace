@@ -1,19 +1,26 @@
 .wrapper {
 	display: flex;
 	flex-direction: column;
-}
-
-.strip {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-wrap: wrap;
-	gap: 0.5rem;
 	margin-top: 0.375rem;
 	padding: 0.5rem;
 	border-top: 1px solid var(--color-border);
 	background: var(--color-surface-alt);
 	border-radius: var(--radius-md);
+}
+
+.topRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: var(--space-sm);
+}
+
+.strip {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.5rem;
 }
 
 .phaseGroup {
@@ -28,7 +35,7 @@
 	border: 1.5px solid var(--color-border-strong);
 	background: var(--color-surface);
 	color: var(--color-text);
-	font-size: 0.9375rem;
+	font-size: var(--text-base);
 	font-weight: 700;
 	white-space: nowrap;
 	transition:
@@ -56,20 +63,32 @@
 	font-weight: 700;
 }
 
-.narration {
+.flow {
 	display: flex;
-	flex-direction: column;
 	align-items: center;
+	gap: 0.375rem;
+	color: var(--color-text-muted);
+	font-family: var(--font-mono);
+	font-size: var(--text-xs);
+	white-space: nowrap;
+}
+
+.flowArrow {
+	color: var(--color-accent);
+}
+
+.popoverAnchor {
+	position: relative;
+	margin-top: 0.375rem;
 }
 
 .toggle {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.25rem;
-	margin-top: 0.375rem;
 	padding: 0.25rem 0.625rem;
 	color: var(--color-text-muted);
-	font-size: 0.75rem;
+	font-size: var(--text-xs);
 	font-weight: 600;
 	border-radius: var(--radius-sm);
 	transition: color 0.15s ease;
@@ -79,20 +98,25 @@
 	color: var(--color-heading);
 }
 
-.narrationBody {
-	max-width: 40rem;
-	margin-top: 0.5rem;
-	padding: 0.75rem 1rem;
+.popover {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 20;
+	width: min(28rem, 90vw);
+	margin-top: 0.375rem;
+	padding: 0.875rem 1rem;
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius-md);
-	background: var(--color-surface-alt);
+	background: var(--color-surface);
+	box-shadow: var(--shadow-raised);
 }
 
-.narrationBody p {
+.popover p {
 	margin: 0;
 	color: var(--color-text);
-	font-size: 0.8125rem;
-	line-height: 1.6;
+	font-size: var(--text-sm);
+	line-height: var(--leading-body);
 }
 
 .narrationLinks {
@@ -106,9 +130,9 @@
 	padding: 0.25rem 0.625rem;
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius-sm);
-	background: var(--color-surface);
+	background: var(--color-surface-alt);
 	color: var(--color-accent);
-	font-size: 0.75rem;
+	font-size: var(--text-xs);
 	font-weight: 600;
 	transition:
 		background-color 0.15s ease,
