@@ -4,9 +4,9 @@
 		{
 			"type": "lldb",
 			"request": "launch",
-			"name": "Debug Grace",
+			"name": "Debug GHopper",
 			"cargo": {
-				"args": ["build", "--bin=Grace"]
+				"args": ["build", "--bin=GHopper"]
 			},
 			"args": [],
 			"cwd": "${workspaceFolder}",

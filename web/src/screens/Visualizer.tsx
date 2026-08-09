@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { FullMode } from "./modes/FullMode";
 import { Stage } from "./modes/Stage";
 import { useRoute } from "../hooks/useRoute";
-import { runGrace } from "../lib/grace";
+import { runGHopper } from "../lib/GHopper";
 import type { Trace } from "../types";
 import styles from "./Visualizer.module.css";
 
@@ -19,7 +19,7 @@ export function Visualizer() {
 		setRunning(true);
 		setRuntimeError(null);
 		try {
-			const result = await runGrace(program);
+			const result = await runGHopper(program);
 			setTrace(result);
 		} catch (error) {
 			setTrace(null);

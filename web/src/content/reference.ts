@@ -4,7 +4,7 @@ export const reference: ReferenceSection[] = [
 	{
 		id: "sintaxe",
 		title: "Sintaxe básica",
-		intro: "As regras de escrita que valem para todo programa em Grace.",
+		intro: "As regras de escrita que valem para todo programa em GHopper.",
 		items: [
 			{
 				id: "ponto-e-virgula",
@@ -40,7 +40,7 @@ export const reference: ReferenceSection[] = [
 				title: "Comentários",
 				syntax: "// texto até o fim da linha",
 				description:
-					"Tudo depois de // na mesma linha é ignorado pelo Grace.\n\nNão existe comentário de bloco (várias linhas com /* */) — cada linha precisa começar com o próprio //.",
+					"Tudo depois de // na mesma linha é ignorado pelo GHopper.\n\nNão existe comentário de bloco (várias linhas com /* */) — cada linha precisa começar com o próprio //.",
 				example: {
 					id: "comentario",
 					title: "Um comentário",
@@ -318,7 +318,7 @@ Evento();`,
 	{
 		id: "operadores",
 		title: "Operadores",
-		intro: "Só os operadores que o Grace realmente reconhece.",
+		intro: "Só os operadores que o GHopper realmente reconhece.",
 		items: [
 			{
 				id: "soma",
@@ -459,13 +459,13 @@ imprima("a" + "b");`,
 	{
 		id: "tipos",
 		title: "Tipos e valores",
-		intro: "O Grace tem quatro tipos de valor.",
+		intro: "O GHopper tem quatro tipos de valor.",
 		items: [
 			{
 				id: "numero",
 				title: "Número",
 				description:
-					"Existe só um tipo de número, sempre com ponto flutuante — não há um tipo separado para números inteiros.\n\nQuando o resultado é um número inteiro, o Grace imprime sem casas decimais (2, não 2.0). Quando não é, imprime as casas decimais normalmente (3.5).",
+					"Existe só um tipo de número, sempre com ponto flutuante — não há um tipo separado para números inteiros.\n\nQuando o resultado é um número inteiro, o GHopper imprime sem casas decimais (2, não 2.0). Quando não é, imprime as casas decimais normalmente (3.5).",
 				example: {
 					id: "numero",
 					title: "Número",
@@ -480,8 +480,8 @@ imprima("a" + "b");`,
 				example: {
 					id: "texto",
 					title: "Texto",
-					code: `imprima("Grace");`,
-					expect: { kind: "output", lines: ["Grace"] },
+					code: `imprima("GHopper");`,
+					expect: { kind: "output", lines: ["GHopper"] },
 				},
 			},
 			{
@@ -704,7 +704,7 @@ rex.latir();`,
 	{
 		id: "limitacoes",
 		title: "Limitações conhecidas",
-		intro: "O que o Grace ainda não tem — melhor saber de antemão do que descobrir no meio de um programa.",
+		intro: "O que o GHopper ainda não tem — melhor saber de antemão do que descobrir no meio de um programa.",
 		items: [
 			{
 				id: "sem-atribuicao-composta",
@@ -736,7 +736,7 @@ x += 5;`,
 				id: "sem-conversao-texto",
 				title: '"texto" + número não funciona',
 				description:
-					"O + só soma dois números ou junta dois textos — nunca mistura os dois, e o Grace não converte um número em texto automaticamente. Imprima os dois valores separadamente.",
+					"O + só soma dois números ou junta dois textos — nunca mistura os dois, e o GHopper não converte um número em texto automaticamente. Imprima os dois valores separadamente.",
 				example: {
 					id: "sem-conversao-texto",
 					title: "Misturando tipos",
@@ -779,7 +779,7 @@ x += 5;`,
 				id: "caractere-nao-reconhecido",
 				title: "Caractere não reconhecido",
 				description:
-					'Mensagem: "O caractere \'X\' não é reconhecido pela linguagem Grace." Algum símbolo digitado (como @ ou #) não existe na linguagem.',
+					'Mensagem: "O caractere \'X\' não é reconhecido pela linguagem GHopper." Algum símbolo digitado (como @ ou #) não existe na linguagem.',
 				example: {
 					id: "caractere-nao-reconhecido",
 					title: "Símbolo inválido",

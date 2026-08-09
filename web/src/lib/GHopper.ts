@@ -1,4 +1,4 @@
-import init, { executar } from "../../../grace/pkg/Grace";
+import init, { executar } from "../../../grace/pkg/GHopper";
 import type { Trace } from "../types";
 
 let initialization: Promise<unknown> | null = null;
@@ -10,7 +10,7 @@ function ensureInitialized() {
 	return initialization;
 }
 
-export async function runGrace(source: string): Promise<Trace> {
+export async function runGHopper(source: string): Promise<Trace> {
 	await ensureInitialized();
 	return JSON.parse(executar(source)) as Trace;
 }

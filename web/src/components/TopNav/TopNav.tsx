@@ -20,7 +20,7 @@ export function TopNav() {
 			<div className={styles.left}>
 				<span className={styles.brand}>
 					<MonitorPlay size={ICON_SIZE} />
-					Grace
+					GHopper
 				</span>
 			</div>
 
@@ -42,7 +42,7 @@ export function TopNav() {
 			<div className={styles.right}>
 				<a
 					className={styles.iconButton}
-					href="https://github.com/rayxves/Grace"
+					href="https://github.com/rayxves/GHopper"
 					target="_blank"
 					rel="noopener noreferrer"
 					title="repositório no GitHub"

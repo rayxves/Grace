@@ -250,7 +250,7 @@ impl Scanner {
                 } else {
                     return Err(TokenError::new(
                         format!(
-                            "O caractere '{}' não é reconhecido pela linguagem Grace.\n\
+                            "O caractere '{}' não é reconhecido pela linguagem GHopper.\n\
      Dica: verifique se não há um símbolo digitado por engano.",
                             c
                         ),

@@ -1,14 +1,14 @@
 {
-  "name": "Grace",
+  "name": "GHopper",
   "type": "module",
   "version": "0.1.0",
   "files": [
-    "Grace_bg.wasm",
-    "Grace.js",
-    "Grace.d.ts"
+    "GHopper_bg.wasm",
+    "GHopper.js",
+    "GHopper.d.ts"
   ],
-  "main": "Grace.js",
-  "types": "Grace.d.ts",
+  "main": "GHopper.js",
+  "types": "GHopper.d.ts",
   "sideEffects": [
     "./snippets/*"
   ]

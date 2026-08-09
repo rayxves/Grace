@@ -1,6 +1,6 @@
-# Grace — plataforma web
+# GHopper — plataforma web
 
-Visualizador de execução da linguagem Grace: editor de código, árvore sintática (AST), bytecode e pilha de execução, sincronizados passo a passo através de um player.
+Visualizador de execução da linguagem GHopper: editor de código, árvore sintática (AST), bytecode e pilha de execução, sincronizados passo a passo através de um player.
 
 Vite + React 19 + TypeScript. Veja o [README na raiz do repositório](../README.md) para como reconstruir o WASM que este projeto consome.
 
@@ -19,5 +19,5 @@ src/
   hooks/        usePlayer (controla a reprodução), useTheme
   lib/          wrapper do WASM, lógica de negócio pura (sem JSX)
   styles/       variáveis de tema (claro/escuro), CSS global
-  types.ts      contrato de dados com a Grace (não altere sem sincronizar com grace/src)
+  types.ts      contrato de dados com a GHopper (não altere sem sincronizar com grace/src)
 ```

@@ -1,4 +1,4 @@
-use Grace::gera_trace;
+use GHopper::gera_trace;
 
 fn main() {
     let json = gera_trace("var x = 10;\nimprima(x + 5);");

@@ -87,7 +87,7 @@ function exitSummary(
 	if (nodeKind === "Binary" && node) {
 		const compound = COMPOUND_COMPARISONS[node.label];
 		if (compound) {
-			return `o Grace não tem uma instrução de "${compound}" — ele compara e nega, por isso saíram ${emitCount} instruções daqui`;
+			return `o GHopper não tem uma instrução de "${compound}" — ele compara e nega, por isso saíram ${emitCount} instruções daqui`;
 		}
 	}
 	if (emitCount === 0) return "este nó não emitiu nenhuma instrução própria";

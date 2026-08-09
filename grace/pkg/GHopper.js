@@ -1,4 +1,4 @@
-/* @ts-self-types="./Grace.d.ts" */
+/* @ts-self-types="./GHopper.d.ts" */
 
 /**
  * @param {string} fonte
@@ -33,7 +33,7 @@ function __wbg_get_imports() {
     };
     return {
         __proto__: null,
-        "./Grace_bg.js": import0,
+        "./GHopper_bg.js": import0,
     };
 }
 
@@ -193,7 +193,7 @@ async function __wbg_init(module_or_path) {
     }
 
     if (module_or_path === undefined) {
-        module_or_path = new URL('Grace_bg.wasm', import.meta.url);
+        module_or_path = new URL('GHopper_bg.wasm', import.meta.url);
     }
     const imports = __wbg_get_imports();
 

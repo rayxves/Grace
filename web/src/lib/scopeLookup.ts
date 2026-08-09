@@ -17,7 +17,7 @@ export function buildScopeResolutionMap(resolveSteps: ResolveStep[]): Map<number
 
 export function describeScopeResolution(resolution: ScopeResolution | undefined): string {
 	if (!resolution) {
-		return "variável global — não passa por resolução de escopo léxico (Grace resolve globais dinamicamente, em tempo de execução).";
+		return "variável global — não passa por resolução de escopo léxico (GHopper resolve globais dinamicamente, em tempo de execução).";
 	}
 	if (resolution.depth === 0) {
 		return "resolvida no próprio escopo local onde foi usada.";

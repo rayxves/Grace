@@ -1,6 +1,6 @@
-# Grace
+# GHopper
 
-Grace é uma linguagem de programação com sintaxe em português, escrita em Rust e compilada para WebAssembly — e um visualizador interativo de como um compilador e uma máquina virtual funcionam por dentro. A plataforma web acompanha, passo a passo, todas as fases reais do pipeline: análise léxica (tokens), análise sintática (AST), resolução de escopos e variáveis, geração de bytecode e execução na VM (pilha, variáveis, frames de chamada).
+GHopper é uma linguagem de programação com sintaxe em português, escrita em Rust e compilada para WebAssembly — e um visualizador interativo de como um compilador e uma máquina virtual funcionam por dentro. A plataforma web acompanha, passo a passo, todas as fases reais do pipeline: análise léxica (tokens), análise sintática (AST), resolução de escopos e variáveis, geração de bytecode e execução na VM (pilha, variáveis, frames de chamada).
 
 Este repositório tem duas partes:
 
@@ -17,7 +17,7 @@ npm install
 npm run dev
 ```
 
-O frontend importa o WASM compilado diretamente de `grace/pkg/Grace.js` por caminho relativo — não precisa rodar nada em `grace/` para isso funcionar, desde que `grace/pkg` já esteja presente (ele é commitado intencionalmente).
+O frontend importa o WASM compilado diretamente de `grace/pkg/GHopper.js` por caminho relativo — não precisa rodar nada em `grace/` para isso funcionar, desde que `grace/pkg` já esteja presente (ele é commitado intencionalmente).
 
 ## Como reconstruir o WASM
 
@@ -28,7 +28,7 @@ cd grace
 wasm-pack build --target web
 ```
 
-Isso regenera `grace/pkg/Grace.js`, `Grace_bg.wasm` e os `.d.ts`. Sem esse passo, `grace/pkg` fica dessincronizado do `grace/src` silenciosamente — o frontend continua rodando, só que com um binário antigo. Requer [`wasm-pack`](https://rustwasm.github.io/wasm-pack/installer/) instalado (`cargo install wasm-pack` ou o instalador oficial).
+Isso regenera `grace/pkg/GHopper.js`, `GHopper_bg.wasm` e os `.d.ts`. Sem esse passo, `grace/pkg` fica dessincronizado do `grace/src` silenciosamente — o frontend continua rodando, só que com um binário antigo. Requer [`wasm-pack`](https://rustwasm.github.io/wasm-pack/installer/) instalado (`cargo install wasm-pack` ou o instalador oficial).
 
 ## Rodando só a linguagem (sem o WASM)
 

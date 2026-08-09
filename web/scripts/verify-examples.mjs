@@ -44,9 +44,9 @@ async function loadContentModule(relPath) {
 }
 
 const { initSync, executar } = await import(
-	pathToFileURL(path.join(repoRoot, "grace/pkg/Grace.js")).href
+	pathToFileURL(path.join(repoRoot, "grace/pkg/GHopper.js")).href
 );
-initSync({ module: readFileSync(path.join(repoRoot, "grace/pkg/Grace_bg.wasm")) });
+initSync({ module: readFileSync(path.join(repoRoot, "grace/pkg/GHopper_bg.wasm")) });
 
 function run(source) {
 	return JSON.parse(executar(source));
