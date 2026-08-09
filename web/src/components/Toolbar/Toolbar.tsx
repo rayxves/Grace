@@ -1,7 +1,7 @@
 import { PipelineStrip } from "../PipelineStrip/PipelineStrip";
 import type { Phase } from "../../lib/phase";
 import { PlayerBar } from "../PlayerBar/PlayerBar";
-import { ViewTabs } from "../ViewTabs/ViewTabs";
+import { AppModeSwitch } from "../AppModeSwitch/AppModeSwitch";
 import type { Mode as AppMode } from "../../screens/Visualizer";
 
 interface ToolbarProps {
@@ -23,11 +23,6 @@ interface ToolbarProps {
 	appMode: AppMode;
 	onSelectAppMode: (mode: AppMode) => void;
 }
-
-const APP_MODE_TABS: { id: AppMode; label: string }[] = [
-	{ id: "full", label: "modo completo" },
-	{ id: "stage", label: "modo palco" },
-];
 
 export function Toolbar({
 	onRun,
@@ -63,7 +58,7 @@ export function Toolbar({
 			onReset={onReset}
 			onSpeedChange={onSpeedChange}
 			onNextLine={onNextLine}
-			appModeSlot={<ViewTabs tabs={APP_MODE_TABS} activeId={appMode} onSelect={onSelectAppMode} />}
+			appModeSlot={<AppModeSwitch appMode={appMode} onSelectAppMode={onSelectAppMode} />}
 		>
 			<PipelineStrip phase={phase} onSelect={onSelectPhase} />
 		</PlayerBar>

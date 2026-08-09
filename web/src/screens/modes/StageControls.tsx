@@ -1,11 +1,6 @@
-import { ViewTabs } from "../../components/ViewTabs/ViewTabs";
+import { AppModeSwitch } from "../../components/AppModeSwitch/AppModeSwitch";
 import { PlayerBar } from "../../components/PlayerBar/PlayerBar";
 import type { Mode as AppMode } from "../Visualizer";
-
-const APP_MODE_TABS: { id: AppMode; label: string }[] = [
-	{ id: "full", label: "modo completo" },
-	{ id: "stage", label: "modo palco" },
-];
 
 interface PlayerLike {
 	index: number;
@@ -51,7 +46,7 @@ export function StageControls({
 			onNext={player.next}
 			onReset={player.reset}
 			onSpeedChange={player.setSpeed}
-			appModeSlot={<ViewTabs tabs={APP_MODE_TABS} activeId={appMode} onSelect={onSelectAppMode} />}
+			appModeSlot={<AppModeSwitch appMode={appMode} onSelectAppMode={onSelectAppMode} />}
 		/>
 	);
 }
