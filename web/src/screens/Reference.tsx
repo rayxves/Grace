@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Play, Search } from "lucide-react";
 import { reference } from "../content/reference";
 import type { ReferenceItem } from "../content/types";
@@ -100,8 +100,28 @@ function ItemEntry({ item }: Readonly<{ item: ReferenceItem }>) {
 }
 
 export function Reference() {
+	const { route } = useRoute();
 	const [selectedId, setSelectedId] = useState(reference[0].id);
 	const [query, setQuery] = useState("");
+	const [appliedParam, setAppliedParam] = useState<string | null>(null);
+
+	if (route.param && route.param !== appliedParam) {
+		const [sectionId] = route.param.split(".");
+		if (reference.some((s) => s.id === sectionId)) {
+			setSelectedId(sectionId);
+			setQuery("");
+		}
+		setAppliedParam(route.param);
+	}
+
+	useEffect(() => {
+		if (!route.param) return;
+		const [, itemId] = route.param.split(".");
+		if (!itemId) return;
+		requestAnimationFrame(() => {
+			document.getElementById(itemId)?.scrollIntoView({ block: "start" });
+		});
+	}, [route.param]);
 
 	const hits = useMemo(() => search(query), [query]);
 	const section = reference.find((s) => s.id === selectedId) ?? reference[0];
