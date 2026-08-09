@@ -14,6 +14,8 @@ export interface ReferenceItem {
 	title: string;
 	syntax?: string;
 	description: string;
+	whyItExists?: string;
+	withoutIt?: string;
 	example?: VerifiedExample;
 	warning?: string;
 	demonstratedError?: VerifiedExample;

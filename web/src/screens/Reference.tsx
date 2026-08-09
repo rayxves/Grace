@@ -45,6 +45,20 @@ function ItemEntry({ item }: Readonly<{ item: ReferenceItem }>) {
 				))}
 			</div>
 
+			{item.whyItExists && (
+				<div className={styles.rationaleBlock}>
+					<span className={styles.blockLabel}>Por que existe</span>
+					<p>{item.whyItExists}</p>
+				</div>
+			)}
+
+			{item.withoutIt && (
+				<div className={styles.rationaleBlock}>
+					<span className={styles.blockLabel}>Sem isso</span>
+					<p>{item.withoutIt}</p>
+				</div>
+			)}
+
 			{item.example && (
 				<div className={styles.exampleBlock}>
 					<span className={styles.blockLabel}>Exemplo</span>
@@ -144,7 +158,11 @@ export function Reference() {
 				) : (
 					<>
 						<h1 className={styles.sectionTitle}>{section.title}</h1>
-						{section.intro && <p className={styles.sectionIntro}>{section.intro}</p>}
+						{section.intro?.split("\n\n").map((paragraph) => (
+							<p key={paragraph} className={styles.sectionIntro}>
+								{paragraph}
+							</p>
+						))}
 						<div className={styles.list}>
 							{section.items.map((item) => (
 								<ItemEntry key={item.id} item={item} />

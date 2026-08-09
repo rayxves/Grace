@@ -163,6 +163,17 @@
 	margin-bottom: 0;
 }
 
+.rationaleBlock {
+	margin-bottom: var(--space-md);
+}
+
+.rationaleBlock p {
+	margin: 0;
+	color: var(--color-text);
+	font-size: 0.9375rem;
+	line-height: 1.7;
+}
+
 .exampleBlock {
 	display: flex;
 	flex-direction: column;
