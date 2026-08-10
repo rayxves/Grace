@@ -1,6 +1,6 @@
-import { ViewTabs } from "../ViewTabs/ViewTabs";
 import { APP_MODES } from "../../content/appModes";
 import type { Mode as AppMode } from "../../screens/Visualizer";
+import { Tooltip } from "../Tooltip/Tooltip";
 import styles from "./AppModeSwitch.module.css";
 
 interface AppModeSwitchProps {
@@ -9,12 +9,21 @@ interface AppModeSwitchProps {
 }
 
 export function AppModeSwitch({ appMode, onSelectAppMode }: Readonly<AppModeSwitchProps>) {
-	const current = APP_MODES.find((mode) => mode.id === appMode) ?? APP_MODES[0];
-
 	return (
-		<div className={styles.wrapper} title={current.description}>
-			<ViewTabs tabs={APP_MODES} activeId={appMode} onSelect={onSelectAppMode} />
-			<span className={styles.caption}>{current.caption}</span>
+		<div className={styles.tabs} role="tablist">
+			{APP_MODES.map((mode) => (
+				<Tooltip key={mode.id} content={mode.description}>
+					<button
+						type="button"
+						role="tab"
+						aria-selected={mode.id === appMode}
+						className={mode.id === appMode ? `${styles.tab} ${styles.tabActive}` : styles.tab}
+						onClick={() => onSelectAppMode(mode.id)}
+					>
+						{mode.label}
+					</button>
+				</Tooltip>
+			))}
 		</div>
 	);
 }
