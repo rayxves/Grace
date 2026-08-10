@@ -143,3 +143,9 @@
 	background: var(--color-accent-soft);
 	border-color: var(--color-accent-border);
 }
+
+@media (max-width: 40rem) {
+	.divider {
+		display: none;
+	}
+}
