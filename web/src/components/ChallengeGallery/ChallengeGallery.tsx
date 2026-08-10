@@ -3,6 +3,7 @@ import { Puzzle, X } from "lucide-react";
 import { CHALLENGES } from "../../content/challenges";
 import { useRoute } from "../../hooks/useRoute";
 import { useChallenge } from "../../hooks/useChallenge";
+import { HighlightedCode } from "../atoms/HighlightedCode";
 import styles from "./ChallengeGallery.module.css";
 
 export function ChallengeGallery() {
@@ -77,21 +78,23 @@ export function ChallengeGallery() {
 					o desafio para ver o passo a passo.
 				</p>
 
-				<div className={styles.grid}>
-					{CHALLENGES.map((challenge) => (
-						<article key={challenge.id} className={styles.card}>
-							<h3 className={styles.cardTitle}>{challenge.title}</h3>
-							<p className={styles.cardQuestion}>{challenge.question}</p>
-							<pre className={styles.code}>{challenge.code}</pre>
+				<div className={styles.gridWrapper}>
+					<div className={styles.grid}>
+						{CHALLENGES.map((challenge) => (
 							<button
+								key={challenge.id}
 								type="button"
-								className={styles.acceptButton}
+								className={styles.card}
 								onClick={() => acceptChallenge(challenge.id)}
 							>
-								aceitar o desafio
+								<h3 className={styles.cardTitle}>{challenge.title}</h3>
+								<p className={styles.cardQuestion}>{challenge.question}</p>
+								<HighlightedCode code={challenge.code} className={styles.code} />
+								<span className={styles.acceptLabel}>aceitar o desafio</span>
 							</button>
-						</article>
-					))}
+						))}
+					</div>
+					<div className={styles.fade} aria-hidden="true" />
 				</div>
 			</dialog>
 		</>
