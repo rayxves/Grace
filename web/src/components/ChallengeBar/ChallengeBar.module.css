@@ -1,6 +1,7 @@
 .bar {
 	display: flex;
 	align-items: flex-start;
+	justify-content: space-between;
 	gap: var(--space-md);
 	flex-shrink: 0;
 	padding: var(--space-sm) var(--space-lg);
@@ -8,21 +9,28 @@
 	background: var(--color-accent-soft);
 }
 
-.text {
-	flex: 1;
+.content {
 	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 0.1875rem;
+	max-width: 48rem;
 }
 
-.label {
+.textRow {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--space-sm);
+}
+
+.icon {
+	flex-shrink: 0;
 	color: var(--color-accent);
-	font-family: var(--font-mono);
-	font-size: var(--text-xs);
+}
+
+.title {
+	flex-shrink: 0;
+	color: var(--color-accent);
 	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
+	font-size: var(--text-sm);
 }
 
 .question {
@@ -32,22 +40,8 @@
 	line-height: var(--leading-body);
 }
 
-.answer {
-	margin: 0.1875rem 0 0;
-	color: var(--color-heading);
-	font-size: var(--text-sm);
-	font-weight: 600;
-	line-height: var(--leading-body);
-}
-
-.actions {
-	display: flex;
-	align-items: center;
-	gap: var(--space-xs);
-	flex-shrink: 0;
-}
-
 .revealButton {
+	flex-shrink: 0;
 	padding: 0.375rem 0.875rem;
 	border-radius: var(--radius-md);
 	background: var(--color-accent);
@@ -62,10 +56,42 @@
 	opacity: 0.85;
 }
 
+.answerWrapper {
+	overflow: hidden;
+}
+
+.answerBlock {
+	margin-top: var(--space-sm);
+	padding: var(--space-sm) var(--space-md);
+	border-radius: var(--radius-md);
+	border: 1px solid var(--color-border);
+	background: var(--color-surface);
+}
+
+.answerLabel {
+	display: block;
+	margin-bottom: 0.25rem;
+	color: var(--color-text-muted);
+	font-family: var(--font-mono);
+	font-size: var(--text-xs);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.answer {
+	margin: 0;
+	color: var(--color-heading);
+	font-size: var(--text-sm);
+	font-weight: 600;
+	line-height: var(--leading-body);
+}
+
 .closeButton {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	flex-shrink: 0;
 	width: 1.75rem;
 	height: 1.75rem;
 	border-radius: var(--radius-sm);
