@@ -7,13 +7,24 @@ interface TooltipProps {
 }
 
 const SHOW_DELAY_MS = 400;
+const BUBBLE_HEIGHT_ESTIMATE = 140;
 
 export function Tooltip({ content, children }: Readonly<TooltipProps>) {
 	const [visible, setVisible] = useState(false);
+	const [placement, setPlacement] = useState<"below" | "above">("below");
 	const timeoutRef = useRef<number | null>(null);
+	const wrapperRef = useRef<HTMLSpanElement>(null);
 
 	function show() {
-		timeoutRef.current = window.setTimeout(() => setVisible(true), SHOW_DELAY_MS);
+		timeoutRef.current = window.setTimeout(() => {
+			const rect = wrapperRef.current?.getBoundingClientRect();
+			if (rect && rect.bottom + BUBBLE_HEIGHT_ESTIMATE > window.innerHeight) {
+				setPlacement("above");
+			} else {
+				setPlacement("below");
+			}
+			setVisible(true);
+		}, SHOW_DELAY_MS);
 	}
 
 	function hide() {
@@ -27,8 +38,12 @@ export function Tooltip({ content, children }: Readonly<TooltipProps>) {
 		};
 	}, []);
 
+	const bubbleClass =
+		placement === "above" ? `${styles.bubble} ${styles.bubbleAbove}` : styles.bubble;
+
 	return (
 		<span
+			ref={wrapperRef}
 			className={styles.wrapper}
 			onMouseEnter={show}
 			onMouseLeave={hide}
@@ -37,7 +52,7 @@ export function Tooltip({ content, children }: Readonly<TooltipProps>) {
 		>
 			{children}
 			{visible && (
-				<span role="tooltip" className={styles.bubble}>
+				<span role="tooltip" className={bubbleClass}>
 					{content}
 				</span>
 			)}
