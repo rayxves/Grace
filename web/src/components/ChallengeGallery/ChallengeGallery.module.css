@@ -24,7 +24,6 @@
 	position: fixed;
 	inset: 0;
 	margin: auto;
-	display: flex;
 	flex-direction: column;
 	width: min(64rem, calc(100vw - 2 * var(--space-lg)));
 	max-height: min(85vh, 48rem);
@@ -35,6 +34,10 @@
 	color: inherit;
 	box-shadow: var(--shadow-raised);
 	overflow: hidden;
+}
+
+.dialog[open] {
+	display: flex;
 }
 
 .dialog::backdrop {
