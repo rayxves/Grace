@@ -13,22 +13,22 @@ export function ChallengeBar() {
 	return (
 		<section className={styles.bar} aria-label="Desafio ativo">
 			<div className={styles.content}>
-				<div className={styles.textRow}>
+				<div className={styles.header}>
 					<Puzzle size="1rem" className={styles.icon} aria-hidden="true" />
 					<span className={styles.title}>{active.title}</span>
-					<p className={styles.question}>{active.question}</p>
-					{!revealed && (
-						<button
-							type="button"
-							className={styles.revealButton}
-							onClick={reveal}
-							disabled={!canReveal}
-							title={canReveal ? undefined : "avance pelo menos um passo para revelar a resposta"}
-						>
-							revelar resposta
-						</button>
-					)}
 				</div>
+				<p className={styles.question}>{active.question}</p>
+				{!revealed && (
+					<button
+						type="button"
+						className={styles.revealButton}
+						onClick={reveal}
+						disabled={!canReveal}
+						title={canReveal ? undefined : "avance pelo menos um passo para revelar a resposta"}
+					>
+						revelar resposta
+					</button>
+				)}
 
 				<AnimatePresence initial={false}>
 					{revealed && (
