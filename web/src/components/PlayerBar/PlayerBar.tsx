@@ -109,7 +109,7 @@ export function PlayerBar({
 								disabled={!hasPlayback || atEnd}
 								title="avançar até a próxima linha"
 							>
-								linha
+								próxima linha
 								<ChevronsRight size={ICON_SIZE} />
 							</button>
 						)}
