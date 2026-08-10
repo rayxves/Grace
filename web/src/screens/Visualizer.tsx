@@ -4,6 +4,7 @@ import { FullMode } from "./modes/FullMode";
 import { Stage } from "./modes/Stage";
 import { useRoute } from "../hooks/useRoute";
 import { runGHopper } from "../lib/GHopper";
+import { ChallengeBar } from "../components/ChallengeBar/ChallengeBar";
 import type { Trace } from "../types";
 import styles from "./Visualizer.module.css";
 
@@ -32,6 +33,7 @@ export function Visualizer() {
 
 	return (
 		<div className={styles.shell}>
+			<ChallengeBar />
 			{trace?.truncated && (
 				<div className={styles.truncatedWarning} role="alert">
 					<AlertTriangle size="1rem" className={styles.truncatedIcon} />

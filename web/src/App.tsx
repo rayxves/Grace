@@ -1,5 +1,6 @@
 import { TopNav } from "./components/TopNav/TopNav";
 import { RouteProvider } from "./hooks/RouteProvider";
+import { ChallengeProvider } from "./hooks/ChallengeProvider";
 import { useRoute } from "./hooks/useRoute";
 import { Visualizer } from "./screens/Visualizer";
 import { Reference } from "./screens/Reference";
@@ -27,7 +28,9 @@ function AppShell() {
 function App() {
 	return (
 		<RouteProvider>
-			<AppShell />
+			<ChallengeProvider>
+				<AppShell />
+			</ChallengeProvider>
 		</RouteProvider>
 	);
 }

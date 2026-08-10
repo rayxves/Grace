@@ -10,6 +10,7 @@ import { usePlayer } from "../../hooks/usePlayer";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { useHighlightState } from "../../hooks/useHighlightState";
 import { useRoute } from "../../hooks/useRoute";
+import { useChallenge } from "../../hooks/useChallenge";
 import { collectOutput } from "../../lib/instructions";
 import { parseErrorLine } from "../../lib/errors";
 import { nodeAccentColor } from "../../lib/nodeColor";
@@ -63,6 +64,11 @@ export function FullMode({
 	const steps = trace?.steps ?? EMPTY_STEPS;
 	const bytecode = trace?.bytecode ?? EMPTY_BYTECODE;
 	const player = usePlayer(steps, (step) => step.line);
+
+	const { markAdvanced } = useChallenge();
+	useEffect(() => {
+		if (player.index > 0) markAdvanced();
+	}, [player.index, markAdvanced]);
 
 	const handleRun = useCallback(() => {
 		setPinnedNodeId(null);

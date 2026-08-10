@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { CodeEditor } from "../../components/CodeEditor/CodeEditor";
 import { useRoute } from "../../hooks/useRoute";
 import { usePlayer } from "../../hooks/usePlayer";
+import { useChallenge } from "../../hooks/useChallenge";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { parseErrorLine } from "../../lib/errors";
 import { nodeAccentColor } from "../../lib/nodeColor";
@@ -35,6 +36,11 @@ export function Stage({
 	const steps = trace?.steps ?? EMPTY_STEPS;
 	const stepPlayer = usePlayer(steps, (step) => step.line);
 	const hasPlayback = steps.length > 0;
+
+	const { markAdvanced } = useChallenge();
+	useEffect(() => {
+		if (stepPlayer.index > 0) markAdvanced();
+	}, [stepPlayer.index, markAdvanced]);
 
 	useKeyboardShortcuts({
 		enabled: hasPlayback,

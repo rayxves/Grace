@@ -27,8 +27,8 @@ const CONTENT_MODULES = [
 		},
 	},
 	{
-		file: "src/content/gallery.ts",
-		exportName: "GALLERY_EXAMPLES",
+		file: "src/content/challenges.ts",
+		exportName: "CHALLENGES",
 		extract: (example) => [{ id: example.id, example }],
 	},
 ];
