@@ -6,6 +6,7 @@ import { explainStep } from "../../lib/instructions";
 import { changedVariableNames } from "../../lib/variables";
 import { Panel } from "../Panel/Panel";
 import { StackBlock } from "../atoms/StackBlock";
+import { OutputView } from "../OutputView/OutputView";
 import styles from "./ExecutionStatePanel.module.css";
 
 interface ExecutionStatePanelProps {
@@ -151,27 +152,12 @@ export function ExecutionStatePanel({
 
 					{(step || error) && (
 						<section className={styles.section}>
-							<h3 className={styles.sectionTitle}>saída</h3>
-							<div className={styles.output}>
-								{output.map((line, i) => (
-									<span key={`${i}-${line}`} className={styles.outputLine}>
-										{line}
-									</span>
-								))}
-								{error && (
-									<span className={styles.outputError} role="alert">
-										{(() => {
-											if (step) return "A execução parou aqui: ";
-											if (hasBytecode) return "A execução falhou logo na primeira instrução: ";
-											return "o programa não chegou a ser compilado: ";
-										})()}
-										{error}
-									</span>
-								)}
-								{output.length === 0 && !error && (
-									<span className={styles.outputEmpty}>Nada foi impresso ainda</span>
-								)}
-							</div>
+							<OutputView
+								output={output}
+								error={error}
+								reachedStep={Boolean(step)}
+								hasBytecode={hasBytecode}
+							/>
 						</section>
 					)}
 

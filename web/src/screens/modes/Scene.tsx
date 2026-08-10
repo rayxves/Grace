@@ -9,6 +9,7 @@ import { buildScopeResolutionMap } from "../../lib/scopeLookup";
 import { StackBlock } from "../../components/atoms/StackBlock";
 import { BytecodeRow } from "../../components/atoms/BytecodeRow";
 import { TokenChip } from "../../components/atoms/TokenChip";
+import { OutputView } from "../../components/OutputView/OutputView";
 import { FlightOverlay } from "../../components/FlightOverlay/FlightOverlay";
 import { useFlight, moveDuration, type FlightTrigger } from "../../hooks/useFlight";
 import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
@@ -204,25 +205,18 @@ export function Scene({ trace, step, stepIndex, speed, error, hasBytecode }: Rea
 									<StackBlock key={`${i}-${value}`} value={value} isTop={i === all.length - 1} />
 								))}
 							</AnimatePresence>
-							{(!step || step.stack.length === 0) && <p className={styles.stackEmpty}>pilha vazia</p>}
-						</div>
-						<div className={styles.output}>
-							{output.map((line, i) => (
-								<span key={`${i}-${line}`} className={styles.outputLine}>
-									{line}
-								</span>
-							))}
-							{error && (
-								<span className={styles.outputError} role="alert">
-									{(() => {
-										if (step) return "A execução parou aqui: ";
-										if (hasBytecode) return "A execução falhou logo na primeira instrução: ";
-										return "o programa não chegou a ser compilado: ";
-									})()}
-									{error}
-								</span>
+							{(!step || step.stack.length === 0) && (
+								<p className={styles.stackEmpty}>
+									A pilha está vazia. Ela enche conforme a VM avança.
+								</p>
 							)}
 						</div>
+						<OutputView
+							output={output}
+							error={error}
+							reachedStep={Boolean(step)}
+							hasBytecode={hasBytecode}
+						/>
 					</div>
 				</div>
 			</div>

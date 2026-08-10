@@ -1,0 +1,51 @@
+.zone {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-xs);
+}
+
+.title {
+	font-size: var(--text-sm);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--color-text-muted);
+}
+
+.output {
+	display: flex;
+	flex-direction: column;
+	gap: 0.125rem;
+	padding: var(--space-sm) var(--space-md);
+	border-radius: var(--radius-sm);
+	background: var(--color-output-bg);
+	font-family: var(--font-mono);
+	font-size: var(--text-sm);
+	max-height: 6rem;
+	overflow-y: auto;
+}
+
+.outputLine {
+	color: var(--color-output-text);
+	overflow-wrap: break-word;
+}
+
+.outputLine::before {
+	content: "› ";
+	opacity: 0.6;
+}
+
+.outputEmpty {
+	color: var(--color-output-label);
+	font-style: italic;
+}
+
+.outputError {
+	color: var(--color-danger);
+	overflow-wrap: break-word;
+}
+
+.outputError::before {
+	content: "› ";
+	opacity: 0.6;
+}
