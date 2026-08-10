@@ -20,37 +20,39 @@ export function PipelineStrip({ phase, onSelect }: Readonly<PipelineStripProps>)
 	useDismiss(anchorRef, open, () => setOpen(false));
 
 	return (
-		<div className={styles.wrapper}>
-			<div className={styles.topRow}>
-				<nav className={styles.strip} aria-label="fases do compilador">
-					{PHASES.map((entry, i) => (
-						<span key={entry.id} className={styles.phaseGroup}>
-							<button
-								type="button"
-								className={
-									entry.id === phase ? `${styles.phase} ${styles.phaseActive}` : styles.phase
-								}
-								onClick={() => onSelect(entry.id)}
-							>
-								{entry.label}
-							</button>
-							{i < PHASES.length - 1 && (
-								<span className={styles.arrow} aria-hidden="true">
-									→
-								</span>
-							)}
-						</span>
-					))}
-				</nav>
-
-				<div className={styles.flow}>
-					<span>{narration.entra}</span>
-					<span className={styles.flowArrow} aria-hidden="true">
-						→
+		<div className={styles.row}>
+			<nav className={styles.strip} aria-label="fases do compilador">
+				{PHASES.map((entry, i) => (
+					<span key={entry.id} className={styles.phaseGroup}>
+						<button
+							type="button"
+							className={
+								entry.id === phase ? `${styles.phase} ${styles.phaseActive}` : styles.phase
+							}
+							onClick={() => onSelect(entry.id)}
+						>
+							{entry.label}
+						</button>
+						{i < PHASES.length - 1 && (
+							<span className={styles.arrow} aria-hidden="true">
+								→
+							</span>
+						)}
 					</span>
-					<span>{narration.sai}</span>
-				</div>
+				))}
+			</nav>
+
+			<span className={styles.divider} aria-hidden="true" />
+
+			<div className={styles.flow}>
+				<span>{narration.entra}</span>
+				<span className={styles.flowArrow} aria-hidden="true">
+					→
+				</span>
+				<span>{narration.sai}</span>
 			</div>
+
+			<span className={styles.divider} aria-hidden="true" />
 
 			<div className={styles.popoverAnchor} ref={anchorRef}>
 				<button
