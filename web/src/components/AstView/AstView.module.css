@@ -17,10 +17,3 @@
 	pointer-events: none;
 }
 
-.placeholder {
-	composes: placeholder from "../Panel/Panel.module.css";
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: 100%;
-}

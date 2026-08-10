@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { GitBranch } from "lucide-react";
 import Tree from "react-d3-tree";
 import type {
 	CustomNodeElementProps,
@@ -31,6 +32,8 @@ interface AstViewProps {
 	resolveMap?: Map<number, ScopeResolution>;
 	astCountsByLine?: Map<number, number>;
 	bytecodeCountsByLine?: Map<number, number>;
+	run: () => void;
+	running: boolean;
 }
 
 const EMPTY_RESOLVE_MAP = new Map<number, ScopeResolution>();
@@ -113,6 +116,8 @@ export function AstView({
 	resolveMap = EMPTY_RESOLVE_MAP,
 	astCountsByLine = EMPTY_COUNTS_MAP,
 	bytecodeCountsByLine = EMPTY_COUNTS_MAP,
+	run,
+	running,
 }: Readonly<AstViewProps>) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const treeRef = useRef<Tree>(null);
@@ -193,8 +198,11 @@ export function AstView({
 			contentClassName={styles.treeContainer}
 			contentRef={containerRef}
 			isEmpty={!treeData}
-			placeholder="Execute um programa para ver sua árvore sintática"
-			placeholderClassName={styles.placeholder}
+			emptyIcon={<GitBranch size="1.5rem" />}
+			placeholder="A árvore sintática aparece aqui depois da análise"
+			emptyActionLabel="executar"
+			onEmptyAction={run}
+			emptyActionDisabled={running}
 		>
 			{treeData && (
 				<Tree

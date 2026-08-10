@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Layers } from "lucide-react";
 import type { Step, Variable } from "../../types";
 import { explainStep } from "../../lib/instructions";
 import { changedVariableNames } from "../../lib/variables";
@@ -13,6 +14,8 @@ interface ExecutionStatePanelProps {
 	output: string[];
 	error: string | null;
 	hasBytecode: boolean;
+	run: () => void;
+	running: boolean;
 }
 
 interface VariableGroupProps {
@@ -55,6 +58,8 @@ export function ExecutionStatePanel({
 	output,
 	error,
 	hasBytecode,
+	run,
+	running,
 }: Readonly<ExecutionStatePanelProps>) {
 	const stack = step?.stack ?? [];
 	const explanation = step ? explainStep(step) : null;
@@ -77,8 +82,11 @@ export function ExecutionStatePanel({
 			panelClassName={styles.panel}
 			contentClassName={styles.content}
 			isEmpty={!step && !error}
-			emptyClassName={styles.empty}
-			placeholder="Execute um programa para acompanhar pilha, saída e variáveis"
+			emptyIcon={<Layers size="1.5rem" />}
+			placeholder="A pilha, a saída e as variáveis aparecem aqui"
+			emptyActionLabel="executar"
+			onEmptyAction={run}
+			emptyActionDisabled={running}
 		>
 			{(step || error) && (
 				<>
@@ -95,7 +103,11 @@ export function ExecutionStatePanel({
 											/>
 										))}
 									</AnimatePresence>
-									{stack.length === 0 && <p className={styles.emptyHint}>pilha vazia</p>}
+									{stack.length === 0 && (
+										<p className={styles.emptyHint}>
+											A pilha está vazia. Ela enche conforme a VM avança.
+										</p>
+									)}
 								</div>
 								<div className={styles.stackBase} />
 							</div>

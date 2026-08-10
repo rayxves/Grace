@@ -41,11 +41,6 @@
 	gap: 0.125rem;
 }
 
-.emptyState {
-	composes: empty from "../Panel/Panel.module.css";
-	flex: 1;
-}
-
 .constantsSection {
 	flex-shrink: 0;
 	display: flex;
@@ -68,8 +63,4 @@
 
 .constantsToggle:hover {
 	color: var(--color-heading);
-}
-
-.placeholder {
-	composes: placeholder from "../Panel/Panel.module.css";
 }

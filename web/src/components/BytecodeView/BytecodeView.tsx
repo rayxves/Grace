@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { Binary, ChevronDown, ChevronUp } from "lucide-react";
 import type { BytecodeInstruction, Step } from "../../types";
 import { groupBytecodeByLine } from "../../lib/bytecode";
 import { nodeAccentColor, nodeAccentFill } from "../../lib/nodeColor";
@@ -33,6 +33,8 @@ interface BytecodeViewProps {
 	onSelectNode?: (nodeId: number | null) => void;
 	currentOffset?: number | null;
 	pendingOffsets?: ReadonlySet<number> | null;
+	run: () => void;
+	running: boolean;
 }
 
 export function BytecodeView({
@@ -46,6 +48,8 @@ export function BytecodeView({
 	onSelectNode,
 	currentOffset,
 	pendingOffsets = null,
+	run,
+	running,
 }: Readonly<BytecodeViewProps>) {
 	const currentRowRef = useRef<HTMLDivElement>(null);
 	const [hoveredJumpTarget, setHoveredJumpTarget] = useState<number | null>(null);
@@ -83,9 +87,11 @@ export function BytecodeView({
 			titleClassName={styles.title}
 			contentClassName={styles.list}
 			isEmpty={bytecode.length === 0}
-			emptyClassName={styles.emptyState}
-			placeholder="Execute um programa para ver o bytecode gerado"
-			placeholderClassName={styles.placeholder}
+			emptyIcon={<Binary size="1.5rem" />}
+			placeholder="As instruções geradas aparecem aqui"
+			emptyActionLabel="executar"
+			onEmptyAction={run}
+			emptyActionDisabled={running}
 		>
 			{groups.map((group) => (
 				<div

@@ -136,6 +136,8 @@ export function FullMode({
 				tokens={trace?.tokens ?? []}
 				hoveredLine={effectiveHoverLine}
 				onHoverLine={setHoveredTokenLine}
+				run={handleRun}
+				running={running}
 			/>
 		);
 	} else if (phase === "arvore") {
@@ -154,6 +156,8 @@ export function FullMode({
 				resolveMap={resolveMap}
 				astCountsByLine={astCountsByLine}
 				bytecodeCountsByLine={bytecodeCountsByLine}
+				run={handleRun}
+				running={running}
 			/>
 		);
 	} else {
@@ -167,6 +171,8 @@ export function FullMode({
 				hoveredNodeId={effectiveNodeId}
 				onHoverNode={setHoveredNodeId}
 				onSelectNode={togglePinnedNode}
+				run={handleRun}
+				running={running}
 			/>
 		);
 	}
@@ -216,6 +222,8 @@ export function FullMode({
 								output={output}
 								error={errorReached ? errorMessage : null}
 								hasBytecode={(trace?.bytecode.length ?? 0) > 0}
+								run={handleRun}
+								running={running}
 							/>
 						</div>
 					)}
