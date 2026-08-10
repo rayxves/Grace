@@ -50,9 +50,19 @@ export type ResolveStep =
 	| { kind: "define"; name: string }
 	| { kind: "resolve"; id: number; name: string; depth: number };
 
+export type TokenCategory =
+	| "keyword"
+	| "identifier"
+	| "number"
+	| "string"
+	| "boolean"
+	| "operator"
+	| "punctuation";
+
 export interface TokenInfo {
 	text: string;
 	kind: string;
+	category: TokenCategory;
 	line: number;
 }
 

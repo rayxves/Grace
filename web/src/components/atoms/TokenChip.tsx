@@ -1,26 +1,33 @@
+import type { CSSProperties } from "react";
 import styles from "./TokenChip.module.css";
 
 interface TokenChipProps {
 	text: string;
-	title?: string;
+	color?: string;
 	active?: boolean;
+	dimmed?: boolean;
 	onMouseEnter?: () => void;
 	onMouseLeave?: () => void;
 }
 
 export function TokenChip({
 	text,
-	title,
+	color,
 	active = false,
+	dimmed = false,
 	onMouseEnter,
 	onMouseLeave,
 }: Readonly<TokenChipProps>) {
+	const classNames = [styles.token];
+	if (active) classNames.push(styles.tokenActive);
+	if (dimmed) classNames.push(styles.tokenDimmed);
+
 	return (
 		<span
-			className={active ? `${styles.token} ${styles.tokenActive}` : styles.token}
+			className={classNames.join(" ")}
+			style={color ? ({ "--chip-color": color } as CSSProperties) : undefined}
 			onMouseEnter={onMouseEnter}
 			onMouseLeave={onMouseLeave}
-			title={title}
 		>
 			{text}
 		</span>

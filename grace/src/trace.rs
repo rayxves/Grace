@@ -2,6 +2,58 @@ use serde::Serialize;
 
 use crate::ast_serializer::AstNode;
 use crate::events::{CompileEvent, Event, EventSink, ParseEvent, ResolveEvent, ScanEvent, VmEvent};
+use crate::token::TokenType;
+
+fn token_category(token_type: &TokenType) -> &'static str {
+    match token_type {
+        TokenType::LeftParen
+        | TokenType::RightParen
+        | TokenType::LeftBrace
+        | TokenType::RightBrace
+        | TokenType::Comma
+        | TokenType::Dot
+        | TokenType::Semicolon
+        | TokenType::EOF => "punctuation",
+
+        TokenType::Star
+        | TokenType::Plus
+        | TokenType::Minus
+        | TokenType::Slash
+        | TokenType::PlusEqual
+        | TokenType::MinusEqual
+        | TokenType::SlashEqual
+        | TokenType::StarEqual
+        | TokenType::Bang
+        | TokenType::BangEqual
+        | TokenType::Equal
+        | TokenType::EqualEqual
+        | TokenType::Greater
+        | TokenType::GreaterEqual
+        | TokenType::Less
+        | TokenType::LessEqual => "operator",
+
+        TokenType::Identifier(_) => "identifier",
+        TokenType::StringLiteral(_) => "string",
+        TokenType::Number(_) => "number",
+        TokenType::Boolean(_) => "boolean",
+
+        TokenType::And
+        | TokenType::Class
+        | TokenType::Else
+        | TokenType::If
+        | TokenType::Function
+        | TokenType::For
+        | TokenType::Null
+        | TokenType::Or
+        | TokenType::Print
+        | TokenType::Return
+        | TokenType::Super
+        | TokenType::This
+        | TokenType::Var
+        | TokenType::While
+        | TokenType::Constructor => "keyword",
+    }
+}
 
 #[derive(Serialize)]
 pub struct VariableJson {
@@ -79,6 +131,7 @@ pub enum CompileStepJson {
 pub struct TokenJson {
     pub text: String,
     pub kind: String,
+    pub category: String,
     pub line: u64,
 }
 
@@ -159,9 +212,11 @@ impl EventSink for TraceCollector {
     fn emit(&mut self, event: Event) {
         match event {
             Event::Scan(ScanEvent::Token(token)) => {
+                let category = token_category(&token.token_type).to_string();
                 self.tokens.push(TokenJson {
                     text: token.lexeme,
                     kind: format!("{:?}", token.token_type),
+                    category,
                     line: token.line,
                 });
             }

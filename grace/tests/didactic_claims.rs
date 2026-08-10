@@ -23,6 +23,16 @@ fn step_instructions(t: &Value) -> Vec<String> {
         .collect()
 }
 
+fn token_categories(t: &Value) -> Vec<String> {
+    t["tokens"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|token| token["kind"].as_str() != Some("EOF"))
+        .map(|token| token["category"].as_str().unwrap().to_string())
+        .collect()
+}
+
 #[test]
 fn maior_ou_igual_gera_menor_seguido_de_nega_logico() {
     let t = trace("var a = 5;\nvar b = 3;\nimprima(a >= b);");
@@ -151,4 +161,36 @@ fn instrucoes_ocupam_um_ou_dois_bytes() {
             "cada instrução deve ocupar 1 ou 2 bytes, mas o offset avançou {delta}"
         );
     }
+}
+
+#[test]
+fn tokens_carregam_a_categoria_lexical_correta() {
+    let t = trace("var x = 5;");
+    assert!(t["error"].is_null());
+    let categories = token_categories(&t);
+    assert_eq!(
+        categories,
+        vec!["keyword", "identifier", "operator", "number", "punctuation"],
+        "var x = 5; deveria classificar cada token como keyword, identifier, operator, number e punctuation, nessa ordem"
+    );
+}
+
+#[test]
+fn booleanos_e_conectivos_logicos_sao_categorizados_corretamente() {
+    let t = trace("imprima(verdadeiro e falso);");
+    assert!(t["error"].is_null());
+    let categories = token_categories(&t);
+    assert_eq!(
+        categories,
+        vec![
+            "keyword",
+            "punctuation",
+            "boolean",
+            "keyword",
+            "boolean",
+            "punctuation",
+            "punctuation",
+        ],
+        "verdadeiro/falso devem ser 'boolean' e 'e' deve ser 'keyword', não 'operator'"
+    );
 }

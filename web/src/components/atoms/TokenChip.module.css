@@ -2,20 +2,25 @@
 	display: inline-flex;
 	padding: 0.25rem 0.625rem;
 	border-radius: var(--radius-sm);
-	border: 1px solid var(--color-border-strong);
+	border: 1px solid color-mix(in srgb, var(--chip-color, var(--color-border-strong)) 45%, var(--color-border-strong));
 	background: var(--color-surface-alt);
-	color: var(--color-text);
+	color: var(--chip-color, var(--color-text));
 	font-family: var(--font-mono);
-	font-size: 0.8125rem;
+	font-size: var(--text-sm);
 	white-space: pre;
 	cursor: default;
 	transition:
 		background-color 0.15s ease,
-		border-color 0.15s ease;
+		border-color 0.15s ease,
+		opacity 0.15s ease;
 }
 
 .tokenActive {
 	border-color: var(--color-accent-border);
 	background: var(--color-accent-soft);
 	color: var(--color-heading);
+}
+
+.tokenDimmed {
+	opacity: 0.25;
 }
