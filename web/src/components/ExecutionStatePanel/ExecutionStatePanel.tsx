@@ -110,7 +110,7 @@ export function ExecutionStatePanel({
 										</p>
 									)}
 								</div>
-								<div className={styles.stackBase} />
+								<div className={styles.stackBase}>base</div>
 							</div>
 							<div className={styles.stackDetail}>
 								{step && explanation && (
@@ -163,12 +163,12 @@ export function ExecutionStatePanel({
 
 					{step && (
 						<section className={styles.section}>
-							<h3 className={styles.sectionTitle}>variáveis e chamadas</h3>
+							<h3 className={styles.sectionTitle}>Variáveis e chamadas</h3>
 							{step.loopIteration !== null && (
 								<div className={styles.loopBadge}>iteração {step.loopIteration}</div>
 							)}
 							<div className={styles.subsection}>
-								<span className={styles.subsectionLabel}>pilha de chamadas</span>
+								<span className={styles.subsectionLabel}>Pilha de chamadas</span>
 								<div className={styles.frames}>
 									<AnimatePresence initial={false}>
 										{displayFrames.map(({ frame, depth }) => (
@@ -180,7 +180,7 @@ export function ExecutionStatePanel({
 												exit={{ opacity: 0, x: -12, scale: 0.95 }}
 												transition={{ duration: 0.18 }}
 												className={
-													depth === maxFrameDepth
+													depth === maxFrameDepth && displayFrames.length > 1
 														? `${styles.frame} ${styles.frameCurrent}`
 														: styles.frame
 												}
@@ -198,7 +198,7 @@ export function ExecutionStatePanel({
 							</div>
 
 							<VariableGroup
-								label="variáveis globais"
+								label="Variáveis globais"
 								variables={step.globals}
 								changed={changedGlobals}
 								emptyText="nenhuma variável global ainda"
@@ -206,7 +206,7 @@ export function ExecutionStatePanel({
 
 							{step.locals.length > 0 && (
 								<VariableGroup
-									label="variáveis locais"
+									label="Variáveis locais"
 									variables={step.locals}
 									changed={changedLocals}
 									emptyText=""

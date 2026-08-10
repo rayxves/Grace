@@ -52,6 +52,9 @@ export function BytecodeRow({
 		isJumpTarget ? styles.rowJumpTarget : "",
 	].join(" ");
 	const isSelectable = Boolean(onSelect);
+	let deltaClass = styles.stackDelta;
+	if (stackDelta?.startsWith("+")) deltaClass = `${styles.stackDelta} ${styles.stackDeltaPositive}`;
+	else if (stackDelta?.startsWith("-")) deltaClass = `${styles.stackDelta} ${styles.stackDeltaNegative}`;
 
 	return (
 		<div
@@ -81,7 +84,7 @@ export function BytecodeRow({
 				{String(instruction.offset).padStart(4, "0")}
 			</span>
 			<span className={styles.text}>{instruction.text}</span>
-			{stackDelta && <span className={styles.stackDelta}>{stackDelta}</span>}
+			{stackDelta && <span className={deltaClass}>{stackDelta}</span>}
 		</div>
 	);
 }

@@ -2,13 +2,20 @@
 	composes: title from "../Panel/Panel.module.css";
 }
 
-.list {
+.panelBody {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	border-top: 1px solid var(--color-border);
+}
+
+.scrollArea {
 	flex: 1;
 	min-height: 0;
 	display: flex;
 	flex-direction: column;
 	overflow-y: auto;
-	border-top: 1px solid var(--color-border);
 }
 
 .lineGroup {
@@ -26,11 +33,10 @@
 	flex-shrink: 0;
 	width: 4rem;
 	padding-top: 0.3125rem;
-	font-size: 0.6875rem;
-	font-family: var(--font-sans);
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	color: var(--color-text-muted);
+	font-size: var(--text-xs);
+	font-weight: 600;
+	font-family: var(--font-mono);
+	color: var(--color-text);
 }
 
 .lineInstructions {

@@ -85,7 +85,7 @@ export function BytecodeView({
 			title="bytecode"
 			dataRole="bytecode-panel"
 			titleClassName={styles.title}
-			contentClassName={styles.list}
+			contentClassName={styles.panelBody}
 			isEmpty={bytecode.length === 0}
 			emptyIcon={<Binary size="1.5rem" />}
 			placeholder="As instruções geradas aparecem aqui"
@@ -93,6 +93,7 @@ export function BytecodeView({
 			onEmptyAction={run}
 			emptyActionDisabled={running}
 		>
+			<div className={styles.scrollArea}>
 			{groups.map((group) => (
 				<div
 					key={`${group.line}-${group.instructions[0].offset}`}
@@ -151,6 +152,7 @@ export function BytecodeView({
 					</div>
 				</div>
 			))}
+			</div>
 			{constants.length > 0 && (
 				<div className={styles.constantsSection}>
 					<button
