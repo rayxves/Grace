@@ -89,6 +89,8 @@ export function Stage({
 						speed={stepPlayer.speed}
 						error={errorReached ? errorMessage : null}
 						hasBytecode={(trace?.bytecode.length ?? 0) > 0}
+						run={run}
+						running={running}
 					/>
 				</div>
 			</div>

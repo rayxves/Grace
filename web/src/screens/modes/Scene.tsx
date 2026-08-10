@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Binary, GitBranch } from "lucide-react";
 import type { Step, Trace } from "../../types";
 import { revealedNodeIdsUpTo } from "../../lib/astReveal";
 import { groupBytecodeByLine, type BytecodeLineGroup } from "../../lib/bytecode";
@@ -23,6 +24,8 @@ interface SceneProps {
 	speed: number;
 	error: string | null;
 	hasBytecode: boolean;
+	run: () => void;
+	running: boolean;
 }
 
 const EMPTY_STEPS: Trace["steps"] = [];
@@ -61,7 +64,16 @@ function renderGroup(
 	);
 }
 
-export function Scene({ trace, step, stepIndex, speed, error, hasBytecode }: Readonly<SceneProps>) {
+export function Scene({
+	trace,
+	step,
+	stepIndex,
+	speed,
+	error,
+	hasBytecode,
+	run,
+	running,
+}: Readonly<SceneProps>) {
 	const reducedMotion = usePrefersReducedMotion();
 	const mainAreaRef = useRef<HTMLDivElement>(null);
 	const steps = trace?.steps ?? EMPTY_STEPS;
@@ -156,45 +168,84 @@ export function Scene({ trace, step, stepIndex, speed, error, hasBytecode }: Rea
 
 	return (
 		<div className={styles.scene}>
-			<div className={styles.tokensRow}>
-				{lineTokens.length === 0 && (
-					<p className={styles.tokensEmpty}>Execute um programa para ver os tokens da linha atual</p>
-				)}
-				{lineTokens.map((token, i) => (
-					<TokenChip key={`${i}-${token.line}-${token.text}`} text={token.text || token.kind} />
-				))}
+			<div className={styles.tokensZone}>
+				<span className={styles.tokensTitle}>tokens da linha atual</span>
+				<div className={styles.tokensRow}>
+					{lineTokens.length === 0 ? (
+						<p className={styles.tokensEmpty}>
+							Os tokens da linha atual aparecem aqui conforme a VM avança.
+						</p>
+					) : (
+						lineTokens.map((token, i) => (
+							<TokenChip key={`${i}-${token.line}-${token.text}`} text={token.text || token.kind} />
+						))
+					)}
+				</div>
 			</div>
 
 			<div className={styles.mainArea} ref={mainAreaRef}>
 				<FlightOverlay flight={nodeFlight} />
 				<FlightOverlay flight={stackFlight} />
 				<div className={styles.treeZone}>
-					<ConstructionTree
-						ast={trace?.ast ?? null}
-						revealedNodeIds={revealedNodeIds}
-						currentNodeId={step?.nodeId ?? null}
-						resolvedDepthByNode={resolvedDepthByNode}
-					/>
-					<AnimatePresence initial={false}>
-						{isInFunction && (
-							<motion.div
-								key="frame-badge"
-								className={styles.frameBadge}
-								initial={{ opacity: 0, y: reducedMotion ? 0 : -6 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, y: reducedMotion ? 0 : -6 }}
-								transition={{ duration: reducedMotion ? 0 : 0.18 }}
-							>
-								dentro de {topFrame?.functionName}()
-							</motion.div>
+					<span className={styles.treeTitle}>árvore</span>
+					<div className={styles.treeContent}>
+						{trace?.ast ? (
+							<ConstructionTree
+								ast={trace.ast}
+								revealedNodeIds={revealedNodeIds}
+								currentNodeId={step?.nodeId ?? null}
+								resolvedDepthByNode={resolvedDepthByNode}
+							/>
+						) : (
+							<div className={styles.zoneEmpty}>
+								<GitBranch size="1.5rem" />
+								<p>A árvore sintática aparece aqui depois da análise</p>
+								<button
+									type="button"
+									className={styles.zoneEmptyAction}
+									onClick={run}
+									disabled={running}
+								>
+									executar
+								</button>
+							</div>
 						)}
-					</AnimatePresence>
+						<AnimatePresence initial={false}>
+							{isInFunction && (
+								<motion.div
+									key="frame-badge"
+									className={styles.frameBadge}
+									initial={{ opacity: 0, y: reducedMotion ? 0 : -6 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: reducedMotion ? 0 : -6 }}
+									transition={{ duration: reducedMotion ? 0 : 0.18 }}
+								>
+									dentro de {topFrame?.functionName}()
+								</motion.div>
+							)}
+						</AnimatePresence>
+					</div>
 				</div>
 				<div className={styles.rightColumn}>
 					<div className={styles.bytecodeZone}>
 						<span className={styles.bytecodeTitle}>bytecode</span>
 						<div className={styles.bytecodeList}>
-							{groups.map((group) => renderGroup(group, currentOffset, executedOffsets))}
+							{groups.length === 0 ? (
+								<div className={styles.zoneEmpty}>
+									<Binary size="1.5rem" />
+									<p>As instruções geradas aparecem aqui</p>
+									<button
+										type="button"
+										className={styles.zoneEmptyAction}
+										onClick={run}
+										disabled={running}
+									>
+										executar
+									</button>
+								</div>
+							) : (
+								groups.map((group) => renderGroup(group, currentOffset, executedOffsets))
+							)}
 						</div>
 					</div>
 					<div className={styles.stackZone}>
