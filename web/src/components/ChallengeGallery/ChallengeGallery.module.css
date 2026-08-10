@@ -26,6 +26,7 @@
 	margin: auto;
 	flex-direction: column;
 	width: min(64rem, calc(100vw - 2 * var(--space-lg)));
+	height: min(85vh, 48rem);
 	max-height: min(85vh, 48rem);
 	padding: var(--space-lg);
 	border: none;

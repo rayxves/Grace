@@ -18,17 +18,6 @@ export function ChallengeBar() {
 					<span className={styles.title}>{active.title}</span>
 				</div>
 				<p className={styles.question}>{active.question}</p>
-				{!revealed && (
-					<button
-						type="button"
-						className={styles.revealButton}
-						onClick={reveal}
-						disabled={!canReveal}
-						title={canReveal ? undefined : "avance pelo menos um passo para revelar a resposta"}
-					>
-						revelar resposta
-					</button>
-				)}
 
 				<AnimatePresence initial={false}>
 					{revealed && (
@@ -48,9 +37,22 @@ export function ChallengeBar() {
 				</AnimatePresence>
 			</div>
 
-			<button type="button" className={styles.closeButton} onClick={dismiss} aria-label="fechar desafio">
-				<X size="1rem" />
-			</button>
+			<div className={styles.actions}>
+				{!revealed && (
+					<button
+						type="button"
+						className={styles.revealButton}
+						onClick={reveal}
+						disabled={!canReveal}
+						title={canReveal ? undefined : "avance pelo menos um passo para revelar a resposta"}
+					>
+						revelar resposta
+					</button>
+				)}
+				<button type="button" className={styles.closeButton} onClick={dismiss} aria-label="fechar desafio">
+					<X size="1rem" />
+				</button>
+			</div>
 		</section>
 	);
 }
